@@ -8,6 +8,7 @@ import ClinicalEditor from './components/ClinicalEditor';
 import DocumentViewer from './components/DocumentViewer';
 import MedicalStaff from './components/MedicalStaff';
 import DatabaseView from './components/DatabaseView';
+import BatchConfigBar from './components/BatchConfigBar';
 import drivePatients from './data/drivePatients.json';
 import { blankPatientTemplate } from './data/initialData';
 import { loadPatientsFromSupabase, mapDbToPatient } from './lib/supabase';
@@ -17,6 +18,11 @@ export default function App() {
   const [patientsList, setPatientsList] = useState([]);
   const [currentPatient, setCurrentPatient] = useState(blankPatientTemplate);
   const [isBlankMode, setIsBlankMode] = useState(true);
+
+  // Estados globales para la configuración masiva (Fecha, Club y Formato)
+  const [globalDate, setGlobalDate] = useState('22-01-2026');
+  const [globalClub, setGlobalClub] = useState('Club FPF / Liga Formativa');
+  const [nameOrder, setNameOrder] = useState('LAST_FIRST'); // 'LAST_FIRST' | 'FIRST_LAST'
 
   // Sincronizar automáticamente con Supabase en el inicio
   useEffect(() => {
@@ -86,6 +92,21 @@ export default function App() {
 
       {/* Main Content Area with Smooth Tab Transitions */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        
+        {/* Barra Maestra de Configuración en Lote (Fecha, Club, Formato y Exportación Word con Sellos) */}
+        <BatchConfigBar
+          globalDate={globalDate}
+          setGlobalDate={setGlobalDate}
+          globalClub={globalClub}
+          setGlobalClub={setGlobalClub}
+          nameOrder={nameOrder}
+          setNameOrder={setNameOrder}
+          patientsList={patientsList}
+          setPatientsList={setPatientsList}
+          currentPatient={currentPatient}
+          setCurrentPatient={setCurrentPatient}
+        />
+
         <AnimatePresence mode="wait">
           <motion.div
             key={currentTab}
@@ -110,6 +131,9 @@ export default function App() {
                 setPatientsList={setPatientsList}
                 onSelectPatient={handleSelectPatient}
                 onNavigateTab={setCurrentTab}
+                globalDate={globalDate}
+                globalClub={globalClub}
+                nameOrder={nameOrder}
               />
             )}
 

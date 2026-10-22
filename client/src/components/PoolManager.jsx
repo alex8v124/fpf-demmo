@@ -26,6 +26,7 @@ import {
   FolderSync
 } from 'lucide-react';
 import drivePatients from '../data/drivePatients.json';
+import { downloadPatientDocx, downloadBatchDocxZip } from '../utils/docxGenerator';
 
 // Meses de la temporada deportiva 2026
 const MONTHS = [
@@ -592,17 +593,30 @@ export default function PoolManager({
             </span>
 
             <button
-              onClick={() => {
-                setToastMessage({
-                  type: 'success',
-                  text: `Generando lote de exportación para ${filteredList.length} jugadores... Se compilarán todos con la fecha ${globalDate}.`
-                });
-                setTimeout(() => setToastMessage(null), 4000);
+              onClick={async () => {
+                if (filteredList.length === 0) return;
+                try {
+                  setToastMessage({
+                    type: 'info',
+                    text: `Compilando lote de ${filteredList.length} documentos Word oficiales con sellos y firmas...`
+                  });
+                  await downloadBatchDocxZip(filteredList, { globalDate, globalClub: 'FPF' });
+                  setToastMessage({
+                    type: 'success',
+                    text: `¡Lote de ${filteredList.length} Words (.docx) descargado en ZIP! Sellos médicos 100% conservados.`
+                  });
+                } catch (e) {
+                  setToastMessage({
+                    type: 'error',
+                    text: `Error al generar lote: ${e.message}`
+                  });
+                }
+                setTimeout(() => setToastMessage(null), 5000);
               }}
               className="bg-emerald-600/90 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-lg transition flex items-center space-x-1.5 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Jalar Lote ({filteredList.length})</span>
+              <span>Descargar Lote Word ({filteredList.length})</span>
             </button>
           </div>
         </div>
@@ -618,7 +632,7 @@ export default function PoolManager({
                 <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Mes Rotación</th>
                 <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Fecha Cascada</th>
                 <th className="px-4 py-3.5 font-bold uppercase tracking-wider text-center">Estado</th>
-                <th className="px-6 py-3.5 font-bold uppercase tracking-wider text-right">Acción</th>
+                <th className="px-6 py-3.5 font-bold uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
@@ -679,13 +693,24 @@ export default function PoolManager({
                   </td>
 
                   <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => handleSelectToView(player)}
-                      className="bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer inline-flex items-center space-x-1.5"
-                    >
-                      <FileCheck2 className="w-3.5 h-3.5" />
-                      <span>Ver 21 Págs</span>
-                    </button>
+                    <div className="flex items-center justify-end space-x-2">
+                      <button
+                        onClick={() => downloadPatientDocx(player, { globalDate, globalClub: player.club })}
+                        className="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 text-xs font-bold px-2.5 py-1.5 rounded-xl transition cursor-pointer inline-flex items-center space-x-1"
+                        title="Descargar Word .docx con sellos"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Word</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleSelectToView(player)}
+                        className="bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer inline-flex items-center space-x-1.5"
+                      >
+                        <FileCheck2 className="w-3.5 h-3.5" />
+                        <span>21 Págs</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

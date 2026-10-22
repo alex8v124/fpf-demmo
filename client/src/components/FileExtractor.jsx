@@ -29,15 +29,30 @@ export default function FileExtractor({
   patientsList, 
   setPatientsList, 
   onSelectPatient, 
-  onNavigateTab 
+  onNavigateTab,
+  globalDate: parentDate,
+  globalClub: parentClub,
+  nameOrder: parentOrder
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [nameOrder, setNameOrder] = useState('LAST_FIRST'); // 'LAST_FIRST' | 'FIRST_LAST'
-  const [globalDate, setGlobalDate] = useState('06-05-2026');
+  const [nameOrder, setNameOrder] = useState(parentOrder || 'LAST_FIRST'); // 'LAST_FIRST' | 'FIRST_LAST'
+  const [globalDate, setGlobalDate] = useState(parentDate || '22-01-2026');
+  const [globalClub, setGlobalClub] = useState(parentClub || 'Club FPF / Liga Formativa');
   const [searchFilter, setSearchFilter] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Mantener sincronizado si cambian los props del padre
+  useEffect(() => {
+    if (parentDate) setGlobalDate(parentDate);
+  }, [parentDate]);
+  useEffect(() => {
+    if (parentClub) setGlobalClub(parentClub);
+  }, [parentClub]);
+  useEffect(() => {
+    if (parentOrder) setNameOrder(parentOrder);
+  }, [parentOrder]);
 
   // Procesamiento automático de archivos seleccionados por el usuario
   const processFiles = (files) => {
@@ -50,6 +65,7 @@ export default function FileExtractor({
       const parsed = parsePatientFromFileName(file.name, file);
       if (parsed) {
         parsed.fechaEvaluacion = globalDate;
+        parsed.club = globalClub;
         parsed.nombreCompleto = formatPlayerDisplayName(parsed.apellidos, parsed.nombres, nameOrder);
         newPatients.push(parsed);
       }

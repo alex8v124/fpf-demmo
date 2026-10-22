@@ -17,9 +17,12 @@ import {
   SlidersHorizontal,
   Maximize2,
   Sparkles,
-  Bookmark
+  Bookmark,
+  Building2,
+  Calendar
 } from 'lucide-react';
 import { pagesCatalog } from '../data/initialData';
+import { downloadPatientDocx } from '../utils/docxGenerator';
 
 export default function DocumentViewer({ 
   patient, 
@@ -168,6 +171,15 @@ export default function DocumentViewer({
 
         {/* Acciones de Descarga e Impresión */}
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => downloadPatientDocx(patient, { globalDate: patient?.fechaEvaluacion, globalClub: patient?.club })}
+            className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3.5 py-2.5 rounded-2xl transition shadow-lg shadow-blue-950/40 cursor-pointer border border-blue-400/30"
+            title="Descargar el documento Word (.docx) oficial con todos los sellos médicos, firmas y datos intactos"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-200" />
+            <span>Descargar Word con Sellos</span>
+          </button>
+
           <a
             href="/PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.pdf"
             download="PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.pdf"
@@ -175,7 +187,7 @@ export default function DocumentViewer({
             title="Descargar el PDF oficial de 21 páginas sin datos personales"
           >
             <Download className="w-3.5 h-3.5 text-emerald-400" />
-            <span>PDF Sin Datos (Plantilla)</span>
+            <span>PDF Plantilla</span>
           </a>
 
           <motion.button
@@ -185,7 +197,7 @@ export default function DocumentViewer({
             className="flex items-center space-x-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-lg shadow-red-950/40 border border-red-500/40 transition cursor-pointer"
           >
             <Printer className="w-4 h-4" />
-            <span>Imprimir Vista</span>
+            <span>Imprimir</span>
           </motion.button>
         </div>
 
@@ -367,9 +379,16 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
             <div className="font-bold text-emerald-800 text-[11px]">CONCLUSIÓN: Ritmo sinusal normal. Sin alteraciones patológicas de conducción.</div>
             <div className="text-[9px] text-slate-500">Apto cardiológico pre-competencia según protocolo Seattle / Corrado / FPF</div>
           </div>
-          <div className="text-right text-[11px]">
-            <div className="font-bold">Dr. Darío Hernández Alarcón</div>
-            <div className="text-[9px] text-slate-500">C.M.P. 27503 • R.N.E. 15620 • Cardiólogo</div>
+          <div className="text-right flex items-center space-x-2">
+            <img 
+              src="/assets/firma-cardiologo.jpeg" 
+              alt="Sello Cardiólogo" 
+              className="h-12 w-auto object-contain mix-blend-multiply" 
+            />
+            <div className="text-[10px] text-slate-600 font-bold">
+              <div>Dr. Darío Hernández Alarcón</div>
+              <div className="text-[9px] text-slate-500">C.M.P. 27503 • R.N.E. 15620 • Cardiólogo</div>
+            </div>
           </div>
         </div>
       </div>
@@ -396,7 +415,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
 
         {/* Club en el recuadro oficial */}
         <div 
-          className="absolute font-sans font-bold text-slate-850 uppercase text-[12px] sm:text-[14px]"
+          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[14px]"
           style={{ top: '14.1%', left: '14.5%', width: '75%' }}
         >
           {patient?.club || 'Club FPF / Liga Formativa'}
@@ -418,12 +437,24 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           {patient?.domicilioClinica || 'AV CONQUISTADORES 1588 SAN ISIDRO'}
         </div>
 
-        {/* Fecha Unificada en el recuadro de fecha */}
+        {/* Fecha Unificada Cuadrada en la línea oficial */}
         <div 
-          className="absolute font-sans font-black text-blue-950 text-[13px] sm:text-[15px]"
+          className="absolute font-mono font-bold text-slate-950 tracking-wider text-[13px] sm:text-[14px]"
           style={{ top: '82.2%', left: '14.5%' }}
         >
-          {patient?.fechaEvaluacion || '06-05-2026'}
+          {patient?.fechaEvaluacion || '22-01-2026'}
+        </div>
+
+        {/* Sello y Firma Oficial del Médico Evaluador / Cardiólogo (Intacto) */}
+        <div 
+          className="absolute pointer-events-none select-none"
+          style={{ top: '80.0%', left: '54.0%', width: '38%' }}
+        >
+          <img 
+            src="/assets/firma-cardiologo.jpeg" 
+            alt="Sello y Firma Dr. Darío Hernández" 
+            className="w-full object-contain mix-blend-multiply opacity-95 filter contrast-125"
+          />
         </div>
       </div>
     );
@@ -463,9 +494,9 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           {patient?.dni || '70000000'}
         </div>
 
-        {/* Club */}
+        {/* Club Deportivo */}
         <div 
-          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px]"
+          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px] tracking-tight"
           style={{ top: '71.6%', left: '10.3%', width: '38%' }}
         >
           {patient?.club || 'Club FPF / Liga Formativa'}
@@ -479,12 +510,142 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           PERU
         </div>
 
-        {/* Fecha Unificada */}
+        {/* Fecha Unificada Cuadrada */}
         <div 
-          className="absolute font-sans font-bold text-blue-900 text-xs sm:text-[13px]"
-          style={{ top: '92.5%', right: '8.5%' }}
+          className="absolute font-mono font-bold text-slate-900 text-xs sm:text-[13px] tracking-wider"
+          style={{ top: '92.6%', right: '8.5%' }}
         >
-          {patient?.fechaEvaluacion || '06-05-2026'}
+          {patient?.fechaEvaluacion || '22-01-2026'}
+        </div>
+      </div>
+    );
+  }
+
+  // PÁGINA 20: INFORME RADIOLÓGICO Y RAYOS X (FACSÍMIL OFICIAL CON SELLO)
+  if (pageNumber === 20) {
+    return (
+      <div className="w-full h-full flex flex-col justify-between bg-white text-slate-900 p-8 relative">
+        <div className="border-b-2 border-slate-900 pb-2 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <img src="/assets/famiheart-logo.png" alt="Famiheart" className="h-10 w-auto object-contain" />
+            <div>
+              <div className="text-sm font-black text-blue-950">FAMIHEART S.A.C.</div>
+              <div className="text-[10px] text-slate-500 font-bold uppercase">SERVICIO DE DIAGNÓSTICO POR IMÁGENES - RAYOS X</div>
+            </div>
+          </div>
+          <div className="text-right text-xs font-mono">
+            <div className="font-black text-blue-900">FECHA: {patient?.fechaEvaluacion || '22-01-2026'}</div>
+            <div className="text-[10px] text-slate-500 font-bold">Pág. 20 de 21</div>
+          </div>
+        </div>
+
+        <div className="my-2 bg-slate-50 p-2.5 rounded-lg text-xs flex justify-between items-center border border-slate-300">
+          <div>
+            <span className="text-slate-600 font-medium">PACIENTE:</span>{' '}
+            <strong className="text-blue-950 font-mono text-sm ml-1">{patient?.nombreCompleto}</strong>
+          </div>
+          <div className="flex items-center gap-4 text-[11px]">
+            <span><strong>DNI:</strong> {patient?.dni || 'Verificado'}</span>
+            <span><strong>CLUB:</strong> {patient?.club || 'Club FPF'}</span>
+            <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded">TÓRAX PA NORMAL</span>
+          </div>
+        </div>
+
+        {/* Imagen de la radiografía de tórax */}
+        <div className="my-auto flex flex-col items-center justify-center p-2 bg-white rounded-lg border border-slate-300">
+          <img 
+            src="/assets/radiografia-torax.jpeg" 
+            alt="Radiografía de Tórax" 
+            className="w-full max-h-[170mm] object-contain shadow-xs"
+          />
+        </div>
+
+        <div className="pt-2 border-t-2 border-slate-900 flex justify-between items-center text-xs">
+          <div>
+            <div className="font-bold text-emerald-800 text-[11px]">CONCLUSIÓN: Silueta cardiovascular y campos pulmonares normales.</div>
+            <div className="text-[9px] text-slate-500">Sin lesiones pleuropulmonares activas. Apto para el deporte de alta competencia.</div>
+          </div>
+          <div className="text-right flex items-center space-x-2">
+            <img 
+              src="/assets/firma-radiologo.jpeg" 
+              alt="Sello Radiólogo" 
+              className="h-14 w-auto object-contain mix-blend-multiply" 
+            />
+            <div className="text-[10px] text-slate-600 font-bold">
+              <div>Dr. Alfredo Vega Cisneros</div>
+              <div className="text-[9px] text-slate-500">C.M.P. 1821 • R.N.E. 4480 • Radiólogo</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PÁGINA 21: DICTAMEN FINAL DE APTITUD FPF (FACSÍMIL OFICIAL CON SELLO)
+  if (pageNumber === 21) {
+    return (
+      <div className="w-full h-full flex flex-col justify-between bg-white text-slate-900 p-8 relative">
+        <div className="border-b-2 border-slate-900 pb-3 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <img src="/assets/fpf-logo.png" alt="FPF" className="h-12 w-auto object-contain" />
+            <div>
+              <div className="text-sm font-black text-blue-950">FEDERACIÓN PERUANA DE FÚTBOL</div>
+              <div className="text-[10px] text-slate-600 font-bold uppercase">CERTIFICACIÓN MÉDICA FINAL DE APTITUD DEPORTIVA 2026</div>
+            </div>
+          </div>
+          <div className="text-right text-xs font-mono">
+            <div className="font-black text-blue-900">FECHA: {patient?.fechaEvaluacion || '22-01-2026'}</div>
+            <div className="text-[10px] text-slate-500 font-bold">Pág. 21 de 21</div>
+          </div>
+        </div>
+
+        <div className="space-y-4 my-auto p-4 bg-slate-50 border border-slate-300 rounded-xl text-xs">
+          <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-200">
+            <div><strong>FUTBOLISTA:</strong> <span className="font-mono text-sm font-bold text-blue-950">{patient?.nombreCompleto}</span></div>
+            <div><strong>CLUB ASOCIADO:</strong> <span className="font-bold text-slate-900">{patient?.club || 'Club FPF'}</span></div>
+            <div><strong>DOCUMENTO (DNI):</strong> <span className="font-mono">{patient?.dni || '70000000'}</span></div>
+            <div><strong>CATEGORÍA:</strong> {patient?.categoria || 'Oficial 2026'}</div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="font-black text-slate-900 text-[11px] uppercase tracking-wide">
+              RESUMEN DIAGNÓSTICO INTEGRAL DE 21 PÁGINAS:
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[11px] pl-2 text-slate-700">
+              <div>✓ Examen Médico Precompetitivo: <strong>SIN ANOMALÍAS</strong></div>
+              <div>✓ Electrocardiograma de 12 Derivaciones: <strong>NORMAL</strong></div>
+              <div>✓ Ecocardiograma Doppler: <strong>CONSERVADO</strong></div>
+              <div>✓ Radiografía de Tórax PA: <strong>NORMAL</strong></div>
+              <div>✓ Laboratorio Clínico y Parasitológico: <strong>NORMAL</strong></div>
+              <div>✓ Declaración Antidopaje y Médica: <strong>CONFORME</strong></div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-xl text-center space-y-1">
+            <div className="text-[11px] text-emerald-800 font-bold uppercase">DICTAMEN MÉDICO FINAL DE LA COMISIÓN EVALUADORA:</div>
+            <div className="text-base font-black text-emerald-900 tracking-wide">
+              [ X ] APTO PARA LA PRÁCTICA DEL FÚTBOL COMPETITIVO
+            </div>
+            <div className="text-[10px] text-emerald-700">Acreditación FPF / CONMEBOL - Temporada 2026</div>
+          </div>
+        </div>
+
+        <div className="pt-3 border-t-2 border-slate-900 flex justify-between items-center text-xs">
+          <div>
+            <div className="font-mono text-slate-600">FECHA OFICIAL: <strong className="text-blue-900">{patient?.fechaEvaluacion || '22-01-2026'}</strong></div>
+            <div className="text-[9px] text-slate-500">Expediente Médico Famiheart S.A.C. para Comisión Médica FPF</div>
+          </div>
+          <div className="text-right flex items-center space-x-2">
+            <img 
+              src="/assets/firma-cardiologo.jpeg" 
+              alt="Sello Comisión Médica" 
+              className="h-14 w-auto object-contain mix-blend-multiply" 
+            />
+            <div className="text-[10px] text-slate-600 font-bold">
+              <div>Dr. Darío Hernández Alarcón</div>
+              <div className="text-[9px] text-slate-500">C.M.P. 27503 • R.N.E. 15620 • Cardiólogo</div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -573,8 +734,12 @@ function DigitalSynchronizedPage({ pageNumber, patient }) {
 
         <div className="grid grid-cols-2 gap-8 pt-8">
           <div className="text-center border-t-2 border-slate-900 pt-2 text-xs font-bold">
-            <div className="h-10 flex items-center justify-center">
-              <span className="font-mono text-[10px] text-blue-900 font-black">FIRMA Y SELLO OFICIAL</span>
+            <div className="h-14 flex items-center justify-center">
+              <img 
+                src="/assets/firma-cardiologo.jpeg" 
+                alt="Firma y Sello Oficial" 
+                className="h-12 w-auto object-contain mix-blend-multiply" 
+              />
             </div>
             <div>{doctorName}</div>
             <div className="text-[10px] text-slate-500 font-normal">Comisión Médica Famiheart S.A.C.</div>
@@ -780,6 +945,13 @@ function DigitalSynchronizedPage({ pageNumber, patient }) {
             <div>Sincronización digital automática de fecha</div>
           </div>
           <div className="text-center border-t border-slate-800 pt-2 w-64">
+            <div className="h-14 flex items-center justify-center">
+              <img 
+                src="/assets/firma-cardiologo.jpeg" 
+                alt="Firma Dr. Darío Hernández" 
+                className="h-12 w-auto object-contain mix-blend-multiply" 
+              />
+            </div>
             <div className="font-black text-xs">{doctorName}</div>
             <div className="text-[10px] text-slate-500">Cardiólogo - Famiheart S.A.C.</div>
           </div>
@@ -993,9 +1165,16 @@ function DigitalSynchronizedPage({ pageNumber, patient }) {
             <div className="font-bold text-emerald-800">CONCLUSIÓN: Ritmo sinusal normal, sin alteraciones de conducción ni repolarización.</div>
             <div className="text-[10px] text-slate-500">Apto cardiológico para fútbol competitivo según criterios internacionales de Seattle / Corrado</div>
           </div>
-          <div className="text-right">
-            <div className="font-bold">{doctorName}</div>
-            <div className="text-[10px] text-slate-500">Médico Cardiólogo Evaluador</div>
+          <div className="text-right flex items-center space-x-2">
+            <img 
+              src="/assets/firma-cardiologo.jpeg" 
+              alt="Sello Cardiólogo" 
+              className="h-12 w-auto object-contain mix-blend-multiply" 
+            />
+            <div className="text-left">
+              <div className="font-bold">{doctorName}</div>
+              <div className="text-[10px] text-slate-500">Médico Cardiólogo Evaluador</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1046,9 +1225,16 @@ function DigitalSynchronizedPage({ pageNumber, patient }) {
             <div className="font-bold text-emerald-800">CONCLUSIÓN: Silueta cardiovascular y campos pulmonares normales.</div>
             <div className="text-[10px] text-slate-500">Sin lesiones pleuropulmonares activas</div>
           </div>
-          <div className="text-right">
-            <div className="font-bold">Dr. Jorge Vera Ponce de León</div>
-            <div className="text-[10px] text-slate-500">CMP 29129 - RNE 21706 • Radiólogo</div>
+          <div className="text-right flex items-center space-x-2">
+            <img 
+              src="/assets/firma-radiologo.jpeg" 
+              alt="Sello Radiólogo" 
+              className="h-12 w-auto object-contain mix-blend-multiply" 
+            />
+            <div className="text-left">
+              <div className="font-bold">Dr. Alfredo Vega Cisneros</div>
+              <div className="text-[10px] text-slate-500">CMP 1821 - RNE 4480 • Radiólogo</div>
+            </div>
           </div>
         </div>
       </div>
