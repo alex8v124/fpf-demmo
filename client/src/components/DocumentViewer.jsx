@@ -405,56 +405,28 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           className="w-full h-full object-contain pointer-events-none block"
         />
 
-        {/* Nombre Completo en el recuadro oficial */}
+        {/* Nombre Completo en el recuadro oficial (alineado después de NOMBRE:) */}
         <div 
           className="absolute font-sans font-bold text-slate-950 uppercase text-[13px] sm:text-[15px] tracking-wide"
-          style={{ top: '11.4%', left: '14.5%', width: '75%' }}
+          style={{ top: '11.4%', left: '17.5%', width: '70%' }}
         >
           {patient?.nombreCompleto}
         </div>
 
-        {/* Club en el recuadro oficial */}
+        {/* Club en el recuadro oficial (alineado después de CLUB:) */}
         <div 
           className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[14px]"
-          style={{ top: '14.1%', left: '14.5%', width: '75%' }}
+          style={{ top: '14.1%', left: '16.0%', width: '70%' }}
         >
           {patient?.club || 'Club FPF / Liga Formativa'}
         </div>
 
-        {/* Médico Evaluador en el recuadro oficial */}
+        {/* Fecha Unificada en el recuadro oficial de FECHA (Derecha, centrado sobre la línea) */}
         <div 
-          className="absolute font-sans text-slate-750 text-[11px] sm:text-[13px]"
-          style={{ top: '17.2%', left: '14.5%', width: '75%' }}
-        >
-          {patient?.medicoEvaluador || 'DR. DARIO HERNANDEZ ALARCON'}
-        </div>
-
-        {/* Domicilio Clínica en el recuadro oficial */}
-        <div 
-          className="absolute font-sans text-slate-700 text-[11px] sm:text-[13px]"
-          style={{ top: '20.7%', left: '14.5%', width: '75%' }}
-        >
-          {patient?.domicilioClinica || 'AV CONQUISTADORES 1588 SAN ISIDRO'}
-        </div>
-
-        {/* Fecha Unificada Cuadrada en la línea oficial */}
-        <div 
-          className="absolute font-mono font-bold text-slate-950 tracking-wider text-[13px] sm:text-[14px]"
-          style={{ top: '82.2%', left: '14.5%' }}
+          className="absolute font-mono font-bold text-slate-950 tracking-wider text-[13px] sm:text-[14px] text-center"
+          style={{ top: '82.0%', left: '52.0%', width: '30%' }}
         >
           {patient?.fechaEvaluacion || '22-01-2026'}
-        </div>
-
-        {/* Sello y Firma Oficial del Médico Evaluador / Cardiólogo (Intacto) */}
-        <div 
-          className="absolute pointer-events-none select-none"
-          style={{ top: '80.0%', left: '54.0%', width: '38%' }}
-        >
-          <img 
-            src="/assets/firma-cardiologo.jpeg" 
-            alt="Sello y Firma Dr. Darío Hernández" 
-            className="w-full object-contain mix-blend-multiply opacity-95 filter contrast-125"
-          />
         </div>
       </div>
     );

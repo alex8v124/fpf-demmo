@@ -36,9 +36,9 @@ print(f"Redactadas {total_kw_redacted} ocurrencias de nombres y fechas personale
 page_clean_coords = {
     # Pag 1: Certificado FPF
     0: [
-        (80, 90, 450, 112),    # Nombre
-        (80, 112, 450, 134),   # Club
-        (80, 685, 450, 710),   # Fecha
+        (110, 92, 450, 110),    # Nombre (deja 'NOMBRE:' intacto)
+        (100, 114, 450, 132),   # Club (deja 'CLUB:' intacto)
+        (355, 688, 445, 708),   # Fecha (en recuadro derecho de FECHA, deja intacto el recuadro izquierdo del sello medico)
     ],
     # Pag 2: Ficha PCMA
     1: [
@@ -183,9 +183,8 @@ p14.apply_redactions()
 # 3. Dibujar lineas oficiales y marcos vectoriales nitidos
 # Pag 1
 p1 = doc[0]
-p1.draw_line(fitz.Point(85, 108), fitz.Point(450, 108), color=(0.75, 0.75, 0.75), width=0.8)
-p1.draw_line(fitz.Point(85, 130), fitz.Point(450, 130), color=(0.75, 0.75, 0.75), width=0.8)
-p1.draw_line(fitz.Point(85, 704), fitz.Point(220, 704), color=(0.75, 0.75, 0.75), width=0.8)
+p1.draw_line(fitz.Point(115, 108), fitz.Point(450, 108), color=(0.75, 0.75, 0.75), width=0.8)
+p1.draw_line(fitz.Point(105, 130), fitz.Point(450, 130), color=(0.75, 0.75, 0.75), width=0.8)
 
 # Pag 2
 p2 = doc[1]
