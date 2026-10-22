@@ -6,3 +6,15 @@ dist-ssr/
 *.local
 *.log
 .DS_Store
+.env
+client/.env
+
+# Local temporary files
+pdf_assets/
+extracted_assets/
+rendered_pages/
+TALEXSIO GUZMAN ADDU ELIAS.pdf
+PONCE ECHEVARRIA CARLOS.docx
+PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.docx
+PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.pdf
+archivos del drive/
