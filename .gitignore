@@ -1,5 +1,9 @@
+package-lock.json
+client/package-lock.json
 node_modules/
-client/node_modules/
+client/package-lock.json
+client/package-lock.json
+node_modules/
 dist/
 client/dist/
 dist-ssr/
