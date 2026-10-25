@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, 
@@ -180,7 +180,18 @@ export default function PoolManager({
   currentPatient, 
   setCurrentPatient 
 }) {
-  const [pool, setPool] = useState(patientsList || []);
+  const [pool, setPool] = useState(() => {
+    return (patientsList && patientsList.length > 0) ? patientsList : (drivePatients || []);
+  });
+
+  // Mantener sincronizado el pool si se actualiza la lista principal
+  useEffect(() => {
+    if (patientsList && patientsList.length > 0) {
+      setPool(patientsList);
+    } else if (drivePatients && drivePatients.length > 0) {
+      setPool(drivePatients);
+    }
+  }, [patientsList]);
   const [selectedMonth, setSelectedMonth] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [nameFormatOrder, setNameFormatOrder] = useState('LAST_FIRST'); // 'LAST_FIRST' | 'FIRST_LAST'
@@ -191,27 +202,79 @@ export default function PoolManager({
   const [pageSize, setPageSize] = useState(15);
   const [selectedIds, setSelectedIds] = useState(new Set());
 
-  // Normalizador automático de nombres
-  const formatPlayerName = (apellidos, nombres, order) => {
+  // Normalizador defensivo de nombres
+  const formatPlayerName = (apellidos = '', nombres = '', order) => {
+    const cleanAp = (apellidos || '').trim();
+    const cleanNom = (nombres || '').trim();
     if (order === 'LAST_FIRST') {
-      return `${apellidos.trim()} ${nombres.trim()}`.toUpperCase();
+      return `${cleanAp} ${cleanNom}`.trim().toUpperCase();
     }
-    return `${nombres.trim()} ${apellidos.trim()}`.toUpperCase();
+    return `${cleanNom} ${cleanAp}`.trim().toUpperCase();
   };
 
-  // Filtrado reactivo por Mes y Búsqueda
+  // Filtrado reactivo defensivo por Mes y Búsqueda
   const filteredList = useMemo(() => {
+    if (!pool || !Array.isArray(pool)) return [];
     return pool.filter(p => {
+      if (!p) return false;
       const matchMonth = selectedMonth === 'ALL' || p.mes === selectedMonth;
-      const q = searchQuery.toLowerCase();
+      if (!searchQuery) return matchMonth;
+      const q = searchQuery.toLowerCase().trim();
+      const name = (p.nombreCompleto || `${p.apellidos || ''} ${p.nombres || ''}`).toLowerCase();
+      const dni = (p.dni || '').toString().toLowerCase();
+      const club = (p.club || '').toLowerCase();
+      const pos = (p.posicion || '').toLowerCase();
       const matchQuery = 
-        p.nombreCompleto.toLowerCase().includes(q) ||
-        p.dni.toLowerCase().includes(q) ||
-        p.club.toLowerCase().includes(q) ||
-        p.posicion.toLowerCase().includes(q);
+        name.includes(q) ||
+        dni.includes(q) ||
+        club.includes(q) ||
+        pos.includes(q);
       return matchMonth && matchQuery;
     });
   }, [pool, selectedMonth, searchQuery]);
+
+  // Paginación y Selección Múltiple
+  const totalPages = Math.max(1, Math.ceil(filteredList.length / pageSize));
+
+  const paginatedList = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredList.slice(start, start + pageSize);
+  }, [filteredList, currentPage, pageSize]);
+
+  const handleToggleSelectAll = () => {
+    if (paginatedList.length === 0) return;
+    const allCurrentPageSelected = paginatedList.every(p => {
+      const id = p.id || p.fileName;
+      return selectedIds.has(id);
+    });
+
+    const next = new Set(selectedIds);
+    if (allCurrentPageSelected) {
+      paginatedList.forEach(p => {
+        const id = p.id || p.fileName;
+        if (id) next.delete(id);
+      });
+    } else {
+      paginatedList.forEach(p => {
+        const id = p.id || p.fileName;
+        if (id) next.add(id);
+      });
+    }
+    setSelectedIds(next);
+  };
+
+  const handleToggleSelectOne = (id) => {
+    if (!id) return;
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   // Aplicar fecha unificada en cascada a todos los jugadores seleccionados ("Sincronizar Lote")
   const handleApplyGlobalDate = () => {
@@ -455,7 +518,7 @@ export default function PoolManager({
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center space-x-2.5">
-              <div className="p-2 rounded-xl bg-red-500/10 text-red-400">
+              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
                 <Calendar className="w-4 h-4" />
               </div>
               <div>
@@ -484,10 +547,10 @@ export default function PoolManager({
               <button
                 onClick={handleApplyGlobalDate}
                 disabled={isApplyingCascade}
-                className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-lg transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-lg transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isApplyingCascade ? 'animate-spin' : ''}`} />
-                <span>Jalar Fecha a Lote</span>
+                <span>Aplicar fecha al lote</span>
               </button>
             </div>
 

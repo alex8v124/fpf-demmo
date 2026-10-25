@@ -15,9 +15,11 @@ import { loadPatientsFromSupabase, mapDbToPatient } from './lib/supabase';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('dashboard');
-  const [patientsList, setPatientsList] = useState([]);
-  const [currentPatient, setCurrentPatient] = useState(blankPatientTemplate);
-  const [isBlankMode, setIsBlankMode] = useState(true);
+  const [patientsList, setPatientsList] = useState(drivePatients || []);
+  const [currentPatient, setCurrentPatient] = useState(
+    (drivePatients && drivePatients.length > 0) ? drivePatients[0] : blankPatientTemplate
+  );
+  const [isBlankMode, setIsBlankMode] = useState(false);
 
   // Rol activo del usuario: 'MEDICO' | 'CLUB' | 'FPF'
   const [userRole, setUserRole] = useState('MEDICO');
@@ -36,9 +38,19 @@ export default function App() {
         setCurrentPatient(mapped[0]);
         setIsBlankMode(false);
       } else {
-        setPatientsList([]);
-        setCurrentPatient(blankPatientTemplate);
-        setIsBlankMode(true);
+        // En ausencia de registros remotos, inicializar con los 75 expedientes del Drive
+        setPatientsList(drivePatients || []);
+        if (drivePatients && drivePatients.length > 0) {
+          setCurrentPatient(drivePatients[0]);
+          setIsBlankMode(false);
+        }
+      }
+    }).catch(err => {
+      console.warn("Supabase load fallback:", err);
+      setPatientsList(drivePatients || []);
+      if (drivePatients && drivePatients.length > 0) {
+        setCurrentPatient(drivePatients[0]);
+        setIsBlankMode(false);
       }
     });
   }, []);
