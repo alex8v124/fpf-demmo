@@ -112,6 +112,7 @@ def main():
     parser.add_argument("--date", default="22-01-2026", help="Fecha unificada de evaluación (ej: 22-01-2026)")
     parser.add_argument("--club", default="Club FPF / Liga Formativa", help="Nombre del Club")
     parser.add_argument("--order", choices=["LAST_FIRST", "FIRST_LAST"], default="LAST_FIRST", help="Orden de nombres")
+    parser.add_argument("--indir", help="Carpeta de archivos de entrada (extrae automáticamente los nombres)")
     parser.add_argument("--names", nargs="+", help="Nombres de los jugadores a procesar")
     parser.add_argument("--outdir", default="output_words", help="Directorio de salida")
 
@@ -119,9 +120,19 @@ def main():
 
     os.makedirs(args.outdir, exist_ok=True)
 
-    if not args.names:
-        print("[INFO] No se pasaron nombres directos. Modo de demostración con plantilla base.")
-        args.names = ["PONCE ECHEVARRIA CARLOS", "TALEXSIO GUZMAN ADDU ELIAS"]
+    names_to_process = []
+    if args.names:
+        names_to_process = args.names
+    elif args.indir and os.path.exists(args.indir):
+        for f in os.listdir(args.indir):
+            if f.lower().endswith(('.pdf', '.png', '.jpg', '.jpeg')):
+                raw = os.path.splitext(f)[0]
+                clean = re.sub(r'^(ECG|EKG|INFORME|RX|LAB)[\s_-]*', '', raw, flags=re.IGNORECASE).strip()
+                if clean and clean not in names_to_process:
+                    names_to_process.append(clean)
+    else:
+        print("[INFO] No se pasaron nombres directos ni carpeta. Modo demostración.")
+        names_to_process = ["PONCE ECHEVARRIA CARLOS", "TALEXSIO GUZMAN ADDU ELIAS"]
 
     print(f"==================================================")
     print(f" PROCESADOR MASIVO DE WORDS FPF - FAMIHEART")
@@ -130,10 +141,10 @@ def main():
     print(f"Club:            {args.club}")
     print(f"Orden nombres:   {args.order}")
     print(f"Sellos médicos:  100% Protegidos (Cardiólogo, Radiólogo, Tecnólogo)")
-    print(f"Total a generar: {len(args.names)}")
+    print(f"Total a generar: {len(names_to_process)}")
     print(f"--------------------------------------------------")
 
-    for raw_name in args.names:
+    for raw_name in names_to_process:
         formatted = format_name(raw_name, args.order)
         out_filename = f"{formatted}.docx"
         out_path = os.path.join(args.outdir, out_filename)
