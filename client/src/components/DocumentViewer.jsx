@@ -493,6 +493,85 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
+  // PÁGINA 13: CERTIFICADO DE APTITUD MÉDICA FAMIHEART (FACSÍMIL 1:1)
+  if (pageNumber === 13) {
+    return (
+      <div className="w-full h-full relative select-none">
+        <img 
+          src="/assets/pages_blank/page_13.png" 
+          alt="Certificado Famiheart Página 13" 
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        <div 
+          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[14px]"
+          style={{ top: '29.3%', left: '30.0%', width: '60%' }}
+        >
+          {patient?.nombreCompleto}
+        </div>
+        <div 
+          className="absolute font-mono font-bold text-slate-900 text-xs sm:text-[13px] tracking-wider"
+          style={{ top: '78.5%', left: '14.5%' }}
+        >
+          Lima, {patient?.fechaEvaluacion || '22-01-2026'}
+        </div>
+      </div>
+    );
+  }
+
+  // PÁGINA 14: INFORME ECOCARDIOGRÁFICO DOPPLER (FACSÍMIL 1:1)
+  if (pageNumber === 14) {
+    return (
+      <div className="w-full h-full relative select-none">
+        <img 
+          src="/assets/pages_blank/page_14.png" 
+          alt="Informe Ecocardiográfico Página 14" 
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        <div 
+          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px]"
+          style={{ top: '21.3%', left: '26.0%', width: '60%' }}
+        >
+          {patient?.nombreCompleto}
+        </div>
+        <div 
+          className="absolute font-mono font-bold text-slate-900 text-xs sm:text-[13px] tracking-wider"
+          style={{ top: '22.8%', left: '25.0%' }}
+        >
+          {patient?.fechaEvaluacion || '22-01-2026'}
+        </div>
+      </div>
+    );
+  }
+
+  // PÁGINAS 17, 18, 19: LABORATORIO CLÍNICO FAMIHEART (FACSÍMIL 1:1)
+  if (pageNumber === 17 || pageNumber === 18 || pageNumber === 19) {
+    const topPaciente = pageNumber === 17 ? '22.0%' : pageNumber === 18 ? '20.8%' : '22.6%';
+    const topFecha = pageNumber === 17 ? '29.3%' : pageNumber === 19 ? '29.9%' : null;
+    return (
+      <div className="w-full h-full relative select-none">
+        <img 
+          src={`/assets/pages_blank/page_${formattedPage}.png`} 
+          alt={`Laboratorio Clínico Página ${pageNumber}`} 
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        <div 
+          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px]"
+          style={{ top: topPaciente, left: '32.0%', width: '55%' }}
+        >
+          {patient?.nombreCompleto}
+        </div>
+        {topFecha && (
+          <div 
+            className="absolute font-mono font-bold text-slate-900 text-xs tracking-wider"
+            style={{ top: topFecha, left: pageNumber === 17 ? '80.0%' : '86.5%' }}
+          >
+            {patient?.fechaEvaluacion || '22-01-2026'}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // PÁGINA 20: INFORME RADIOLÓGICO Y RAYOS X (FACSÍMIL OFICIAL CON SELLO)
   if (pageNumber === 20) {
     return (
