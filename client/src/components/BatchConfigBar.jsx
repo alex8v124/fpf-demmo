@@ -44,6 +44,7 @@ export default function BatchConfigBar({
   const [isApplyingDate, setIsApplyingDate] = useState(false);
   const [isApplyingClub, setIsApplyingClub] = useState(false);
   const [isExportingWord, setIsExportingWord] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [toast, setToast] = useState(null);
 
   const showToast = (type, message) => {
@@ -204,14 +205,26 @@ export default function BatchConfigBar({
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-white flex items-center gap-2">
-                Configuración Masiva de Expedientes
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-black text-white">
+                  Configuración Masiva de Expedientes
+                </h3>
                 <span className="text-[10px] bg-blue-950 text-blue-400 border border-blue-800/60 px-2 py-0.5 rounded-full font-bold">
                   En Lote FPF
                 </span>
-              </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="text-[11px] text-blue-400 hover:text-blue-300 font-bold px-2 py-0.5 rounded-lg bg-blue-950/60 hover:bg-blue-900/60 border border-blue-800/60 transition cursor-pointer"
+                >
+                  {isCollapsed ? 'Mostrar Controles ▾' : 'Ocultar Controles ▴'}
+                </button>
+              </div>
               <p className="text-[11px] text-slate-400">
-                Aplica la fecha, el nombre del club y el formato de nombres a todos los Words y PDFs simultáneamente.
+                {isCollapsed 
+                  ? `Fecha: ${globalDate} • Club: ${globalClub} • Formato: ${nameOrder === 'LAST_FIRST' ? '[APELLIDOS NOMBRES]' : '[NOMBRES APELLIDOS]'}`
+                  : 'Aplica fecha, club y formato a los Words y PDFs simultáneamente.'
+                }
               </p>
             </div>
           </div>
@@ -219,11 +232,12 @@ export default function BatchConfigBar({
           {/* Sellos Médicos Badge */}
           <div className="flex items-center space-x-2 bg-emerald-950/60 border border-emerald-700/60 px-3 py-1.5 rounded-2xl text-[11px] font-bold text-emerald-300">
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Sellos Médicos Protegidos (Cardiólogo, Radiólogo, Tecnólogo)</span>
+            <span>29 Sellos Médicos Protegidos</span>
           </div>
         </div>
 
-        {/* Form controls grid */}
+        {/* Form controls grid (Condicional al colapso) */}
+        {!isCollapsed && (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-end">
           
           {/* 1. Control de Fecha Global */}
@@ -330,6 +344,7 @@ export default function BatchConfigBar({
           </div>
 
         </div>
+        )}
 
       </div>
 

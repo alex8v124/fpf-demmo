@@ -79,7 +79,7 @@ export function parsePatientFromFileName(fileName, fileObj = null) {
     club: 'Club FPF / Liga Formativa',
     categoria: 'Temporada Oficial 2026',
     posicion: 'Futbolista',
-    fechaEvaluacion: '06-05-2026',
+    fechaEvaluacion: '22-01-2026',
     estadoAptitud: 'APTO',
     resultadoEkg: 'EKG NORMAL',
     fileUrl,

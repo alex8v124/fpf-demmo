@@ -214,7 +214,7 @@ export default function Dashboard({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => onNavigateTab('documento')}
-              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-xl shadow-red-950/40 border border-red-500/40 transition cursor-pointer"
+              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-xl shadow-blue-950/40 border border-blue-400/30 transition cursor-pointer"
             >
               <FileCheck2 className="w-4 h-4" />
               <span>Ver Expediente (21 Págs)</span>
@@ -578,7 +578,7 @@ export default function Dashboard({
                           handleChoosePlayer(player);
                           onNavigateTab('documento');
                         }}
-                        className="flex items-center space-x-1.5 bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer min-h-[44px] focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none"
+                        className="flex items-center space-x-1.5 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/20 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer min-h-[44px] focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
                         title="Ver el expediente médico oficial de 21 páginas"
                         aria-label={`Ver 21 páginas de ${player.nombreCompleto}`}
                       >

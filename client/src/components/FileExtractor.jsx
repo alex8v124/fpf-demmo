@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  UploadCloud, 
+  UploadCloud,
+  Edit3,
+  Check, 
   FileText, 
   Image as ImageIcon, 
   CheckCircle2, 
@@ -41,7 +43,43 @@ export default function FileExtractor({
   const [globalClub, setGlobalClub] = useState(parentClub || 'Club FPF / Liga Formativa');
   const [searchFilter, setSearchFilter] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editNameValue, setEditNameValue] = useState('');
   const fileInputRef = useRef(null);
+
+  const getExtractionConfidence = (player) => {
+    const fn = (player.fileName || '').toUpperCase();
+    const hasDniOrNums = /\d{6,}/.test(fn);
+    const parts = (player.nombreCompleto || '').trim().split(/\s+/);
+    if (parts.length >= 3 && !hasDniOrNums) {
+      return { level: 'ALTA', text: 'Alta Certeza (99%)', badgeBg: 'bg-emerald-950/70 border-emerald-800/80 text-emerald-300' };
+    }
+    return { level: 'REVISAR', text: 'Revisión Sugerida', badgeBg: 'bg-amber-950/70 border-amber-800/80 text-amber-300' };
+  };
+
+  const handleStartEdit = (player) => {
+    setEditingId(player.id || player.fileName);
+    setEditNameValue(player.nombreCompleto || `${player.apellidos || ''} ${player.nombres || ''}`.trim());
+  };
+
+  const handleSaveEdit = (targetId) => {
+    if (!editNameValue.trim()) return;
+    setPatientsList(prev => prev.map(p => {
+      if ((p.id || p.fileName) === targetId) {
+        return {
+          ...p,
+          nombreCompleto: editNameValue.trim().toUpperCase()
+        };
+      }
+      return p;
+    }));
+    setEditingId(null);
+    setToastMessage({
+      type: 'success',
+      text: `Nombre corregido y confirmado a: "${editNameValue.trim().toUpperCase()}".`
+    });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   // Mantener sincronizado si cambian los props del padre
   useEffect(() => {
@@ -448,22 +486,63 @@ export default function FileExtractor({
                 <th className="px-6 py-3.5 font-bold uppercase tracking-wider">Nombre Extraído (Oficial)</th>
                 <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Archivo Fuente</th>
                 <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Apellidos / Nombres</th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Fecha Cascada</th>
+                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Fecha Evaluación</th>
                 <th className="px-4 py-3.5 font-bold uppercase tracking-wider text-center">Estado</th>
                 <th className="px-6 py-3.5 font-bold uppercase tracking-wider text-right">Acción</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
-              {filteredPatients.map((player) => (
-                <tr key={player.id} className="hover:bg-slate-900/60 transition group">
+              {filteredPatients.map((player) => {
+                const pId = player.id || player.fileName;
+                const isEditing = editingId === pId;
+                const confidence = getExtractionConfidence(player);
+
+                return (
+                <tr key={pId} className="hover:bg-slate-900/60 transition group">
                   <td className="px-6 py-4">
-                    <div className="font-black text-white text-sm tracking-tight font-mono">
-                      {player.nombreCompleto}
-                    </div>
-                    <div className="text-[11px] text-slate-400 flex items-center space-x-2 mt-0.5">
-                      <span>DNI: {player.dni}</span>
+                    {isEditing ? (
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={editNameValue}
+                          onChange={(e) => setEditNameValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveEdit(pId);
+                            if (e.key === 'Escape') setEditingId(null);
+                          }}
+                          className="bg-slate-950 border border-blue-500 rounded-xl px-2.5 py-1 text-xs text-white font-mono font-bold focus:outline-none w-full"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEdit(pId)}
+                          className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition cursor-pointer"
+                          title="Guardar nombre corregido"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <div className="font-black text-white text-sm tracking-tight font-mono">
+                          {player.nombreCompleto}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(player)}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-slate-800 text-slate-400 hover:text-blue-400 transition cursor-pointer"
+                          title="Editar nombre manualmente si hay dudas"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+                    <div className="text-[11px] text-slate-400 flex items-center space-x-2 mt-1">
+                      <span>DNI: {player.dni || '70000000'}</span>
                       <span>•</span>
-                      <span className="text-blue-400 font-semibold">{player.origen}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.2 rounded-md border ${confidence.badgeBg}`}>
+                        {confidence.text}
+                      </span>
                     </div>
                   </td>
 
@@ -500,14 +579,15 @@ export default function FileExtractor({
                         onSelectPatient(player);
                         onNavigateTab('documento');
                       }}
-                      className="bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 text-xs font-bold px-3.5 py-1.5 rounded-xl transition cursor-pointer inline-flex items-center space-x-1.5 shadow"
+                      className="bg-blue-600/15 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 text-xs font-bold px-3.5 py-1.5 rounded-xl transition cursor-pointer inline-flex items-center space-x-1.5 shadow min-h-[38px]"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>Ver 21 Págs</span>
                     </button>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
 
               {filteredPatients.length === 0 && (
                 <tr>

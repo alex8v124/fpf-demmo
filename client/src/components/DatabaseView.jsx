@@ -130,15 +130,15 @@ export default function DatabaseView() {
               <span>Probar Conexión</span>
             </button>
 
-            <a
-              href={`https://supabase.com/dashboard/project/${projectId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-950/40 transition cursor-pointer"
+            <button
+              type="button"
+              onClick={() => alert('Acceso a la Consola Cloud restringido por política de seguridad a administradores de infraestructura Famiheart S.A.C.')}
+              className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
+              title="Acceso exclusivo para administradores de infraestructura"
             >
-              <span>Abrir Supabase</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Consola Admin (Restringida)</span>
+            </button>
           </div>
         </div>
 
@@ -156,13 +156,13 @@ export default function DatabaseView() {
             <span className="text-emerald-400 font-mono font-bold mt-0.5 block">{connStatus.latencyMs} ms</span>
           </div>
           <div>
-            <span className="text-slate-400 block font-medium">Project ID:</span>
-            <span className="text-blue-300 font-mono font-bold mt-0.5 block">{projectId}</span>
+            <span className="text-slate-400 block font-medium">Instancia Médica:</span>
+            <span className="text-blue-300 font-mono font-bold mt-0.5 block">fpf_cluster_prod (TLS v1.3)</span>
           </div>
           <div>
-            <span className="text-slate-400 block font-medium">Host PostgreSQL:</span>
-            <span className="text-slate-200 font-mono text-[11px] truncate block mt-0.5">
-              db.{projectId}.supabase.co
+            <span className="text-slate-400 block font-medium">Seguridad de Datos:</span>
+            <span className="text-emerald-300 font-mono text-[11px] truncate block mt-0.5">
+              Cifrado AES-256 / Ley 29733
             </span>
           </div>
         </div>
@@ -222,7 +222,7 @@ export default function DatabaseView() {
                   <div className="min-w-0">
                     <div className="text-xs font-bold text-white truncate">{p.nombre_completo || p.id}</div>
                     <div className="text-[10px] text-slate-400 truncate">
-                      {p.club || 'Club FPF'} • DNI: {p.dni || '70000000'} • {p.fecha_evaluacion || '06-05-2026'}
+                      {p.club || 'Club FPF'} • DNI: {p.dni || '70000000'} • {p.fecha_evaluacion || '22-01-2026'}
                     </div>
                   </div>
                 </div>

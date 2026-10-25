@@ -98,19 +98,21 @@ export default function App() {
       {/* Main Content Area with Smooth Tab Transitions */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         
-        {/* Barra Maestra de Configuración en Lote (Fecha, Club, Formato y Exportación Word con Sellos) */}
-        <BatchConfigBar
-          globalDate={globalDate}
-          setGlobalDate={setGlobalDate}
-          globalClub={globalClub}
-          setGlobalClub={setGlobalClub}
-          nameOrder={nameOrder}
-          setNameOrder={setNameOrder}
-          patientsList={patientsList}
-          setPatientsList={setPatientsList}
-          currentPatient={currentPatient}
-          setCurrentPatient={setCurrentPatient}
-        />
+        {/* Barra Maestra de Configuración en Lote (Solo visible en Pool y Expediente 21P) */}
+        {(currentTab === 'pool' || currentTab === 'documento') && (
+          <BatchConfigBar
+            globalDate={globalDate}
+            setGlobalDate={setGlobalDate}
+            globalClub={globalClub}
+            setGlobalClub={setGlobalClub}
+            nameOrder={nameOrder}
+            setNameOrder={setNameOrder}
+            patientsList={patientsList}
+            setPatientsList={setPatientsList}
+            currentPatient={currentPatient}
+            setCurrentPatient={setCurrentPatient}
+          />
+        )}
 
         <AnimatePresence mode="wait">
           <motion.div

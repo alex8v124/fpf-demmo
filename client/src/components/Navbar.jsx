@@ -33,11 +33,11 @@ export default function Navbar({
 
   const navItems = [
     { id: 'dashboard', label: 'Bandeja', icon: LayoutDashboard },
-    { id: 'extractor', label: 'Subir Archivos', icon: UploadCloud, badge: 'Auto' },
+    { id: 'extractor', label: 'Subir Archivos', icon: UploadCloud },
     { id: 'pool', label: 'Pool Rotación', icon: Users },
-    { id: 'documento', label: 'Expediente (21P)', icon: FileCheck2 },
+    { id: 'documento', label: 'Expediente', icon: FileCheck2 },
     { id: 'medicos', label: 'Médicos', icon: Stethoscope },
-    { id: 'database', label: 'Base de Datos', icon: Database, live: true }
+    { id: 'database', label: 'Base de Datos', icon: Database }
   ];
 
   return (
@@ -101,17 +101,7 @@ export default function Navbar({
 
                   <span className="relative z-10 flex items-center space-x-1.5">
                     <Icon className="w-3.5 h-3.5" />
-                    <span>{item.label}</span>
-                    {item.badge && (
-                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold uppercase ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-blue-300'
-                      }`}>
-                        {item.badge}
-                      </span>
-                    )}
-                    {item.live && (
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
-                    )}
+                    <span className="whitespace-nowrap">{item.label}</span>
                   </span>
                 </button>
               );
@@ -352,7 +342,7 @@ export default function Navbar({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onPrint}
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-md shadow-red-950/40 border border-red-500/30 transition cursor-pointer shrink-0"
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-md shadow-blue-950/40 border border-blue-400/30 min-h-[38px] focus-visible:ring-2 focus-visible:ring-blue-500 transition cursor-pointer shrink-0"
               title="Imprimir el expediente completo o guardar como PDF"
             >
               <Printer className="w-3.5 h-3.5" />
@@ -380,13 +370,7 @@ export default function Navbar({
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{item.label}</span>
-                {item.badge && (
-                  <span className={`text-[9px] px-1 py-0.2 rounded-full font-bold uppercase ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-blue-300'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
+
               </button>
             );
           })}

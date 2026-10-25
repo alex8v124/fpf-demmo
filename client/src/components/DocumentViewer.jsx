@@ -194,7 +194,7 @@ export default function DocumentViewer({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={onPrint}
-            className="flex items-center space-x-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-lg shadow-red-950/40 border border-red-500/40 transition cursor-pointer"
+            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-lg shadow-blue-950/40 border border-blue-400/30 transition cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>Imprimir</span>
@@ -345,7 +345,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
             </div>
           </div>
           <div className="text-right text-xs font-mono">
-            <div className="font-black text-blue-900">FECHA: {patient?.fechaEvaluacion || '06-05-2026'}</div>
+            <div className="font-black text-blue-900">FECHA: {patient?.fechaEvaluacion || '22-01-2026'}</div>
             <div className="text-[10px] text-slate-500 font-bold">Pág. 16 de 21</div>
           </div>
         </div>
@@ -422,7 +422,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         {/* Nombre Completo: Calibri 11pt, regular, #000, mayúsculas */}
         <div 
           className="absolute fpf-doc-text uppercase"
-          style={{ top: '11.40%', left: '14.30%' }}
+          style={{ top: '11.40%', left: '20.20%' }}
         >
           {patient?.nombreCompleto}
         </div>
@@ -430,7 +430,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         {/* Club: Calibri 11pt, regular, #000, mayúsculas */}
         <div 
           className="absolute fpf-doc-text uppercase"
-          style={{ top: '14.07%', left: '14.30%' }}
+          style={{ top: '14.07%', left: '18.20%' }}
         >
           {patient?.club || 'Club FPF / Liga Formativa'}
         </div>

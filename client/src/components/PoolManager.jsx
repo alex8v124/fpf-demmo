@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import drivePatients from '../data/drivePatients.json';
 import { downloadPatientDocx, downloadBatchDocxZip } from '../utils/docxGenerator';
+import { getPlayerCertificationStatus } from '../utils/statusClassifier';
 
 // Meses de la temporada deportiva 2026
 const MONTHS = [
@@ -186,6 +187,9 @@ export default function PoolManager({
   const [globalDate, setGlobalDate] = useState('22-01-2026');
   const [isApplyingCascade, setIsApplyingCascade] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   // Normalizador automático de nombres
   const formatPlayerName = (apellidos, nombres, order) => {
@@ -209,7 +213,7 @@ export default function PoolManager({
     });
   }, [pool, selectedMonth, searchQuery]);
 
-  // Aplicar fecha unificada en cascada a todos los jugadores seleccionados ("Jalar de uno solo")
+  // Aplicar fecha unificada en cascada a todos los jugadores seleccionados ("Sincronizar Lote")
   const handleApplyGlobalDate = () => {
     setIsApplyingCascade(true);
     setTimeout(() => {
@@ -360,7 +364,7 @@ export default function PoolManager({
               Gestor de Pool Masivo & Rotación por Meses
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Resuelve el reemplazo manual en Word: estandariza el orden de nombres y apellidos, y sincroniza la fecha única en cascada en las 21 páginas para <strong className="text-white">"jalar de uno solo"</strong> sin errores.
+              Resuelve el reemplazo manual en Word: estandariza el orden de nombres y apellidos, y sincroniza la fecha única en cascada en las 21 páginas para <strong className="text-white">"Sincronización unificada de fecha en lote"</strong> sin errores.
             </p>
           </div>
 
@@ -571,153 +575,234 @@ export default function PoolManager({
         </div>
       </section>
 
-      {/* LISTADO DE FUTBOLISTAS DEL POOL */}
-      <section className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+      {/* LISTADO DE FUTBOLISTAS DEL POOL CON PAGINACIÓN Y SELECCIÓN MÚLTIPLE */}
+      <section className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl space-y-0">
         
-        {/* Barra de Filtros y Búsqueda */}
+        {/* Barra de Filtros, Búsqueda y Selección en Lote */}
         <div className="p-5 sm:p-6 border-b border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               placeholder="Buscar por Nombre, DNI, Club o Posición..."
               className="w-full bg-slate-950 border border-slate-800 pl-10 pr-4 py-2.5 rounded-2xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
             />
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs text-slate-400">
-              Mostrando <strong className="text-white">{filteredList.length}</strong> de <strong className="text-white">{pool.length}</strong> jugadores
+              Total: <strong className="text-white">{filteredList.length}</strong> futbolistas
             </span>
 
-            <button
-              onClick={async () => {
-                if (filteredList.length === 0) return;
-                try {
-                  setToastMessage({
-                    type: 'info',
-                    text: `Compilando lote de ${filteredList.length} documentos Word oficiales con sellos y firmas...`
-                  });
-                  await downloadBatchDocxZip(filteredList, { globalDate, globalClub: 'FPF' });
-                  setToastMessage({
-                    type: 'success',
-                    text: `¡Lote de ${filteredList.length} Words (.docx) descargado en ZIP! Sellos médicos 100% conservados.`
-                  });
-                } catch (e) {
-                  setToastMessage({
-                    type: 'error',
-                    text: `Error al generar lote: ${e.message}`
-                  });
-                }
-                setTimeout(() => setToastMessage(null), 5000);
+            {/* Selector de Tamaño de Página */}
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setCurrentPage(1);
               }}
-              className="bg-emerald-600/90 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-lg transition flex items-center space-x-1.5 cursor-pointer"
+              className="bg-slate-950 border border-slate-800 text-xs text-slate-300 font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-blue-500"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Descargar Lote Word ({filteredList.length})</span>
-            </button>
+              <option value={10}>10 por página</option>
+              <option value={15}>15 por página</option>
+              <option value={25}>25 por página</option>
+              <option value={50}>50 por página</option>
+            </select>
+
+            {/* Acción en Lote para Seleccionados */}
+            {selectedIds.size > 0 && (
+              <button
+                onClick={async () => {
+                  const selectedPatients = pool.filter(p => selectedIds.has(p.id || p.fileName));
+                  try {
+                    setToastMessage({
+                      type: 'info',
+                      text: `Compilando lote ZIP de ${selectedPatients.length} futbolistas seleccionados...`
+                    });
+                    await downloadBatchDocxZip(selectedPatients, { globalDate, globalClub: 'FPF' });
+                    setToastMessage({
+                      type: 'success',
+                      text: `¡ZIP con ${selectedPatients.length} Words oficiales descargado exitosamente!`
+                    });
+                  } catch (e) {
+                    setToastMessage({ type: 'error', text: e.message });
+                  }
+                  setTimeout(() => setToastMessage(null), 4000);
+                }}
+                className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-lg transition flex items-center space-x-1.5 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Exportar Seleccionados ({selectedIds.size})</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Tabla Responsiva de Jugadores */}
+        {/* Tabla Responsiva con Selección */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
               <tr>
-                <th className="px-6 py-3.5 font-bold uppercase tracking-wider">Futbolista (Estandarizado)</th>
+                <th className="px-4 py-3.5 w-10 text-center">
+                  <input
+                    type="checkbox"
+                    checked={paginatedList.length > 0 && selectedIds.size >= paginatedList.length}
+                    onChange={handleToggleSelectAll}
+                    className="rounded border-slate-700 bg-slate-900 text-blue-600 cursor-pointer"
+                    title="Seleccionar todos los de esta página"
+                  />
+                </th>
+                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Futbolista</th>
                 <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Club / Categoría</th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Posición</th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Mes Rotación</th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Fecha Cascada</th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider text-center">Estado</th>
+                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">DNI</th>
+                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Fecha Evaluación</th>
+                <th className="px-4 py-3.5 font-bold uppercase tracking-wider text-center">Estado FPF</th>
                 <th className="px-6 py-3.5 font-bold uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
-              {filteredList.length === 0 ? (
+              {paginatedList.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-6 py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <Users className="w-8 h-8 text-slate-600 mb-1" />
-                      <span className="font-bold text-white text-sm">El Pool está listo para nueva data</span>
-                      <span className="text-xs text-slate-500">Sube los nuevos archivos en la pestaña "Subir Archivos" para cargarlos al pool.</span>
+                      <span className="font-bold text-white text-sm">No hay futbolistas con los criterios actuales</span>
+                      <span className="text-xs text-slate-500">Prueba ajustando la búsqueda o seleccionando otro mes de la temporada.</span>
                     </div>
                   </td>
                 </tr>
               ) : (
-                filteredList.map((player) => (
-                <tr key={player.id} className="hover:bg-slate-900/60 transition">
-                  <td className="px-6 py-4">
-                    <div className="font-black text-white text-sm tracking-tight font-mono">
-                      {player.nombreCompleto}
-                    </div>
-                    <div className="text-[11px] text-slate-400 flex items-center space-x-2 mt-0.5">
-                      <span>DNI: {player.dni}</span>
-                      <span>•</span>
-                      <span className="text-blue-400 font-semibold">{player.docType}</span>
-                    </div>
-                  </td>
+                paginatedList.map((player) => {
+                  const pId = player.id || player.fileName;
+                  const isSelected = selectedIds.has(pId);
+                  const status = getPlayerCertificationStatus(player);
 
-                  <td className="px-4 py-4">
-                    <div className="font-semibold text-slate-200">{player.club}</div>
-                    <div className="text-[11px] text-slate-400">{player.categoria}</div>
-                  </td>
+                  return (
+                    <tr 
+                      key={pId} 
+                      className={`hover:bg-slate-900/60 transition group cursor-pointer ${
+                        isSelected ? 'bg-blue-950/30' : ''
+                      }`}
+                      onClick={() => handleToggleSelectOne(pId)}
+                    >
+                      <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleSelectOne(pId)}
+                          className="rounded border-slate-700 bg-slate-900 text-blue-600 cursor-pointer"
+                        />
+                      </td>
 
-                  <td className="px-4 py-4 text-slate-300 font-medium">
-                    {player.posicion}
-                  </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center space-x-2.5">
+                          <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${status.dotColor}`} />
+                          <div className="font-bold text-white text-sm">
+                            {player.nombreCompleto || `${player.apellidos || ''} ${player.nombres || ''}`}
+                          </div>
+                        </div>
+                        <div className="text-[11px] text-slate-400 pl-5">
+                          Posición: {player.posicion || 'Campo'}
+                        </div>
+                      </td>
 
-                  <td className="px-4 py-4">
-                    <span className="bg-blue-950 text-blue-300 border border-blue-800/80 px-2 py-0.5 rounded-lg text-[10px] font-bold">
-                      {player.mes} 2026
-                    </span>
-                  </td>
+                      <td className="px-4 py-4">
+                        <div className="font-semibold text-slate-200">{player.club || 'Club FPF'}</div>
+                        <div className="text-[11px] text-slate-400">{player.categoria || 'Primera / Reserva'}</div>
+                      </td>
 
-                  <td className="px-4 py-4">
-                    <span className="font-mono text-emerald-400 text-xs font-semibold bg-emerald-950/60 px-2 py-0.5 rounded-lg border border-emerald-800/60">
-                      {player.fechaEvaluacion}
-                    </span>
-                  </td>
+                      <td className="px-4 py-4 font-mono text-slate-300">
+                        {player.dni || '70000000'}
+                      </td>
 
-                  <td className="px-4 py-4 text-center">
-                    <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
-                      player.estado === 'APTO'
-                        ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800/80'
-                        : 'bg-amber-950/80 text-amber-300 border-amber-800/80'
-                    }`}>
-                      <CheckCircle2 className="w-3 h-3" />
-                      <span>{player.estado}</span>
-                    </span>
-                  </td>
+                      <td className="px-4 py-4 font-mono font-bold text-blue-300">
+                        {player.fechaEvaluacion || globalDate}
+                      </td>
 
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        onClick={() => downloadPatientDocx(player, { globalDate, globalClub: player.club })}
-                        className="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 text-xs font-bold px-2.5 py-1.5 rounded-xl transition cursor-pointer inline-flex items-center space-x-1"
-                        title="Descargar Word .docx con sellos"
-                      >
-                        <Download className="w-3 h-3" />
-                        <span>Word</span>
-                      </button>
+                      <td className="px-4 py-4 text-center">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.badgeBg} ${status.badgeBorder} ${status.badgeText}`}>
+                          {status.shortLabel}
+                        </span>
+                      </td>
 
-                      <button
-                        onClick={() => handleSelectToView(player)}
-                        className="bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer inline-flex items-center space-x-1.5"
-                      >
-                        <FileCheck2 className="w-3.5 h-3.5" />
-                        <span>21 Págs</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
+                      <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => {
+                              if (onSelectPatient) onSelectPatient(player);
+                              if (onNavigateTab) onNavigateTab('documento');
+                            }}
+                            className="bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/20 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer min-h-[38px]"
+                            title="Ver las 21 páginas del expediente"
+                          >
+                            <span>Ver 21P</span>
+                          </button>
+
+                          <button
+                            onClick={() => downloadPatientDocx(player, { globalDate: player.fechaEvaluacion || globalDate, globalClub: player.club })}
+                            className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-2 rounded-xl transition cursor-pointer min-h-[38px]"
+                            title="Descargar Word oficial con sellos médicos intactos"
+                          >
+                            <Download className="w-3.5 h-3.5 text-blue-300" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
           </table>
         </div>
+
+        {/* Barra de Paginación */}
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-800 bg-slate-950 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <span className="text-slate-400">
+              Página <strong className="text-white">{currentPage}</strong> de <strong className="text-white">{totalPages}</strong> ({filteredList.length} registros)
+            </span>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage <= 1}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-30 disabled:hover:text-slate-300 transition cursor-pointer"
+              >
+                Anterior
+              </button>
+
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pNum = i + 1;
+                  return (
+                    <button
+                      key={pNum}
+                      onClick={() => setCurrentPage(pNum)}
+                      className={`w-7 h-7 rounded-lg font-bold transition cursor-pointer ${
+                        currentPage === pNum ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {pNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage >= totalPages}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-30 disabled:hover:text-slate-300 transition cursor-pointer"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
 
       </section>
 
