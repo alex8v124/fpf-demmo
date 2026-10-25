@@ -519,6 +519,26 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
+  // PÁGINA 12: DECLARACIÓN MÉDICA FINAL DE LA COMISIÓN (FACSÍMIL 1:1)
+  if (pageNumber === 12) {
+    return (
+      <div className="w-full h-full relative select-none">
+        <img 
+          src="/assets/pages_blank/page_12.png" 
+          alt="Declaración Médica Página 12" 
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        {/* Fecha Oficial de la Declaración: Calibri 11pt, regular, #000 */}
+        <div 
+          className="absolute fpf-doc-text"
+          style={{ top: '86.51%', left: '8.57%' }}
+        >
+          {patient?.fechaEvaluacion || '22-01-2026'}
+        </div>
+      </div>
+    );
+  }
+
   // PÁGINA 13: CERTIFICADO DE APTITUD MÉDICA FAMIHEART (FACSÍMIL 1:1)
   if (pageNumber === 13) {
     return (
