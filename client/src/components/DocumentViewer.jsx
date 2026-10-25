@@ -67,7 +67,7 @@ export default function DocumentViewer({
           <button
             onClick={handlePrevPage}
             disabled={currentPage <= 1 || viewMode === 'all'}
-            className="p-2.5 rounded-2xl bg-slate-800 hover:bg-slate-750 disabled:opacity-30 disabled:hover:bg-slate-800 text-white transition cursor-pointer"
+            className="p-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 text-white transition cursor-pointer"
             title="Página Anterior"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -82,7 +82,7 @@ export default function DocumentViewer({
           <button
             onClick={handleNextPage}
             disabled={currentPage >= totalPages || viewMode === 'all'}
-            className="p-2.5 rounded-2xl bg-slate-800 hover:bg-slate-750 disabled:opacity-30 disabled:hover:bg-slate-800 text-white transition cursor-pointer"
+            className="p-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 text-white transition cursor-pointer"
             title="Página Siguiente"
           >
             <ChevronRight className="w-4 h-4" />
@@ -101,7 +101,7 @@ export default function DocumentViewer({
             className={`flex items-center space-x-1.5 px-3 py-2 rounded-2xl text-xs font-bold border transition cursor-pointer ${
               viewFormat === 'facsimile'
                 ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-950/40'
-                : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-850'
+                : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-900'
             }`}
             title="Formato 1:1 idéntico al PDF oficial de 21 páginas de la FPF / CONMEBOL"
           >
@@ -118,7 +118,7 @@ export default function DocumentViewer({
             className={`flex items-center space-x-1.5 px-3 py-2 rounded-2xl text-xs font-semibold border transition cursor-pointer ${
               viewFormat === 'blank'
                 ? 'bg-amber-600 text-white border-amber-500 shadow-md shadow-amber-950/40'
-                : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-850'
+                : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-900'
             }`}
             title="Plantilla oficial limpia de 21 páginas sin datos de clientes"
           >
@@ -135,7 +135,7 @@ export default function DocumentViewer({
             className={`flex items-center space-x-1.5 px-3 py-2 rounded-2xl text-xs font-semibold border transition cursor-pointer ${
               viewFormat === 'digital'
                 ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-950/40'
-                : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-850'
+                : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-900'
             }`}
             title="Vista de resumen digital"
           >
@@ -183,7 +183,7 @@ export default function DocumentViewer({
           <a
             href="/PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.pdf"
             download="PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.pdf"
-            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 font-semibold text-xs px-3.5 py-2.5 rounded-2xl transition shadow cursor-pointer"
+            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs px-3.5 py-2.5 rounded-2xl transition shadow cursor-pointer"
             title="Descargar el PDF oficial de 21 páginas sin datos personales"
           >
             <Download className="w-3.5 h-3.5 text-emerald-400" />
@@ -362,16 +362,30 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           </div>
         </div>
 
-        {/* Trazado EKG real extraído del archivo */}
-        <div className="my-auto flex flex-col items-center justify-center p-2 bg-white rounded-lg border border-slate-300">
-          <img 
-            src={ekgSrc} 
-            alt={`Trazado ECG - ${patient?.nombreCompleto}`} 
-            className="w-full max-h-[175mm] object-contain shadow-xs"
-            onError={(e) => {
-              e.target.src = '/assets/pages_blank/page_16.png';
-            }}
-          />
+        {/* Trazado EKG real extraído del archivo (Soporta Imagen y PDF embebido) */}
+        <div className="my-auto flex flex-col items-center justify-center p-2 bg-white rounded-lg border border-slate-300 overflow-hidden">
+          {patient?.fileType === 'application/pdf' || (typeof ekgSrc === 'string' && ekgSrc.toLowerCase().endsWith('.pdf')) ? (
+            <object 
+              data={`${ekgSrc}#toolbar=0&navpanes=0`} 
+              type="application/pdf" 
+              className="w-full h-[175mm] rounded-lg border-0"
+            >
+              <iframe 
+                src={ekgSrc} 
+                title={`EKG - ${patient?.nombreCompleto}`} 
+                className="w-full h-[175mm] rounded-lg border-0" 
+              />
+            </object>
+          ) : (
+            <img 
+              src={ekgSrc} 
+              alt={`Trazado ECG - ${patient?.nombreCompleto}`} 
+              className="w-full max-h-[175mm] object-contain shadow-xs"
+              onError={(e) => {
+                e.target.src = '/assets/pages_blank/page_16.png';
+              }}
+            />
+          )}
         </div>
 
         <div className="pt-2 border-t-2 border-slate-900 flex justify-between items-center text-xs">
@@ -419,6 +433,18 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           style={{ top: '14.1%', left: '16.0%', width: '70%' }}
         >
           {patient?.club || 'Club FPF / Liga Formativa'}
+        </div>
+
+        {/* Sello y Firma del Médico Cardiólogo en el recuadro izquierdo oficial */}
+        <div 
+          className="absolute flex items-center justify-center pointer-events-none"
+          style={{ top: '78.5%', left: '12.5%', width: '30%', height: '14%' }}
+        >
+          <img 
+            src="/assets/firma-cardiologo.jpeg" 
+            alt="Firma y Sello Médico" 
+            className="max-h-full max-w-full object-contain mix-blend-multiply" 
+          />
         </div>
 
         {/* Fecha Unificada en el recuadro oficial de FECHA (Derecha, centrado sobre la línea) */}

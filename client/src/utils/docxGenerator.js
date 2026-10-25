@@ -45,12 +45,15 @@ export async function generatePatientDocx(patient, options = {}) {
   const targetDni = patient?.dni || '70000000';
 
   try {
-    // 1. Descargar la plantilla oficial que contiene los 29 sellos y formularios intactos
-    const res = await fetch(templateUrl);
-    if (!res.ok) {
-      throw new Error(`No se pudo cargar la plantilla Word desde ${templateUrl}`);
+    // 1. Obtener la plantilla oficial (usar buffer precargado o descargarla)
+    let templateBlob = options.templateBuffer;
+    if (!templateBlob) {
+      const res = await fetch(templateUrl);
+      if (!res.ok) {
+        throw new Error(`No se pudo cargar la plantilla Word desde ${templateUrl}`);
+      }
+      templateBlob = await res.arrayBuffer();
     }
-    const templateBlob = await res.arrayBuffer();
 
     // 2. Abrir el archivo .docx (contenedor ZIP)
     const zip = await JSZip.loadAsync(templateBlob);
@@ -140,9 +143,18 @@ export async function downloadBatchDocxZip(patientsList, options = {}, onProgres
   const zip = new JSZip();
   const folder = zip.folder('Expedientes_FPF_Word_Oficiales');
 
+  // Pre-cargar la plantilla Word una sola vez para todo el lote
+  const templateUrl = options.templateUrl || '/PLANTILLA_OFICIAL_CON_SELLOS.docx';
+  const res = await fetch(templateUrl);
+  if (!res.ok) {
+    throw new Error(`No se pudo cargar la plantilla base desde ${templateUrl}`);
+  }
+  const templateBuffer = await res.arrayBuffer();
+  const batchOptions = { ...options, templateBuffer };
+
   let completed = 0;
   for (const patient of patientsList) {
-    const res = await generatePatientDocx(patient, options);
+    const res = await generatePatientDocx(patient, batchOptions);
     if (res.success) {
       folder.file(res.fileName, res.blob);
     }

@@ -292,7 +292,7 @@ export default function BatchConfigBar({
             </label>
             <button
               onClick={handleToggleNameOrder}
-              className="w-full bg-slate-950 hover:bg-slate-850 border border-purple-500/40 text-purple-200 text-xs font-bold px-3 py-2 rounded-xl transition cursor-pointer flex items-center justify-center space-x-1.5"
+              className="w-full bg-slate-950 hover:bg-slate-900 border border-purple-500/40 text-purple-200 text-xs font-bold px-3 py-2 rounded-xl transition cursor-pointer flex items-center justify-center space-x-1.5"
               title="Cambiar formato para todos los expedientes simultáneamente"
             >
               <span>{nameOrder === 'LAST_FIRST' ? '[APELLIDOS NOMBRES]' : '[NOMBRES APELLIDOS]'}</span>
@@ -320,7 +320,7 @@ export default function BatchConfigBar({
               <button
                 onClick={handleDownloadBatchZip}
                 disabled={isExportingWord || !patientsList || patientsList.length === 0}
-                className="bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-bold px-3 py-2 rounded-xl transition cursor-pointer flex items-center justify-center space-x-1 disabled:opacity-40"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3 py-2 rounded-xl transition cursor-pointer flex items-center justify-center space-x-1 disabled:opacity-40"
                 title="Generar y descargar un archivo ZIP con todos los Words oficiales del lote"
               >
                 <Download className="w-3 h-3 text-blue-400" />

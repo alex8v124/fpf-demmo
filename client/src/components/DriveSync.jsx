@@ -41,7 +41,7 @@ export default function DriveSync({
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Cloud Header Banner */}
-      <div className="bg-slate-850 border border-slate-750 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
@@ -84,7 +84,7 @@ export default function DriveSync({
         </div>
 
         {/* Folder Details Box */}
-        <div className="mt-6 pt-4 border-t border-slate-750 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div className="mt-6 pt-4 border-t border-slate-700 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div>
             <span className="text-slate-400 block font-medium">Folder ID de Google Drive:</span>
             <span className="text-blue-300 font-mono font-bold">{folderId}</span>
@@ -112,9 +112,9 @@ export default function DriveSync({
       )}
 
       {/* Cloud Files Grid */}
-      <div className="bg-slate-850 border border-slate-750 rounded-2xl shadow-xl overflow-hidden">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl overflow-hidden">
         
-        <div className="p-5 border-b border-slate-750 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-700 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <FolderSync className="w-4 h-4 text-blue-400" />
@@ -129,7 +129,7 @@ export default function DriveSync({
           </span>
         </div>
 
-        <div className="divide-y divide-slate-750">
+        <div className="divide-y divide-slate-700">
           {cloudDriveFiles.map((file, idx) => (
             <div 
               key={idx} 
@@ -206,7 +206,7 @@ export default function DriveSync({
         </div>
 
         {/* Upload simulated dropzone */}
-        <div className="p-6 bg-slate-900/60 border-t border-slate-750 text-center">
+        <div className="p-6 bg-slate-900/60 border-t border-slate-700 text-center">
           <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-6 transition cursor-pointer flex flex-col items-center justify-center space-y-2">
             <Upload className="w-8 h-8 text-slate-400" />
             <div className="text-xs font-bold text-white">

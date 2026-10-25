@@ -418,7 +418,7 @@ export default function PoolManager({
                 className={`p-3 rounded-2xl border text-left transition cursor-pointer ${
                   nameFormatOrder === 'LAST_FIRST'
                     ? 'bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-950/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-850'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900'
                 }`}
               >
                 <div className="text-[10px] font-extrabold uppercase text-blue-400">Formato Oficial FPF</div>
@@ -431,7 +431,7 @@ export default function PoolManager({
                 className={`p-3 rounded-2xl border text-left transition cursor-pointer ${
                   nameFormatOrder === 'FIRST_LAST'
                     ? 'bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-950/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-850'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900'
                 }`}
               >
                 <div className="text-[10px] font-extrabold uppercase text-slate-400">Formato Directo</div>
@@ -526,14 +526,14 @@ export default function PoolManager({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handleGenerateBatch(20)}
-              className="bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5"
             >
               <Users className="w-3.5 h-3.5 text-blue-400" />
               <span>+ Cargar Lote (+20)</span>
             </button>
             <button
               onClick={() => handleGenerateBatch(100)}
-              className="bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>Simular Pool (+100)</span>
@@ -556,7 +556,7 @@ export default function PoolManager({
                 className={`px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition cursor-pointer border flex items-center space-x-2 shrink-0 ${
                   isSelected
                     ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-950/50'
-                    : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-850'
+                    : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-900'
                 }`}
               >
                 <span>{m.name}</span>
@@ -648,7 +648,7 @@ export default function PoolManager({
                 </tr>
               ) : (
                 filteredList.map((player) => (
-                <tr key={player.id} className="hover:bg-slate-850/60 transition">
+                <tr key={player.id} className="hover:bg-slate-900/60 transition">
                   <td className="px-6 py-4">
                     <div className="font-black text-white text-sm tracking-tight font-mono">
                       {player.nombreCompleto}

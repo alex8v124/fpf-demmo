@@ -414,7 +414,7 @@ export default function Dashboard({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
-                  className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-850/60 transition group cursor-pointer"
+                  className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-900/60 transition group cursor-pointer"
                   onClick={() => handleChoosePlayer(player)}
                 >
                   <div className="flex items-center space-x-3.5">

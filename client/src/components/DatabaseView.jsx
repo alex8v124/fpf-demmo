@@ -100,7 +100,7 @@ export default function DatabaseView() {
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Banner Superior */}
-      <div className="bg-slate-850 border border-slate-750 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
@@ -143,7 +143,7 @@ export default function DatabaseView() {
         </div>
 
         {/* Parámetros de Conexión */}
-        <div className="mt-6 pt-4 border-t border-slate-750 grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+        <div className="mt-6 pt-4 border-t border-slate-700 grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
           <div>
             <span className="text-slate-400 block font-medium">Estado del Endpoint:</span>
             <div className="flex items-center space-x-1.5 mt-0.5">
@@ -189,7 +189,7 @@ export default function DatabaseView() {
       )}
 
       {/* Sincronización de Datos */}
-      <div className="bg-slate-850 border border-slate-750 rounded-2xl p-6 shadow-xl space-y-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -240,7 +240,7 @@ export default function DatabaseView() {
       </div>
 
       {/* Script SQL para Creación de Tablas */}
-      <div className="bg-slate-850 border border-slate-750 rounded-2xl p-6 shadow-xl space-y-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -269,7 +269,7 @@ export default function DatabaseView() {
       </div>
 
       {/* Parámetros de Conexión Directa a Postgres */}
-      <div className="bg-slate-850 border border-slate-750 rounded-2xl p-6 shadow-xl space-y-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-4">
         <h3 className="text-sm font-bold text-white flex items-center gap-2">
           <Server className="w-4 h-4 text-purple-400" />
           Credenciales de Conexión Directa (PostgreSQL)

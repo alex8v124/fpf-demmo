@@ -348,7 +348,7 @@ export default function FileExtractor({
                   className={`p-2.5 rounded-xl border text-left text-xs transition cursor-pointer ${
                     nameOrder === 'LAST_FIRST'
                       ? 'bg-blue-600/20 border-blue-500 text-white font-bold'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-850'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900'
                   }`}
                 >
                   <div className="text-[10px] uppercase text-blue-400 font-extrabold">Oficial FPF</div>
@@ -361,7 +361,7 @@ export default function FileExtractor({
                   className={`p-2.5 rounded-xl border text-left text-xs transition cursor-pointer ${
                     nameOrder === 'FIRST_LAST'
                       ? 'bg-blue-600/20 border-blue-500 text-white font-bold'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-850'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900'
                   }`}
                 >
                   <div className="text-[10px] uppercase text-slate-400 font-extrabold">Formato Directo</div>
@@ -455,7 +455,7 @@ export default function FileExtractor({
             </thead>
             <tbody className="divide-y divide-slate-800/80">
               {filteredPatients.map((player) => (
-                <tr key={player.id} className="hover:bg-slate-850/60 transition group">
+                <tr key={player.id} className="hover:bg-slate-900/60 transition group">
                   <td className="px-6 py-4">
                     <div className="font-black text-white text-sm tracking-tight font-mono">
                       {player.nombreCompleto}

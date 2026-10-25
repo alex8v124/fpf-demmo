@@ -119,7 +119,7 @@ export default function ClinicalEditor({
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={onResetBlank}
-            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer"
+            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-amber-400" />
             <span>Formato en Blanco</span>
@@ -127,7 +127,7 @@ export default function ClinicalEditor({
 
           <button
             onClick={() => onNavigateTab('documento')}
-            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-750 text-blue-300 hover:text-white border border-slate-700 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer"
+            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-blue-300 hover:text-white border border-slate-700 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" />
             <span>Ver 21 Págs</span>
@@ -161,8 +161,8 @@ export default function ClinicalEditor({
                   isCurrent 
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-950/50' 
                     : isCompleted
-                    ? 'bg-slate-850/80 text-slate-300 hover:bg-slate-800'
-                    : 'text-slate-400 hover:bg-slate-850 hover:text-slate-200'
+                    ? 'bg-slate-900/80 text-slate-300 hover:bg-slate-800'
+                    : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
                 }`}
               >
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
@@ -370,7 +370,7 @@ export default function ClinicalEditor({
                     { key: 'hipertensionArterial', label: 'Antecedente de hipertensión arterial' },
                     { key: 'restriccionPrevia', label: 'Restricción previa para participar en deporte' }
                   ].map(item => (
-                    <div key={item.key} className="flex items-center justify-between p-3.5 bg-slate-950 rounded-2xl border border-slate-800/80 hover:border-slate-750 transition">
+                    <div key={item.key} className="flex items-center justify-between p-3.5 bg-slate-950 rounded-2xl border border-slate-800/80 hover:border-slate-700 transition">
                       <span className="text-xs text-slate-200 font-medium">{item.label}</span>
                       <div className="flex items-center space-x-2">
                         <button
@@ -427,9 +427,9 @@ export default function ClinicalEditor({
                         <th className="py-3 px-4">Estado / Fecha</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-850">
+                    <tbody className="divide-y divide-slate-900">
                       {(patient.operaciones || []).slice(0, 7).map((op, idx) => (
-                        <tr key={idx} className="hover:bg-slate-850/40">
+                        <tr key={idx} className="hover:bg-slate-900/40">
                           <td className="py-2.5 px-4 font-semibold text-slate-200">{op.zona}</td>
                           <td className="py-2.5 px-4 text-center">
                             <input
@@ -542,7 +542,7 @@ export default function ClinicalEditor({
                   </div>
 
                   {/* Barra Visual Progresiva */}
-                  <div className="h-2.5 w-full bg-slate-850 rounded-full overflow-hidden relative">
+                  <div className="h-2.5 w-full bg-slate-900 rounded-full overflow-hidden relative">
                     <motion.div 
                       className={`h-full ${imcCategory.bg}`}
                       initial={{ width: 0 }}
@@ -814,7 +814,7 @@ export default function ClinicalEditor({
         <button
           onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
           disabled={currentStep === 1}
-          className="flex items-center space-x-2 bg-slate-850 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-slate-850 text-slate-300 font-semibold text-xs px-5 py-3 rounded-2xl transition cursor-pointer"
+          className="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-slate-900 text-slate-300 font-semibold text-xs px-5 py-3 rounded-2xl transition cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>Paso Anterior</span>
