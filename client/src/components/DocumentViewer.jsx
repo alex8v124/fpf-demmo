@@ -409,7 +409,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 1: CERTIFICADO MÉDICO DEPORTIVO FPF (FACSÍMIL 1:1)
+  // PÁGINA 1: CERTIFICADO MÉDICO DEPORTIVO FPF (FACSÍMIL 1:1 CON TIPOGRAFÍA Y COORDENADAS EXACTAS)
   if (pageNumber === 1) {
     return (
       <div className="w-full h-full relative select-none">
@@ -419,18 +419,18 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           className="w-full h-full object-contain pointer-events-none block"
         />
 
-        {/* Nombre Completo en el recuadro oficial (alineado después de NOMBRE:) */}
+        {/* Nombre Completo: Calibri 11pt, regular, #000, mayúsculas */}
         <div 
-          className="absolute font-sans font-bold text-slate-950 uppercase text-[13px] sm:text-[15px] tracking-wide"
-          style={{ top: '11.4%', left: '17.5%', width: '70%' }}
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: '11.40%', left: '14.30%' }}
         >
           {patient?.nombreCompleto}
         </div>
 
-        {/* Club en el recuadro oficial (alineado después de CLUB:) */}
+        {/* Club: Calibri 11pt, regular, #000, mayúsculas */}
         <div 
-          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[14px]"
-          style={{ top: '14.1%', left: '16.0%', width: '70%' }}
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: '14.07%', left: '14.30%' }}
         >
           {patient?.club || 'Club FPF / Liga Formativa'}
         </div>
@@ -447,10 +447,10 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           />
         </div>
 
-        {/* Fecha Unificada en el recuadro oficial de FECHA (Derecha, centrado sobre la línea) */}
+        {/* Fecha Oficial: Calibri 11pt, regular, #000 */}
         <div 
-          className="absolute font-mono font-bold text-slate-950 tracking-wider text-[13px] sm:text-[14px] text-center"
-          style={{ top: '82.0%', left: '52.0%', width: '30%' }}
+          className="absolute fpf-doc-text"
+          style={{ top: '82.21%', left: '55.93%' }}
         >
           {patient?.fechaEvaluacion || '22-01-2026'}
         </div>
@@ -468,50 +468,50 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           className="w-full h-full object-contain pointer-events-none block"
         />
 
-        {/* Apellidos */}
+        {/* Apellidos: Calibri 11pt, regular, #000, mayúsculas */}
         <div 
-          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px]"
-          style={{ top: '49.8%', left: '11.2%', width: '38%' }}
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: '49.98%', left: '11.21%' }}
         >
           {patient?.apellidos || patient?.nombreCompleto}
         </div>
 
-        {/* Nombres */}
+        {/* Nombres: Calibri 11pt, regular, #000, mayúsculas */}
         <div 
-          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px]"
-          style={{ top: '49.8%', left: '57.0%', width: '38%' }}
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: '49.79%', left: '57.08%' }}
         >
           {patient?.nombres || '-'}
         </div>
 
-        {/* DNI */}
+        {/* DNI: Calibri 11pt, regular, #000 */}
         <div 
-          className="absolute font-sans font-bold text-blue-950 text-[12px] sm:text-[13px]"
-          style={{ top: '56.8%', left: '57.0%' }}
+          className="absolute fpf-doc-text"
+          style={{ top: '56.80%', left: '57.08%' }}
         >
           {patient?.dni || '70000000'}
         </div>
 
-        {/* Club Deportivo */}
+        {/* Club Deportivo: Calibri 11pt, regular, #000, mayúsculas */}
         <div 
-          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px] tracking-tight"
-          style={{ top: '71.6%', left: '10.3%', width: '38%' }}
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: '71.79%', left: '10.32%' }}
         >
           {patient?.club || 'Club FPF / Liga Formativa'}
         </div>
 
-        {/* País */}
+        {/* País: Calibri 11pt, regular, #000, mayúsculas */}
         <div 
-          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px]"
-          style={{ top: '71.6%', left: '57.0%' }}
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: '71.60%', left: '56.57%' }}
         >
           PERU
         </div>
 
-        {/* Fecha Unificada Cuadrada */}
+        {/* Fecha Unificada: Calibri 11pt, regular, #000 */}
         <div 
-          className="absolute font-mono font-bold text-slate-900 text-xs sm:text-[13px] tracking-wider"
-          style={{ top: '92.6%', right: '8.5%' }}
+          className="absolute fpf-doc-text"
+          style={{ top: '92.60%', left: '78.50%' }}
         >
           {patient?.fechaEvaluacion || '22-01-2026'}
         </div>
@@ -528,17 +528,19 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           alt="Certificado Famiheart Página 13" 
           className="w-full h-full object-contain pointer-events-none block"
         />
+        {/* Nombre en Certificado Famiheart: Berlin Sans FB 24pt (32px), bold, #000 */}
         <div 
-          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[14px]"
-          style={{ top: '29.3%', left: '30.0%', width: '60%' }}
+          className="absolute fpf-doc-title-24 uppercase"
+          style={{ top: '29.68%', left: '31.64%' }}
         >
           {patient?.nombreCompleto}
         </div>
+        {/* Fecha Oficial: Calibri 16pt (21.33px), regular, #000 */}
         <div 
-          className="absolute font-mono font-bold text-slate-900 text-xs sm:text-[13px] tracking-wider"
-          style={{ top: '78.5%', left: '14.5%' }}
+          className="absolute fpf-doc-date-16"
+          style={{ top: '73.31%', left: '14.30%' }}
         >
-          Lima, {patient?.fechaEvaluacion || '22-01-2026'}
+          {patient?.fechaEvaluacion || '22-01-2026'}
         </div>
       </div>
     );
@@ -553,15 +555,17 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           alt="Informe Ecocardiográfico Página 14" 
           className="w-full h-full object-contain pointer-events-none block"
         />
+        {/* Nombre en Ecocardiograma: Calibri 11pt, regular, #000 */}
         <div 
-          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px]"
-          style={{ top: '21.3%', left: '26.0%', width: '60%' }}
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: '21.38%', left: '20.08%' }}
         >
           {patient?.nombreCompleto}
         </div>
+        {/* Fecha en Ecocardiograma: Calibri 11pt, regular, #000 */}
         <div 
-          className="absolute font-mono font-bold text-slate-900 text-xs sm:text-[13px] tracking-wider"
-          style={{ top: '22.8%', left: '25.0%' }}
+          className="absolute fpf-doc-text"
+          style={{ top: '23.07%', left: '20.08%' }}
         >
           {patient?.fechaEvaluacion || '22-01-2026'}
         </div>
@@ -571,8 +575,12 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
 
   // PÁGINAS 17, 18, 19: LABORATORIO CLÍNICO FAMIHEART (FACSÍMIL 1:1)
   if (pageNumber === 17 || pageNumber === 18 || pageNumber === 19) {
-    const topPaciente = pageNumber === 17 ? '22.0%' : pageNumber === 18 ? '20.8%' : '22.6%';
-    const topFecha = pageNumber === 17 ? '29.3%' : pageNumber === 19 ? '29.9%' : null;
+    const coords = {
+      17: { nameTop: '22.24%', nameLeft: '30.80%', dateTop: '29.18%', dateLeft: '78.27%' },
+      18: { nameTop: '21.00%', nameLeft: '28.95%', dateTop: '27.94%', dateLeft: '80.38%' },
+      19: { nameTop: '22.82%', nameLeft: '26.77%', dateTop: '29.76%', dateLeft: '86.81%' }
+    }[pageNumber];
+
     return (
       <div className="w-full h-full relative select-none">
         <img 
@@ -581,149 +589,57 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           className="w-full h-full object-contain pointer-events-none block"
         />
         <div 
-          className="absolute font-sans font-bold text-slate-900 uppercase text-[12px] sm:text-[13px]"
-          style={{ top: topPaciente, left: '32.0%', width: '55%' }}
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: coords.nameTop, left: coords.nameLeft }}
         >
           {patient?.nombreCompleto}
         </div>
-        {topFecha && (
-          <div 
-            className="absolute font-mono font-bold text-slate-900 text-xs tracking-wider"
-            style={{ top: topFecha, left: pageNumber === 17 ? '80.0%' : '86.5%' }}
-          >
-            {patient?.fechaEvaluacion || '22-01-2026'}
-          </div>
-        )}
+        <div 
+          className="absolute fpf-doc-text"
+          style={{ top: coords.dateTop, left: coords.dateLeft }}
+        >
+          {patient?.fechaEvaluacion || '22-01-2026'}
+        </div>
       </div>
     );
   }
 
-  // PÁGINA 20: INFORME RADIOLÓGICO Y RAYOS X (FACSÍMIL OFICIAL CON SELLO)
+  // PÁGINA 20: INFORME RADIOLÓGICO Y RAYOS X (FACSÍMIL OFICIAL 1:1)
   if (pageNumber === 20) {
     return (
-      <div className="w-full h-full flex flex-col justify-between bg-white text-slate-900 p-8 relative">
-        <div className="border-b-2 border-slate-900 pb-2 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/assets/famiheart-logo.png" alt="Famiheart" className="h-10 w-auto object-contain" />
-            <div>
-              <div className="text-sm font-black text-blue-950">FAMIHEART S.A.C.</div>
-              <div className="text-[10px] text-slate-500 font-bold uppercase">SERVICIO DE DIAGNÓSTICO POR IMÁGENES - RAYOS X</div>
-            </div>
-          </div>
-          <div className="text-right text-xs font-mono">
-            <div className="font-black text-blue-900">FECHA: {patient?.fechaEvaluacion || '22-01-2026'}</div>
-            <div className="text-[10px] text-slate-500 font-bold">Pág. 20 de 21</div>
-          </div>
+      <div className="w-full h-full relative select-none">
+        <img 
+          src="/assets/pages_blank/page_20.png" 
+          alt="Informe Radiológico Rayos X Página 20" 
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        {/* Nombre del paciente: Calibri 11pt, regular, #000 */}
+        <div 
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: '21.90%', left: '35.55%' }}
+        >
+          {patient?.nombreCompleto}
         </div>
-
-        <div className="my-2 bg-slate-50 p-2.5 rounded-lg text-xs flex justify-between items-center border border-slate-300">
-          <div>
-            <span className="text-slate-600 font-medium">PACIENTE:</span>{' '}
-            <strong className="text-blue-950 font-mono text-sm ml-1">{patient?.nombreCompleto}</strong>
-          </div>
-          <div className="flex items-center gap-4 text-[11px]">
-            <span><strong>DNI:</strong> {patient?.dni || 'Verificado'}</span>
-            <span><strong>CLUB:</strong> {patient?.club || 'Club FPF'}</span>
-            <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded">TÓRAX PA NORMAL</span>
-          </div>
-        </div>
-
-        {/* Imagen de la radiografía de tórax */}
-        <div className="my-auto flex flex-col items-center justify-center p-2 bg-white rounded-lg border border-slate-300">
-          <img 
-            src="/assets/radiografia-torax.jpeg" 
-            alt="Radiografía de Tórax" 
-            className="w-full max-h-[170mm] object-contain shadow-xs"
-          />
-        </div>
-
-        <div className="pt-2 border-t-2 border-slate-900 flex justify-between items-center text-xs">
-          <div>
-            <div className="font-bold text-emerald-800 text-[11px]">CONCLUSIÓN: Silueta cardiovascular y campos pulmonares normales.</div>
-            <div className="text-[9px] text-slate-500">Sin lesiones pleuropulmonares activas. Apto para el deporte de alta competencia.</div>
-          </div>
-          <div className="text-right flex items-center space-x-2">
-            <img 
-              src="/assets/firma-radiologo.jpeg" 
-              alt="Sello Radiólogo" 
-              className="h-14 w-auto object-contain mix-blend-multiply" 
-            />
-            <div className="text-[10px] text-slate-600 font-bold">
-              <div>Dr. Alfredo Vega Cisneros</div>
-              <div className="text-[9px] text-slate-500">C.M.P. 1821 • R.N.E. 4480 • Radiólogo</div>
-            </div>
-          </div>
+        {/* Fecha: Calibri 11pt, regular, #000 */}
+        <div 
+          className="absolute fpf-doc-text"
+          style={{ top: '25.19%', left: '35.49%' }}
+        >
+          {patient?.fechaEvaluacion || '22-01-2026'}
         </div>
       </div>
     );
   }
 
-  // PÁGINA 21: DICTAMEN FINAL DE APTITUD FPF (FACSÍMIL OFICIAL CON SELLO)
+  // PÁGINA 21: DICTAMEN FINAL DE APTITUD FPF (FACSÍMIL OFICIAL 1:1)
   if (pageNumber === 21) {
     return (
-      <div className="w-full h-full flex flex-col justify-between bg-white text-slate-900 p-8 relative">
-        <div className="border-b-2 border-slate-900 pb-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/assets/fpf-logo.png" alt="FPF" className="h-12 w-auto object-contain" />
-            <div>
-              <div className="text-sm font-black text-blue-950">FEDERACIÓN PERUANA DE FÚTBOL</div>
-              <div className="text-[10px] text-slate-600 font-bold uppercase">CERTIFICACIÓN MÉDICA FINAL DE APTITUD DEPORTIVA 2026</div>
-            </div>
-          </div>
-          <div className="text-right text-xs font-mono">
-            <div className="font-black text-blue-900">FECHA: {patient?.fechaEvaluacion || '22-01-2026'}</div>
-            <div className="text-[10px] text-slate-500 font-bold">Pág. 21 de 21</div>
-          </div>
-        </div>
-
-        <div className="space-y-4 my-auto p-4 bg-slate-50 border border-slate-300 rounded-xl text-xs">
-          <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-200">
-            <div><strong>FUTBOLISTA:</strong> <span className="font-mono text-sm font-bold text-blue-950">{patient?.nombreCompleto}</span></div>
-            <div><strong>CLUB ASOCIADO:</strong> <span className="font-bold text-slate-900">{patient?.club || 'Club FPF'}</span></div>
-            <div><strong>DOCUMENTO (DNI):</strong> <span className="font-mono">{patient?.dni || '70000000'}</span></div>
-            <div><strong>CATEGORÍA:</strong> {patient?.categoria || 'Oficial 2026'}</div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="font-black text-slate-900 text-[11px] uppercase tracking-wide">
-              RESUMEN DIAGNÓSTICO INTEGRAL DE 21 PÁGINAS:
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-[11px] pl-2 text-slate-700">
-              <div>✓ Examen Médico Precompetitivo: <strong>SIN ANOMALÍAS</strong></div>
-              <div>✓ Electrocardiograma de 12 Derivaciones: <strong>NORMAL</strong></div>
-              <div>✓ Ecocardiograma Doppler: <strong>CONSERVADO</strong></div>
-              <div>✓ Radiografía de Tórax PA: <strong>NORMAL</strong></div>
-              <div>✓ Laboratorio Clínico y Parasitológico: <strong>NORMAL</strong></div>
-              <div>✓ Declaración Antidopaje y Médica: <strong>CONFORME</strong></div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-xl text-center space-y-1">
-            <div className="text-[11px] text-emerald-800 font-bold uppercase">DICTAMEN MÉDICO FINAL DE LA COMISIÓN EVALUADORA:</div>
-            <div className="text-base font-black text-emerald-900 tracking-wide">
-              [ X ] APTO PARA LA PRÁCTICA DEL FÚTBOL COMPETITIVO
-            </div>
-            <div className="text-[10px] text-emerald-700">Acreditación FPF / CONMEBOL - Temporada 2026</div>
-          </div>
-        </div>
-
-        <div className="pt-3 border-t-2 border-slate-900 flex justify-between items-center text-xs">
-          <div>
-            <div className="font-mono text-slate-600">FECHA OFICIAL: <strong className="text-blue-900">{patient?.fechaEvaluacion || '22-01-2026'}</strong></div>
-            <div className="text-[9px] text-slate-500">Expediente Médico Famiheart S.A.C. para Comisión Médica FPF</div>
-          </div>
-          <div className="text-right flex items-center space-x-2">
-            <img 
-              src="/assets/firma-cardiologo.jpeg" 
-              alt="Sello Comisión Médica" 
-              className="h-14 w-auto object-contain mix-blend-multiply" 
-            />
-            <div className="text-[10px] text-slate-600 font-bold">
-              <div>Dr. Darío Hernández Alarcón</div>
-              <div className="text-[9px] text-slate-500">C.M.P. 27503 • R.N.E. 15620 • Cardiólogo</div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full h-full relative select-none">
+        <img 
+          src="/assets/pages_blank/page_21.png" 
+          alt="Dictamen Final FPF Página 21" 
+          className="w-full h-full object-contain pointer-events-none block"
+        />
       </div>
     );
   }

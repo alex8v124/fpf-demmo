@@ -60,3 +60,29 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.5);
 }
+
+/* Exact FPF Document Typography (Calibri 11pt, pure black, official metrics) */
+.fpf-doc-text {
+  font-family: Calibri, 'Carlito', 'Segoe UI', Arial, sans-serif !important;
+  font-size: 14.67px !important; /* 11.0pt */
+  line-height: 1.2 !important;
+  color: #000000 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+
+.fpf-doc-title-24 {
+  font-family: 'Berlin Sans FB', 'Segoe UI', Calibri, Arial, sans-serif !important;
+  font-size: 32px !important; /* 24.0pt */
+  line-height: 1.1 !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+.fpf-doc-date-16 {
+  font-family: Calibri, 'Carlito', 'Segoe UI', Arial, sans-serif !important;
+  font-size: 21.33px !important; /* 16.0pt */
+  line-height: 1.2 !important;
+  color: #000000 !important;
+  font-weight: 400 !important;
+}
