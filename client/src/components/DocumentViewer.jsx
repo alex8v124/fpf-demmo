@@ -1303,20 +1303,15 @@ function CleanTemplatePage({ pageNumber }) {
   const formattedPage = pageNumber.toString().padStart(2, '0');
 
   return (
-    <div className="w-full h-full flex flex-col justify-between text-slate-800 relative">
+    <div className="w-full h-full relative select-none">
       <img 
         src={`/assets/pages_blank/page_${formattedPage}.png`} 
         alt={`Plantilla Oficial en Blanco Página ${pageNumber}`}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-contain pointer-events-none block"
         onError={(e) => {
           e.target.style.display = 'none';
         }}
       />
-
-      <div className="text-[10px] text-slate-400 flex items-center justify-between border-t border-slate-200 pt-2 mt-4 print-only">
-        <span>Plantilla Oficial en Blanco (Sin Datos Personales) • FPF / CONMEBOL / Famiheart S.A.C.</span>
-        <span>Página {pageNumber} de 21</span>
-      </div>
     </div>
   );
 }
