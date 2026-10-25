@@ -9,23 +9,50 @@ export async function generatePatientDocx(patient, options = {}) {
   const {
     globalDate = patient?.fechaEvaluacion || '22-01-2026',
     globalClub = patient?.club || 'Club FPF / Liga Formativa',
+    nameOrder = 'LAST_FIRST',
     templateUrl = '/PLANTILLA_OFICIAL_CON_SELLOS.docx'
   } = options;
 
-  const targetName = (patient?.nombreCompleto || 'PACIENTE SIN NOMBRE').toUpperCase();
+  // Extraer apellidos y nombres limpios
+  let apellidos = (patient?.apellidos || '').trim();
+  let nombres = (patient?.nombres || '').trim();
+
+  if (!apellidos && patient?.nombreCompleto) {
+    const parts = patient.nombreCompleto.trim().split(/\s+/);
+    if (parts.length >= 3) {
+      apellidos = parts.slice(0, 2).join(' ');
+      nombres = parts.slice(2).join(' ');
+    } else if (parts.length === 2) {
+      apellidos = parts[0];
+      nombres = parts[1];
+    } else {
+      apellidos = patient.nombreCompleto;
+      nombres = '';
+    }
+  }
+
+  // Determinar orden según configuración en lote (Apellidos Nombres vs Nombres Apellidos)
+  const isFirstLast = nameOrder === 'FIRST_LAST';
+  const targetFullName = isFirstLast 
+    ? `${nombres} ${apellidos}`.trim().toUpperCase() 
+    : `${apellidos} ${nombres}`.trim().toUpperCase();
+
+  const firstBox = isFirstLast ? (nombres || targetFullName).toUpperCase() : (apellidos || targetFullName).toUpperCase();
+  const secondBox = isFirstLast ? apellidos.toUpperCase() : nombres.toUpperCase();
+
   const targetDate = patient?.fechaEvaluacion || globalDate || '22-01-2026';
-  const targetClub = patient?.club || globalClub || 'Club FPF / Liga Formativa';
+  const targetClub = (patient?.club || globalClub || 'Club FPF / Liga Formativa').toUpperCase();
   const targetDni = patient?.dni || '70000000';
 
   try {
-    // 1. Descargar la plantilla oficial que contiene los 28 sellos y formularios intactos
+    // 1. Descargar la plantilla oficial que contiene los 29 sellos y formularios intactos
     const res = await fetch(templateUrl);
     if (!res.ok) {
       throw new Error(`No se pudo cargar la plantilla Word desde ${templateUrl}`);
     }
     const templateBlob = await res.arrayBuffer();
 
-    // 2. Abrir el archivo .docx (que es un contenedor ZIP)
+    // 2. Abrir el archivo .docx (contenedor ZIP)
     const zip = await JSZip.loadAsync(templateBlob);
 
     // 3. Modificar únicamente word/document.xml (sin tocar word/media/ donde viven los sellos)
@@ -36,17 +63,23 @@ export async function generatePatientDocx(patient, options = {}) {
 
     let xmlText = await docXmlFile.async('string');
 
-    // 4. Reemplazos precisos en el XML
-    // Nombre del paciente (reemplazar la referencia base sin romper etiquetas XML)
-    xmlText = xmlText.replace(/PONCE ECHEVARRIA CARLOS/g, targetName);
-    xmlText = xmlText.replace(/PONCE ECHEVARRIA\s*/g, targetName + ' ');
-    
-    // Fechas en cascada
+    // 4. Reemplazos quirúrgicos en el XML
+    // A) Nombre completo en todo el expediente (Certificado de Aptitud, Ecocardiograma, Rayos X, etc.)
+    xmlText = xmlText.replace(/PONCE ECHEVARRIA CARLOS/g, targetFullName);
+
+    // B) Ficha PCMA: Casillas separadas de APELLIDOS y NOMBRES
+    xmlText = xmlText.replace(/PONCE ECHEVARRIA\s*/g, firstBox + ' ');
+    xmlText = xmlText.replace(/CARLOS/g, secondBox || '-');
+
+    // C) Ficha PCMA: Nombre del Club Deportivo en Hoja 1 y 2
+    xmlText = xmlText.replace(/ZU[\u00D1\xc3\x91N]IGA/gi, targetClub);
+
+    // D) Fechas en cascada en todas las hojas
     xmlText = xmlText.replace(/22-01-2026/g, targetDate);
     xmlText = xmlText.replace(/____-____-2026/g, targetDate);
     xmlText = xmlText.replace(/06-05-2026/g, targetDate);
 
-    // DNI si aplica
+    // E) DNI si aplica
     if (patient?.dni) {
       xmlText = xmlText.replace(/74290500/g, targetDni);
     }
@@ -54,7 +87,7 @@ export async function generatePatientDocx(patient, options = {}) {
     // Guardar el XML modificado de vuelta en el zip
     zip.file('word/document.xml', xmlText);
 
-    // 5. Compilar el archivo .docx final manteniendo todos los sellos binarios
+    // 5. Compilar el archivo .docx final manteniendo todos los sellos binarios intactos
     const outputBlob = await zip.generateAsync({
       type: 'blob',
       mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -64,7 +97,7 @@ export async function generatePatientDocx(patient, options = {}) {
     return {
       success: true,
       blob: outputBlob,
-      fileName: `${targetName.replace(/[^A-Z0-9\s]/gi, '').trim()}.docx`
+      fileName: `${targetFullName.replace(/[^A-Z0-9\s]/gi, '').trim()}.docx`
     };
   } catch (error) {
     console.error('Error al generar el documento Word:', error);

@@ -44,11 +44,31 @@ def format_name(full_name, order="LAST_FIRST"):
         return f"{nombres} {apellidos}".upper()
     return f"{apellidos} {nombres}".upper()
 
-def process_word_document(input_path, output_path, player_name, evaluation_date, club_name):
+def process_word_document(input_path, output_path, raw_name, evaluation_date, club_name, order="LAST_FIRST"):
     """
     Modifica el archivo docx (que es un zip de XMLs) reemplazando textos pero
     dejando la carpeta word/media/ (donde viven los 28 sellos y firmas) 100% intacta.
     """
+    parts = raw_name.strip().split()
+    if len(parts) >= 3:
+        apellidos = " ".join(parts[:2])
+        nombres = " ".join(parts[2:])
+    elif len(parts) == 2:
+        apellidos = parts[0]
+        nombres = parts[1]
+    else:
+        apellidos = raw_name.strip()
+        nombres = ""
+
+    if order == "FIRST_LAST":
+        target_full_name = f"{nombres} {apellidos}".strip().upper()
+        first_box = (nombres or target_full_name).upper()
+        second_box = apellidos.upper()
+    else:
+        target_full_name = f"{apellidos} {nombres}".strip().upper()
+        first_box = (apellidos or target_full_name).upper()
+        second_box = nombres.upper()
+
     with open(input_path, "rb") as f:
         zip_bytes = f.read()
 
@@ -61,12 +81,17 @@ def process_word_document(input_path, output_path, player_name, evaluation_date,
         if item.filename == "word/document.xml":
             xml_str = content.decode("utf-8")
 
-            # 1. Reemplazar nombre del paciente
-            xml_str = xml_str.replace("PONCE ECHEVARRIA CARLOS", player_name)
-            xml_str = xml_str.replace("PONCE ECHEVARRIA ", player_name + " ")
-            xml_str = xml_str.replace("________________________________________", player_name)
+            # 1. Reemplazar nombre completo en certificados y anexos
+            xml_str = xml_str.replace("PONCE ECHEVARRIA CARLOS", target_full_name)
 
-            # 2. Reemplazar fecha masiva en cascada
+            # 2. Casillas separadas en Ficha PCMA
+            xml_str = xml_str.replace("PONCE ECHEVARRIA ", first_box + " ")
+            xml_str = xml_str.replace("CARLOS", second_box if second_box else "-")
+
+            # 3. Reemplazar Nombre del Club
+            xml_str = re.sub(r'ZU[\u00D1\xc3\x91N]IGA', club_name.upper(), xml_str, flags=re.IGNORECASE)
+
+            # 4. Reemplazar fecha masiva en cascada
             xml_str = xml_str.replace("22-01-2026", evaluation_date)
             xml_str = xml_str.replace("____-____-2026", evaluation_date)
             xml_str = xml_str.replace("06-05-2026", evaluation_date)
@@ -112,7 +137,7 @@ def main():
         formatted = format_name(raw_name, args.order)
         out_filename = f"{formatted}.docx"
         out_path = os.path.join(args.outdir, out_filename)
-        process_word_document(TEMPLATE_PATH, out_path, formatted, args.date, args.club)
+        process_word_document(TEMPLATE_PATH, out_path, raw_name, args.date, args.club, args.order)
 
     print(f"--------------------------------------------------")
     print(f"[EXITO] Procesamiento completado. Archivos en: {args.outdir}")

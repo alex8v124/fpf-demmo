@@ -145,7 +145,8 @@ export default function BatchConfigBar({
     try {
       const fn = await downloadPatientDocx(currentPatient, {
         globalDate: localDate,
-        globalClub: localClub
+        globalClub: localClub,
+        nameOrder: nameOrder
       });
       showToast('success', `Word generado exitosamente: "${fn}" (Sellos y firmas 100% intactos).`);
     } catch (e) {
@@ -165,7 +166,8 @@ export default function BatchConfigBar({
     try {
       const res = await downloadBatchDocxZip(patientsList, {
         globalDate: localDate,
-        globalClub: localClub
+        globalClub: localClub,
+        nameOrder: nameOrder
       });
       showToast('success', `¡ZIP generado con ${res.count} expedientes Word oficiales (.docx) con sellos médicos!`);
     } catch (e) {
