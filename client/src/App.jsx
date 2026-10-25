@@ -19,6 +19,9 @@ export default function App() {
   const [currentPatient, setCurrentPatient] = useState(blankPatientTemplate);
   const [isBlankMode, setIsBlankMode] = useState(true);
 
+  // Rol activo del usuario: 'MEDICO' | 'CLUB' | 'FPF'
+  const [userRole, setUserRole] = useState('MEDICO');
+
   // Estados globales para la configuración masiva (Fecha, Club y Formato)
   const [globalDate, setGlobalDate] = useState('22-01-2026');
   const [globalClub, setGlobalClub] = useState('Club FPF / Liga Formativa');
@@ -88,6 +91,8 @@ export default function App() {
         onSelectPatient={handleSelectPatient}
         onResetBlank={handleResetBlank}
         onPrint={handlePrint}
+        userRole={userRole}
+        setUserRole={setUserRole}
       />
 
       {/* Main Content Area with Smooth Tab Transitions */}
@@ -126,6 +131,8 @@ export default function App() {
                 globalDate={globalDate}
                 globalClub={globalClub}
                 nameOrder={nameOrder}
+                userRole={userRole}
+                setUserRole={setUserRole}
               />
             )}
 
@@ -181,21 +188,35 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {/* Footer Minimalista */}
-      <footer className="no-print bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <span className="font-bold text-slate-400">Famiheart S.A.C.</span>
-            <span>•</span>
-            <span>Comisión Médica FPF / CONMEBOL 2026</span>
+      {/* Footer Institucional con Aviso de Privacidad y Protección de Datos en Salud */}
+      <footer className="no-print bg-slate-950 border-t border-slate-900 py-8 text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-900/80 pb-4">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-300">
+              <span className="font-extrabold text-white text-sm">Famiheart S.A.C.</span>
+              <span className="text-slate-600">•</span>
+              <span>RUC 20554742905</span>
+              <span className="text-slate-600">•</span>
+              <span className="text-slate-200 font-semibold">Comisión Médica FPF & CONMEBOL 2026</span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="inline-flex items-center gap-1.5 text-emerald-400 font-semibold bg-emerald-950/70 border border-emerald-800/80 px-3 py-1 rounded-full text-[11px]">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+                Sesión Médica Segura (TLS 256-bit)
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-blue-400 font-semibold bg-blue-950/70 border border-blue-800/80 px-3 py-1 rounded-full text-[11px]">
+                Ley N° 29733 (Datos Personales de Salud)
+              </span>
+            </div>
           </div>
-          <div className="flex items-center space-x-4 text-slate-400">
-            <span>Cardiología, Laboratorio Clínico y Radiología</span>
-            <span>•</span>
-            <span className="text-emerald-400 font-semibold flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-              Supabase PostgreSQL Activo
-            </span>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
+            <p className="max-w-3xl leading-relaxed text-center sm:text-left">
+              <strong className="text-slate-400">Aviso de Confidencialidad Médica:</strong> La información clínica, trazados electrocardiográficos, ecocardiogramas Doppler y radiografías de tórax son datos sensibles de salud protegidos por la Ley N° 29733 y el reglamento médico de la FPF. Acceso exclusivo para profesionales médicos acreditados y delegados autorizados.
+            </p>
+            <div className="shrink-0 text-slate-400 font-mono text-[10px] text-center sm:text-right">
+              V1.2.5-FPF • Supabase PostgreSQL Activo
+            </div>
           </div>
         </div>
       </footer>
