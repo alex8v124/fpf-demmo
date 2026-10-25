@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, 
@@ -25,17 +25,92 @@ import {
   FolderSync
 } from 'lucide-react';
 import { samplePlayersList } from '../data/initialData';
+import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
+import { saveBatchPatientsToSupabase } from '../lib/supabase';
 
 export default function Dashboard({ 
   patientsList = samplePlayersList,
+  setPatientsList,
   onSelectPatient,
   onSelectPatientId, 
   onNavigateTab, 
   onResetBlank, 
-  onPrint 
+  onPrint,
+  globalDate = '22-01-2026',
+  globalClub = 'Club FPF / Liga Formativa',
+  nameOrder = 'LAST_FIRST'
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'APTO' | 'OBSERVACION'
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadToast, setUploadToast] = useState(null);
+  const dashboardFileInputRef = useRef(null);
+
+  // Procesamiento directo de archivos subidos desde el Dashboard
+  const handleProcessFiles = (files) => {
+    if (!files || files.length === 0) return;
+    const newPatients = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const parsed = parsePatientFromFileName(file.name, file);
+      if (parsed) {
+        parsed.fechaEvaluacion = globalDate;
+        parsed.club = globalClub;
+        parsed.nombreCompleto = formatPlayerDisplayName(parsed.apellidos, parsed.nombres, nameOrder);
+        newPatients.push(parsed);
+      }
+    }
+
+    if (newPatients.length > 0) {
+      if (setPatientsList) {
+        setPatientsList(prev => {
+          const existing = new Set((prev || []).map(p => p.fileName));
+          const filtered = newPatients.filter(p => !existing.has(p.fileName));
+          return [...filtered, ...(prev || [])];
+        });
+      }
+
+      saveBatchPatientsToSupabase(newPatients).then(res => {
+        if (res.success) {
+          console.log(`[Supabase] Auto-guardados ${res.count} expedientes desde Dashboard.`);
+        }
+      });
+
+      if (onSelectPatient) {
+        onSelectPatient(newPatients[0]);
+      }
+
+      setUploadToast(`¡${newPatients.length} expedientes cargados exitosamente! Nombres extraídos y vinculados.`);
+      setTimeout(() => setUploadToast(null), 4000);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleProcessFiles(e.dataTransfer.files);
+    }
+  };
 
   const filteredPlayers = patientsList.filter(player => {
     const q = searchTerm.toLowerCase();
@@ -61,6 +136,13 @@ export default function Dashboard({
 
   return (
     <div className="space-y-10 animate-in fade-in duration-300">
+      {/* Toast Alert flotante para subida */}
+      {uploadToast && (
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-2xl border text-xs font-semibold flex items-center space-x-2 transition bg-emerald-950 text-emerald-200 border-emerald-500/50 animate-bounce">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{uploadToast}</span>
+        </div>
+      )}
       
       {/* SECCIÓN 1: BIENVENIDA Y ACCIONES CLAVE */}
       <section className="relative overflow-hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
@@ -87,14 +169,30 @@ export default function Dashboard({
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+            {/* Input nativo oculto para subida rápida */}
+            <input 
+              type="file"
+              ref={dashboardFileInputRef}
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  handleProcessFiles(e.target.files);
+                }
+                e.target.value = '';
+              }}
+              multiple
+              accept=".pdf,image/*"
+              className="hidden"
+            />
+
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onNavigateTab('extractor')}
+              onClick={() => dashboardFileInputRef.current?.click()}
               className="flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-xl shadow-emerald-950/40 border border-emerald-500/40 transition cursor-pointer"
+              title="Selecciona archivos PDF o imágenes directamente desde tu equipo"
             >
               <UploadCloud className="w-4 h-4" />
-              <span>Subir Archivos & Auto-Nombre</span>
+              <span>Subir Archivos (PDF/Fotos)</span>
             </motion.button>
 
             <motion.button
@@ -111,7 +209,7 @@ export default function Dashboard({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => onNavigateTab('pool')}
-              className="flex items-center justify-center space-x-2 bg-slate-800/90 hover:bg-slate-750 text-slate-200 border border-slate-700 font-semibold text-xs sm:text-sm px-4 py-3 rounded-2xl transition cursor-pointer"
+              className="flex items-center justify-center space-x-2 bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs sm:text-sm px-4 py-3 rounded-2xl transition cursor-pointer"
             >
               <Users className="w-4 h-4 text-blue-400" />
               <span>Pool Rotación</span>
@@ -270,22 +368,41 @@ export default function Dashboard({
         {/* Lista de Jugadores */}
         <div className="divide-y divide-slate-800/80">
           {filteredPlayers.length === 0 ? (
-            <div className="p-12 text-center space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-3xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-400 shadow-inner">
-                <UploadCloud className="w-8 h-8 text-blue-400 animate-pulse" />
+            <div 
+              onDragOver={handleDragOver}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => dashboardFileInputRef.current?.click()}
+              className={`p-10 sm:p-14 text-center space-y-4 border-2 border-dashed rounded-3xl m-4 cursor-pointer transition-all duration-200 ${
+                isDragging
+                  ? 'border-blue-400 bg-blue-950/60 scale-[1.01] shadow-2xl shadow-blue-500/20 ring-4 ring-blue-500/30'
+                  : 'border-slate-800 bg-slate-900/40 hover:bg-slate-900 hover:border-blue-500/50'
+              }`}
+            >
+              <div className={`w-16 h-16 mx-auto rounded-3xl flex items-center justify-center shadow-inner transition-transform ${
+                isDragging ? 'bg-blue-600 text-white scale-110 animate-bounce' : 'bg-slate-800/80 text-blue-400'
+              }`}>
+                <UploadCloud className="w-8 h-8 animate-pulse" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-white">Bandeja Vacía y Lista para Nueva Data</h3>
+                <h3 className="text-base sm:text-lg font-bold text-white">
+                  {isDragging ? '¡Suelta aquí los archivos para cargarlos!' : 'Bandeja Lista para Recibir Nuevos Expedientes'}
+                </h3>
                 <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-                  Toda la data anterior ha sido limpiada. Arrastra o sube los nuevos archivos (PDF o imágenes) para que el sistema extraiga automáticamente los nombres de los pacientes.
+                  Arrastra aquí tus archivos <strong className="text-slate-200">PDFs o imágenes de exámenes</strong> (ej. <span className="font-mono text-blue-300">APELLIDOS NOMBRES.pdf</span>) o haz clic para explorar tu equipo. El sistema extraerá los nombres automáticamente.
                 </p>
               </div>
               <button
-                onClick={() => onNavigateTab('extractor')}
-                className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-5 py-2.5 rounded-2xl shadow-lg shadow-emerald-950/40 transition cursor-pointer"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dashboardFileInputRef.current?.click();
+                }}
+                className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-2xl shadow-lg shadow-emerald-950/40 border border-emerald-400/30 transition transform hover:scale-105 cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>Subir Nuevos Archivos</span>
+                <span>Seleccionar Archivos desde mi Computadora</span>
               </button>
             </div>
           ) : (

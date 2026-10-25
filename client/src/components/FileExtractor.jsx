@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   UploadCloud, 
@@ -86,6 +86,11 @@ export default function FileExtractor({
         }
       });
 
+      // Seleccionar automáticamente el primer paciente nuevo en el visor
+      if (newPatients.length > 0 && onSelectPatient) {
+        onSelectPatient(newPatients[0]);
+      }
+
       setIsProcessing(false);
       setToastMessage({
         type: 'success',
@@ -95,18 +100,28 @@ export default function FileExtractor({
     }, 400);
   };
 
-  // Drag & Drop handlers
+  // Drag & Drop handlers con prevención y propagación robusta
   const handleDragOver = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragLeave = () => {
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       processFiles(e.dataTransfer.files);
@@ -248,40 +263,62 @@ export default function FileExtractor({
         {/* ZONA DRAG & DROP (2 Columnas) */}
         <div 
           onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           className={`lg:col-span-2 border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 relative overflow-hidden group ${
             isDragging
-              ? 'border-blue-500 bg-blue-950/40 scale-[1.01]'
-              : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700'
+              ? 'border-blue-400 bg-blue-950/60 scale-[1.02] shadow-2xl shadow-blue-500/20 ring-4 ring-blue-500/30'
+              : 'border-slate-700 bg-slate-900/70 hover:bg-slate-900 hover:border-blue-500/60'
           }`}
         >
           <input 
             type="file"
             ref={fileInputRef}
-            onChange={(e) => processFiles(e.target.files)}
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                processFiles(e.target.files);
+              }
+              e.target.value = '';
+            }}
             multiple
             accept=".pdf,image/*"
             className="hidden"
           />
 
-          <div className="p-4 rounded-3xl bg-blue-600/10 text-blue-400 group-hover:scale-110 group-hover:bg-blue-600/20 transition-all">
+          <div className={`p-4 rounded-3xl transition-all duration-200 ${
+            isDragging 
+              ? 'bg-blue-500 text-white scale-125 animate-bounce' 
+              : 'bg-blue-600/15 text-blue-400 group-hover:scale-110 group-hover:bg-blue-600/25'
+          }`}>
             <UploadCloud className="w-10 h-10" />
           </div>
 
-          <h3 className="text-base sm:text-lg font-bold text-white mt-4">
-            Arrastra aquí tus Imágenes o PDFs de Exámenes
+          <h3 className="text-base sm:text-lg font-black text-white mt-4">
+            {isDragging ? '¡Suelta aquí los archivos para procesarlos!' : 'Arrastra aquí tus Imágenes o PDFs de Exámenes'}
           </h3>
           <p className="text-xs text-slate-400 max-w-md mt-1">
             Archivos con formato <strong className="text-slate-200">[APELLIDOS] [NOMBRES].pdf</strong> (ej. <span className="text-blue-300 font-mono">BARAYBAR COLLANTES FABIANO.pdf</span>).
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-            <span className="text-[11px] font-semibold text-slate-300 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              fileInputRef.current?.click();
+            }}
+            className="mt-5 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-950/50 border border-blue-400/30 flex items-center gap-2 cursor-pointer transition transform hover:scale-105"
+          >
+            <UploadCloud className="w-4 h-4" />
+            <span>Seleccionar Archivos desde mi Computadora</span>
+          </button>
+
+          <div className="flex flex-wrap items-center justify-center gap-2.5 mt-5">
+            <span className="text-[11px] font-semibold text-slate-300 bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-xl">
               PDFs de Electrocardiograma (EKG)
             </span>
-            <span className="text-[11px] font-semibold text-slate-300 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl">
+            <span className="text-[11px] font-semibold text-slate-300 bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-xl">
               Imágenes JPG / PNG de Estudios
             </span>
             <span className="text-[11px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-xl">
@@ -289,8 +326,8 @@ export default function FileExtractor({
             </span>
           </div>
 
-          <div className="mt-4 text-[10px] text-slate-500">
-            Haz clic en cualquier parte de este recuadro para explorar tus carpetas locales
+          <div className="mt-3 text-[10px] text-slate-500">
+            O haz clic en cualquier lugar del recuadro para abrir el explorador de archivos
           </div>
         </div>
 

@@ -118,10 +118,14 @@ export default function App() {
             {currentTab === 'dashboard' && (
               <Dashboard
                 patientsList={patientsList}
+                setPatientsList={setPatientsList}
                 onSelectPatient={handleSelectPatient}
                 onNavigateTab={setCurrentTab}
                 onResetBlank={handleResetBlank}
                 onPrint={handlePrint}
+                globalDate={globalDate}
+                globalClub={globalClub}
+                nameOrder={nameOrder}
               />
             )}
 
