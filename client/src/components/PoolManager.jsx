@@ -16,7 +16,6 @@ import {
   ShieldCheck, 
   FileSpreadsheet, 
   Layers, 
-  Sparkles, 
   Check, 
   FileCheck2,
   ChevronRight,
@@ -621,7 +620,7 @@ export default function PoolManager({
               onClick={() => handleGenerateBatch(100)}
               className="bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-xs font-medium px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1"
             >
-              <Sparkles className="w-3 h-3 text-amber-600" />
+              <Database className="w-3 h-3 text-slate-500" />
               <span>Simular Pool (+100)</span>
             </button>
           </div>

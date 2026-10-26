@@ -12,8 +12,7 @@ import {
   Code2, 
   UploadCloud, 
   DownloadCloud,
-  ShieldCheck,
-  Zap
+  ShieldCheck
 } from 'lucide-react';
 import { 
   testSupabaseConnection, 
@@ -208,7 +207,7 @@ export default function DatabaseView() {
             disabled={syncing}
             className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3.5 py-2 rounded-md shadow-xs transition cursor-pointer disabled:opacity-50"
           >
-            <Zap className={`w-3.5 h-3.5 ${syncing ? 'animate-bounce' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
             <span>{syncing ? 'Sincronizando...' : 'Sincronizar Lote Drive con Supabase'}</span>
           </button>
         </div>

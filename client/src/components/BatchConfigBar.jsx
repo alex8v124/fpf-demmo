@@ -7,7 +7,7 @@ import {
   FileText, 
   Download, 
   CheckCircle2, 
-  Sparkles,
+  SlidersHorizontal,
   RefreshCw
 } from 'lucide-react';
 import { downloadPatientDocx, downloadBatchDocxZip } from '../utils/docxGenerator';
@@ -179,7 +179,7 @@ export default function BatchConfigBar({
   };
 
   return (
-    <div className="relative mb-5 select-none">
+    <div className="no-print relative mb-5 select-none">
       
       {/* Toast Alert */}
       {toast && (
@@ -202,7 +202,7 @@ export default function BatchConfigBar({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#E2E8F0] pb-2.5">
           <div className="flex items-center space-x-2">
             <div className="w-7 h-7 rounded-md bg-sky-50 text-[#0369A1] border border-sky-200 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5" />
+              <SlidersHorizontal className="w-3.5 h-3.5" />
             </div>
             <div>
               <div className="flex items-center gap-2">

@@ -24,7 +24,6 @@ import {
   UploadCloud,
   Check,
   Scale,
-  Sparkles
 } from 'lucide-react';
 import { savePatientToSupabase } from '../utils/supabase';
 

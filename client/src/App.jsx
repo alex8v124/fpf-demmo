@@ -87,7 +87,26 @@ export default function App() {
     setIsBlankMode(true);
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    // Precarga síncrona de las 21 páginas oficiales para evitar hojas en blanco al imprimir
+    const loadPromises = Array.from({ length: 21 }, (_, i) => {
+      const num = (i + 1).toString().padStart(2, '0');
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = `/assets/pages_blank/page_${num}.png`;
+        if (img.complete && img.naturalWidth > 0) {
+          resolve();
+        } else {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+        }
+      });
+    });
+    try {
+      await Promise.all(loadPromises);
+    } catch {
+      // Fallback
+    }
     window.print();
   };
 

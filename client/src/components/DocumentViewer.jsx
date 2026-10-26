@@ -16,7 +16,6 @@ import {
   Share2,
   SlidersHorizontal,
   Maximize2,
-  Sparkles,
   Bookmark,
   Building2,
   Calendar
@@ -253,7 +252,7 @@ export default function DocumentViewer({
       </div>
 
       {/* MESA DE TRABAJO NEUTRAL PARA VISUALIZACIÓN DE HOJA A4 */}
-      <div className="bg-slate-200/90 border border-[#CBD5E1] rounded-lg p-4 sm:p-8 flex justify-center overflow-x-auto shadow-inner">
+      <div className="no-print bg-slate-200/90 border border-[#CBD5E1] rounded-lg p-4 sm:p-8 flex justify-center overflow-x-auto shadow-inner">
         <div 
           style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }} 
           className="transition-transform duration-150"
@@ -298,6 +297,22 @@ export default function DocumentViewer({
             </div>
           )}
         </div>
+      </div>
+
+      {/* CONTENEDOR EXCLUSIVO DE IMPRESIÓN OFICIAL (21 PÁGINAS PURAS 1:1) */}
+      <div className="print-only">
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(pNum => (
+          <div 
+            key={pNum} 
+            className="print-page w-[210mm] h-[297mm] max-h-[297mm] bg-white text-black relative overflow-hidden"
+          >
+            <PageContentRenderer 
+              pageNumber={pNum} 
+              patient={patient} 
+              viewFormat={viewFormat === 'digital' ? 'digital' : (isBlankMode ? 'blank' : 'facsimile')}
+            />
+          </div>
+        ))}
       </div>
 
       {/* ÍNDICE SECCIONADO EN 5 FASES CLÍNICAS */}
@@ -870,10 +885,6 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         }}
       />
 
-      {/* Franja superior sincronizada para control clínico */}
-      <div className="absolute top-1 right-3 text-[9px] font-mono font-semibold text-slate-500 bg-white/80 px-2 py-0.5 rounded shadow-xs print-only">
-        {patient?.nombreCompleto} • {patient?.fechaEvaluacion}
-      </div>
     </div>
   );
 }
