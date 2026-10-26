@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock } from 'lucide-react';
-import Sidebar from './components/Sidebar';
-import Topbar from './components/Topbar';
+import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import FileExtractor from './components/FileExtractor';
 import PoolManager from './components/PoolManager';
@@ -22,7 +21,6 @@ export default function App() {
     (drivePatients && drivePatients.length > 0) ? drivePatients[0] : blankPatientTemplate
   );
   const [isBlankMode, setIsBlankMode] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Rol activo del usuario: 'MEDICO' | 'CLUB' | 'FPF'
   const [userRole, setUserRole] = useState('MEDICO');
@@ -94,144 +92,133 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] text-[#1E293B] flex font-sans selection:bg-[#0369A1] selection:text-white">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] flex flex-col font-sans selection:bg-[#0369A1] selection:text-white">
       
-      {/* 1. Menú Lateral Izquierdo Fijo (Sidebar) */}
-      <Sidebar
+      {/* 1. Barra de Navegación Horizontal Superior Completa */}
+      <Navbar
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
-        mobileOpen={mobileOpen}
-        setMobileOpen={setMobileOpen}
+        currentPatient={currentPatient}
+        patientsList={patientsList}
+        onSelectPatient={handleSelectPatient}
+        onSelectPatientId={handleSelectPatientId}
+        onResetBlank={handleResetBlank}
+        onPrint={handlePrint}
+        userRole={userRole}
+        setUserRole={setUserRole}
       />
 
-      {/* 2. Contenedor Principal de la Aplicación (Columna Derecha) */}
-      <div className="flex-1 md:pl-64 flex flex-col h-full min-w-0 overflow-hidden bg-[#F8FAFC]">
+      {/* 2. Contenedor Principal (Ancho Completo, Sin Barra Lateral) */}
+      <div className="flex-1 flex flex-col min-w-0">
         
-        {/* Barra Superior Institucional (Header Fijo de 64px) */}
-        <Topbar
-          currentTab={currentTab}
-          currentPatient={currentPatient}
-          patientsList={patientsList}
-          onSelectPatient={handleSelectPatient}
-          onSelectPatientId={handleSelectPatientId}
-          userRole={userRole}
-          setUserRole={setUserRole}
-          setMobileOpen={setMobileOpen}
-        />
-
-        {/* 3. Contenedor con Scroll Único Vertical (Header fijo arriba, Footer al final) */}
-        <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
           
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            
-            {/* Barra Maestra de Configuración en Lote (Solo visible en Pool y Expediente 21P) */}
-            {(currentTab === 'pool' || currentTab === 'documento') && (
-              <BatchConfigBar
-                globalDate={globalDate}
-                setGlobalDate={setGlobalDate}
-                globalClub={globalClub}
-                setGlobalClub={setGlobalClub}
-                nameOrder={nameOrder}
-                setNameOrder={setNameOrder}
-                patientsList={patientsList}
-                setPatientsList={setPatientsList}
-                currentPatient={currentPatient}
-                setCurrentPatient={setCurrentPatient}
-              />
-            )}
+          {/* Barra Maestra de Configuración en Lote (Solo visible en Pool y Expediente 21P) */}
+          {(currentTab === 'pool' || currentTab === 'documento') && (
+            <BatchConfigBar
+              globalDate={globalDate}
+              setGlobalDate={setGlobalDate}
+              globalClub={globalClub}
+              setGlobalClub={setGlobalClub}
+              nameOrder={nameOrder}
+              setNameOrder={setNameOrder}
+              patientsList={patientsList}
+              setPatientsList={setPatientsList}
+              currentPatient={currentPatient}
+              setCurrentPatient={setCurrentPatient}
+            />
+          )}
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentTab}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-              >
-                {currentTab === 'dashboard' && (
-                  <Dashboard
-                    patientsList={patientsList}
-                    setPatientsList={setPatientsList}
-                    onSelectPatient={handleSelectPatient}
-                    onSelectPatientId={handleSelectPatientId}
-                    onNavigateTab={setCurrentTab}
-                    onResetBlank={handleResetBlank}
-                    onPrint={handlePrint}
-                    globalDate={globalDate}
-                    globalClub={globalClub}
-                    nameOrder={nameOrder}
-                    userRole={userRole}
-                    setUserRole={setUserRole}
-                  />
-                )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentTab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+            >
+              {currentTab === 'dashboard' && (
+                <Dashboard
+                  patientsList={patientsList}
+                  setPatientsList={setPatientsList}
+                  onSelectPatient={handleSelectPatient}
+                  onSelectPatientId={handleSelectPatientId}
+                  onNavigateTab={setCurrentTab}
+                  onResetBlank={handleResetBlank}
+                  onPrint={handlePrint}
+                  globalDate={globalDate}
+                  globalClub={globalClub}
+                  nameOrder={nameOrder}
+                  userRole={userRole}
+                  setUserRole={setUserRole}
+                />
+              )}
 
-                {currentTab === 'extractor' && (
-                  <FileExtractor
-                    patientsList={patientsList}
-                    setPatientsList={setPatientsList}
-                    onSelectPatient={handleSelectPatient}
-                    onNavigateTab={setCurrentTab}
-                    globalDate={globalDate}
-                    globalClub={globalClub}
-                    nameOrder={nameOrder}
-                  />
-                )}
+              {currentTab === 'extractor' && (
+                <FileExtractor
+                  patientsList={patientsList}
+                  setPatientsList={setPatientsList}
+                  onSelectPatient={handleSelectPatient}
+                  onNavigateTab={setCurrentTab}
+                  globalDate={globalDate}
+                  globalClub={globalClub}
+                  nameOrder={nameOrder}
+                />
+              )}
 
-                {currentTab === 'pool' && (
-                  <PoolManager
-                    patientsList={patientsList}
-                    setPatientsList={setPatientsList}
-                    onSelectPatient={handleSelectPatient}
-                    onNavigateTab={setCurrentTab}
-                    currentPatient={currentPatient}
-                    setCurrentPatient={setCurrentPatient}
-                  />
-                )}
+              {currentTab === 'pool' && (
+                <PoolManager
+                  patientsList={patientsList}
+                  setPatientsList={setPatientsList}
+                  onSelectPatient={handleSelectPatient}
+                  onNavigateTab={setCurrentTab}
+                  currentPatient={currentPatient}
+                  setCurrentPatient={setCurrentPatient}
+                />
+              )}
 
-                {currentTab === 'editor' && (
-                  <ClinicalEditor
-                    patient={currentPatient}
-                    setPatient={setCurrentPatient}
-                    onNavigateTab={setCurrentTab}
-                    onResetBlank={handleResetBlank}
-                  />
-                )}
+              {currentTab === 'editor' && (
+                <ClinicalEditor
+                  patient={currentPatient}
+                  setPatient={setCurrentPatient}
+                  onNavigateTab={setCurrentTab}
+                  onResetBlank={handleResetBlank}
+                />
+              )}
 
-                {currentTab === 'documento' && (
-                  <DocumentViewer
-                    patient={currentPatient}
-                    isBlankMode={isBlankMode}
-                    setIsBlankMode={setIsBlankMode}
-                    onPrint={handlePrint}
-                  />
-                )}
+              {currentTab === 'documento' && (
+                <DocumentViewer
+                  patient={currentPatient}
+                  isBlankMode={isBlankMode}
+                  setIsBlankMode={setIsBlankMode}
+                  onPrint={handlePrint}
+                />
+              )}
 
-                {currentTab === 'medicos' && (
-                  <MedicalStaff />
-                )}
+              {currentTab === 'medicos' && (
+                <MedicalStaff />
+              )}
 
-                {currentTab === 'database' && (
-                  <DatabaseView />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </main>
+              {currentTab === 'database' && (
+                <DatabaseView />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </main>
 
-          {/* Footer Institucional Formal (Cierre Legal y Técnico) */}
-          <footer className="no-print bg-[#F1F5F9] border-t border-[#E2E8F0] py-4 px-6 sm:px-8 text-xs text-[#64748B] shrink-0">
-            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="text-center sm:text-left text-[#334155] font-medium">
-                © 2026 Famiheart S.A.C. (RUC 20554742905) — Comisión Médica FPF & CONMEBOL.
-              </div>
-
-              <div className="flex items-center gap-2 text-[11px] text-[#475569]">
-                <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Conexión Segura TLS 256-bit • Cumplimiento Ley N° 29733 (Datos de Salud) • v1.2.6</span>
-              </div>
+        {/* Footer Institucional Formal (Cierre Legal y Técnico) */}
+        <footer className="no-print bg-[#F1F5F9] border-t border-[#E2E8F0] py-4 px-6 sm:px-8 text-xs text-[#64748B] shrink-0 mt-auto">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-center sm:text-left text-[#334155] font-medium">
+              © 2026 Famiheart S.A.C. (RUC 20554742905) — Comisión Médica FPF & CONMEBOL.
             </div>
-          </footer>
 
-        </div>
+            <div className="flex items-center gap-2 text-[11px] text-[#475569]">
+              <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Conexión Segura TLS 256-bit • Cumplimiento Ley N° 29733 (Datos de Salud) • v1.2.6</span>
+            </div>
+          </div>
+        </footer>
 
       </div>
 
