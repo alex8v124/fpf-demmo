@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
+import Topbar from './components/Topbar';
 import Dashboard from './components/Dashboard';
 import FileExtractor from './components/FileExtractor';
 import PoolManager from './components/PoolManager';
@@ -20,6 +21,7 @@ export default function App() {
     (drivePatients && drivePatients.length > 0) ? drivePatients[0] : blankPatientTemplate
   );
   const [isBlankMode, setIsBlankMode] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Rol activo del usuario: 'MEDICO' | 'CLUB' | 'FPF'
   const [userRole, setUserRole] = useState('MEDICO');
@@ -91,149 +93,152 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B1220] text-[#E6EDF7] flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] flex font-sans selection:bg-[#0284C7] selection:text-white">
       
-      {/* Top Main Navigation Bar */}
-      <Navbar
+      {/* 1. Menú Lateral Izquierdo (Sidebar) */}
+      <Sidebar
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
-        currentPatient={currentPatient}
-        patientsList={patientsList}
-        onSelectPatientId={handleSelectPatientId}
-        onSelectPatient={handleSelectPatient}
-        onResetBlank={handleResetBlank}
-        onPrint={handlePrint}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
         userRole={userRole}
-        setUserRole={setUserRole}
       />
 
-      {/* Main Content Area with Smooth Tab Transitions */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      {/* 2. Contenedor Principal (Topbar + Contenido + Footer) */}
+      <div className="flex-1 md:pl-64 flex flex-col min-w-0 min-h-screen bg-[#F8FAFC]">
         
-        {/* Barra Maestra de Configuración en Lote (Solo visible en Pool y Expediente 21P) */}
-        {(currentTab === 'pool' || currentTab === 'documento') && (
-          <BatchConfigBar
-            globalDate={globalDate}
-            setGlobalDate={setGlobalDate}
-            globalClub={globalClub}
-            setGlobalClub={setGlobalClub}
-            nameOrder={nameOrder}
-            setNameOrder={setNameOrder}
-            patientsList={patientsList}
-            setPatientsList={setPatientsList}
-            currentPatient={currentPatient}
-            setCurrentPatient={setCurrentPatient}
-          />
-        )}
+        {/* Barra Superior Limpia y Contextual */}
+        <Topbar
+          currentTab={currentTab}
+          currentPatient={currentPatient}
+          patientsList={patientsList}
+          onSelectPatient={handleSelectPatient}
+          onSelectPatientId={handleSelectPatientId}
+          userRole={userRole}
+          setUserRole={setUserRole}
+          setMobileOpen={setMobileOpen}
+        />
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentTab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-          >
-            {currentTab === 'dashboard' && (
-              <Dashboard
-                patientsList={patientsList}
-                setPatientsList={setPatientsList}
-                onSelectPatient={handleSelectPatient}
-                onNavigateTab={setCurrentTab}
-                onResetBlank={handleResetBlank}
-                onPrint={handlePrint}
-                globalDate={globalDate}
-                globalClub={globalClub}
-                nameOrder={nameOrder}
-                userRole={userRole}
-                setUserRole={setUserRole}
-              />
-            )}
+        {/* Mesa de Trabajo de Contenido */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          
+          {/* Barra Maestra de Configuración en Lote (Solo visible en Pool y Expediente 21P) */}
+          {(currentTab === 'pool' || currentTab === 'documento') && (
+            <BatchConfigBar
+              globalDate={globalDate}
+              setGlobalDate={setGlobalDate}
+              globalClub={globalClub}
+              setGlobalClub={setGlobalClub}
+              nameOrder={nameOrder}
+              setNameOrder={setNameOrder}
+              patientsList={patientsList}
+              setPatientsList={setPatientsList}
+              currentPatient={currentPatient}
+              setCurrentPatient={setCurrentPatient}
+            />
+          )}
 
-            {currentTab === 'extractor' && (
-              <FileExtractor
-                patientsList={patientsList}
-                setPatientsList={setPatientsList}
-                onSelectPatient={handleSelectPatient}
-                onNavigateTab={setCurrentTab}
-                globalDate={globalDate}
-                globalClub={globalClub}
-                nameOrder={nameOrder}
-              />
-            )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentTab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+            >
+              {currentTab === 'dashboard' && (
+                <Dashboard
+                  patientsList={patientsList}
+                  setPatientsList={setPatientsList}
+                  onSelectPatient={handleSelectPatient}
+                  onSelectPatientId={handleSelectPatientId}
+                  onNavigateTab={setCurrentTab}
+                  onResetBlank={handleResetBlank}
+                  onPrint={handlePrint}
+                  globalDate={globalDate}
+                  globalClub={globalClub}
+                  nameOrder={nameOrder}
+                  userRole={userRole}
+                  setUserRole={setUserRole}
+                />
+              )}
 
-            {currentTab === 'pool' && (
-              <PoolManager
-                patientsList={patientsList}
-                setPatientsList={setPatientsList}
-                onSelectPatient={handleSelectPatient}
-                onNavigateTab={setCurrentTab}
-                currentPatient={currentPatient}
-                setCurrentPatient={setCurrentPatient}
-              />
-            )}
+              {currentTab === 'extractor' && (
+                <FileExtractor
+                  patientsList={patientsList}
+                  setPatientsList={setPatientsList}
+                  onSelectPatient={handleSelectPatient}
+                  onNavigateTab={setCurrentTab}
+                  globalDate={globalDate}
+                  globalClub={globalClub}
+                  nameOrder={nameOrder}
+                />
+              )}
 
-            {currentTab === 'editor' && (
-              <ClinicalEditor
-                patient={currentPatient}
-                setPatient={setCurrentPatient}
-                onNavigateTab={setCurrentTab}
-                onResetBlank={handleResetBlank}
-              />
-            )}
+              {currentTab === 'pool' && (
+                <PoolManager
+                  patientsList={patientsList}
+                  setPatientsList={setPatientsList}
+                  onSelectPatient={handleSelectPatient}
+                  onNavigateTab={setCurrentTab}
+                  currentPatient={currentPatient}
+                  setCurrentPatient={setCurrentPatient}
+                />
+              )}
 
-            {currentTab === 'documento' && (
-              <DocumentViewer
-                patient={currentPatient}
-                isBlankMode={isBlankMode}
-                setIsBlankMode={setIsBlankMode}
-                onPrint={handlePrint}
-              />
-            )}
+              {currentTab === 'editor' && (
+                <ClinicalEditor
+                  patient={currentPatient}
+                  setPatient={setCurrentPatient}
+                  onNavigateTab={setCurrentTab}
+                  onResetBlank={handleResetBlank}
+                />
+              )}
 
-            {currentTab === 'medicos' && (
-              <MedicalStaff />
-            )}
+              {currentTab === 'documento' && (
+                <DocumentViewer
+                  patient={currentPatient}
+                  isBlankMode={isBlankMode}
+                  setIsBlankMode={setIsBlankMode}
+                  onPrint={handlePrint}
+                />
+              )}
 
-            {currentTab === 'database' && (
-              <DatabaseView />
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+              {currentTab === 'medicos' && (
+                <MedicalStaff />
+              )}
 
-      {/* Footer Institucional con Aviso de Privacidad y Protección de Datos en Salud */}
-      <footer className="no-print bg-slate-950 border-t border-slate-900 py-8 text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-900/80 pb-4">
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-slate-300">
-              <span className="font-extrabold text-white text-sm">Famiheart S.A.C.</span>
-              <span className="text-slate-600">•</span>
+              {currentTab === 'database' && (
+                <DatabaseView />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+
+        {/* Footer Institucional Clínico */}
+        <footer className="no-print bg-white border-t border-[#E2E8F0] py-4 text-xs text-[#64748B]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <span className="font-bold text-[#1E293B]">Famiheart S.A.C.</span>
+              <span>•</span>
               <span>RUC 20554742905</span>
-              <span className="text-slate-600">•</span>
-              <span className="text-slate-200 font-semibold">Comisión Médica FPF & CONMEBOL 2026</span>
+              <span>•</span>
+              <span className="font-semibold text-slate-700">Comisión Médica FPF & CONMEBOL 2026</span>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-emerald-400 font-semibold bg-emerald-950/70 border border-emerald-800/80 px-3 py-1 rounded-full text-[11px]">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                Sesión Médica Segura (TLS 256-bit)
+
+            <div className="flex items-center gap-3 text-[11px]">
+              <span className="inline-flex items-center gap-1 text-[#15803D] font-medium bg-[#DCFCE7] px-2 py-0.5 rounded border border-[#BBF7D0]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                TLS 256-bit Activo
               </span>
-              <span className="inline-flex items-center gap-1.5 text-blue-400 font-semibold bg-blue-950/70 border border-blue-800/80 px-3 py-1 rounded-full text-[11px]">
+              <span className="text-[#64748B]">
                 Ley N° 29733 (Datos Personales de Salud)
               </span>
             </div>
           </div>
+        </footer>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500">
-            <p className="max-w-3xl leading-relaxed text-center sm:text-left">
-              <strong className="text-slate-400">Aviso de Confidencialidad Médica:</strong> La información clínica, trazados electrocardiográficos, ecocardiogramas Doppler y radiografías de tórax son datos sensibles de salud protegidos por la Ley N° 29733 y el reglamento médico de la FPF. Acceso exclusivo para profesionales médicos acreditados y delegados autorizados.
-            </p>
-            <div className="shrink-0 text-slate-400 font-mono text-[10px] text-center sm:text-right">
-              V1.2.5-FPF • Supabase PostgreSQL Activo
-            </div>
-          </div>
-        </div>
-      </footer>
+      </div>
 
     </div>
   );

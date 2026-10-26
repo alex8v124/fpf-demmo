@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #0B1220;
-  --color-surface: #111A2E;
-  --color-surface-elevated: #16213A;
-  --color-border: #243350;
-  --color-primary: #3B82F6;
-  --color-primary-hover: #2563EB;
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --color-text: #E6EDF7;
-  --color-text-muted: #9FB0C8;
-  --color-fpf-red: #C8102E;
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #F1F5F9;
+  --color-border: #E2E8F0;
+  --color-primary: #0284C7;
+  --color-primary-hover: #0369A1;
+  --color-sidebar: #0F172A;
+  --color-success: #15803D;
+  --color-warning: #B45309;
+  --color-danger: #B91C1C;
+  --color-text: #1E293B;
+  --color-text-muted: #64748B;
+  --color-fpf-red: #B91C1C;
 }
 
 @layer base {
@@ -21,13 +22,32 @@
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #0B1220;
-    color: #E6EDF7;
+    background-color: #F8FAFC;
+    color: #1E293B;
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.01em;
   }
+}
+
+/* Status Badges - Clinical Pastel Palettes (Anti-Neon) */
+.badge-apto {
+  background-color: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.badge-renovar {
+  background-color: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+
+.badge-observado {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  border: 1px solid #FECACA;
 }
 
 /* Print specific styles for exact 1:1 medical document rendering */
@@ -65,20 +85,20 @@
   }
 }
 
-/* Custom scrollbars */
+/* Custom scrollbars - Clean clinical gray */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B1220;
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #243350;
+  background: #CBD5E1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3B82F6;
+  background: #94A3B8;
 }
 
 /* Exact FPF Document Typography (Calibri 11pt, pure black, official metrics) */

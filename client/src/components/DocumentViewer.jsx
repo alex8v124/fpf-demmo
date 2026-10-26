@@ -71,32 +71,34 @@ export default function DocumentViewer({
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-4 select-none animate-in fade-in duration-200">
       
       {/* BARRA SUPERIOR DE CONTROL MINIMALISTA */}
-      <div className="no-print bg-[#111A2E] border border-[#243350] rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
+      <div className="no-print bg-white border border-[#E2E8F0] rounded-lg p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
         
         {/* Navegador de Páginas */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1.5">
           <button
+            type="button"
             onClick={handlePrevPage}
             disabled={currentPage <= 1 || viewMode === 'all'}
-            className="p-2 rounded-xl bg-[#16213A] border border-[#243350] hover:border-[#3B82F6]/50 disabled:opacity-30 text-[#E6EDF7] transition cursor-pointer"
+            className="p-1.5 rounded-md bg-white border border-[#CBD5E1] hover:bg-slate-50 disabled:opacity-30 text-[#1E293B] transition cursor-pointer"
             title="Página Anterior (← Flecha Izquierda)"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center space-x-2 bg-[#0B1220] border border-[#243350] px-3.5 py-1.5 rounded-xl">
-            <span className="text-xs text-[#9FB0C8] font-medium">Página</span>
-            <span className="text-sm font-bold text-[#E6EDF7] font-mono">{currentPage}</span>
-            <span className="text-xs text-[#9FB0C8]">de {totalPages}</span>
+          <div className="flex items-center space-x-1.5 bg-slate-50 border border-[#E2E8F0] px-2.5 py-1 rounded-md">
+            <span className="text-[11px] text-[#64748B]">Página</span>
+            <span className="text-xs font-bold text-[#1E293B] font-mono">{currentPage}</span>
+            <span className="text-[11px] text-[#64748B]">de {totalPages}</span>
           </div>
 
           <button
+            type="button"
             onClick={handleNextPage}
             disabled={currentPage >= totalPages || viewMode === 'all'}
-            className="p-2 rounded-xl bg-[#16213A] border border-[#243350] hover:border-[#3B82F6]/50 disabled:opacity-30 text-[#E6EDF7] transition cursor-pointer"
+            className="p-1.5 rounded-md bg-white border border-[#CBD5E1] hover:bg-slate-50 disabled:opacity-30 text-[#1E293B] transition cursor-pointer"
             title="Página Siguiente (→ Flecha Derecha)"
           >
             <ChevronRight className="w-4 h-4" />
@@ -104,31 +106,35 @@ export default function DocumentViewer({
         </div>
 
         {/* Controles de Zoom y Ajuste */}
-        <div className="flex items-center space-x-1 bg-[#0B1220] border border-[#243350] p-1 rounded-xl">
+        <div className="flex items-center space-x-1 bg-slate-50 border border-[#CBD5E1] p-0.5 rounded-md">
           <button
+            type="button"
             onClick={() => setZoomLevel(prev => Math.max(60, prev - 10))}
-            className="p-1.5 rounded-lg text-[#9FB0C8] hover:text-[#E6EDF7] hover:bg-[#16213A] transition cursor-pointer"
+            className="p-1 rounded text-[#64748B] hover:text-[#1E293B] hover:bg-white transition cursor-pointer"
             title="Reducir Zoom"
           >
             <ZoomOut className="w-3.5 h-3.5" />
           </button>
           <button
+            type="button"
             onClick={() => setZoomLevel(100)}
-            className="px-2 py-1 rounded-lg text-xs font-mono font-bold text-[#E6EDF7] hover:bg-[#16213A] transition cursor-pointer"
+            className="px-1.5 py-0.5 rounded text-xs font-mono font-semibold text-[#1E293B] hover:bg-white transition cursor-pointer"
             title="Ajustar al 100%"
           >
             {zoomLevel}%
           </button>
           <button
+            type="button"
             onClick={() => setZoomLevel(prev => Math.min(140, prev + 10))}
-            className="p-1.5 rounded-lg text-[#9FB0C8] hover:text-[#E6EDF7] hover:bg-[#16213A] transition cursor-pointer"
+            className="p-1 rounded text-[#64748B] hover:text-[#1E293B] hover:bg-white transition cursor-pointer"
             title="Aumentar Zoom"
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
           <button
+            type="button"
             onClick={() => setZoomLevel(prev => prev === 85 ? 100 : 85)}
-            className="px-2 py-1 rounded-lg text-[10px] font-bold text-[#9FB0C8] hover:text-[#E6EDF7] hover:bg-[#16213A] border-l border-[#243350] transition cursor-pointer"
+            className="px-1.5 py-0.5 rounded text-[10px] font-semibold text-[#64748B] hover:text-[#1E293B] hover:bg-white border-l border-[#CBD5E1] transition cursor-pointer"
             title="Ajustar a página completa (85%)"
           >
             Ajustar
@@ -140,16 +146,17 @@ export default function DocumentViewer({
           
           {/* Modo 1: Certificado Vectorial Oficial 1:1 */}
           <button
+            type="button"
             onClick={() => {
               setViewFormat('facsimile');
               if (setIsBlankMode) setIsBlankMode(false);
             }}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
+            className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition cursor-pointer ${
               viewFormat === 'facsimile'
-                ? 'bg-[#3B82F6] text-white border-[#3B82F6] shadow-sm'
-                : 'bg-[#0B1220] text-[#9FB0C8] border-[#243350] hover:text-[#E6EDF7] hover:bg-[#16213A]'
+                ? 'bg-[#0284C7] text-white border-[#0284C7] shadow-xs'
+                : 'bg-white text-slate-700 border-[#CBD5E1] hover:bg-slate-50'
             }`}
-            title="Certificado Oficial FPF 1:1 vectorial de alta fidelidad sin defectos de escaneo"
+            title="Certificado Oficial FPF 1:1 vectorial de alta fidelidad"
           >
             <FileCheck2 className="w-3.5 h-3.5" />
             <span>Oficial Vectorial (1:1)</span>
@@ -157,39 +164,42 @@ export default function DocumentViewer({
 
           {/* Modo 2: Plantilla en Blanco */}
           <button
+            type="button"
             onClick={() => {
               setViewFormat('blank');
               if (setIsBlankMode) setIsBlankMode(true);
             }}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${
+            className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition cursor-pointer ${
               viewFormat === 'blank'
-                ? 'bg-[#F59E0B] text-black border-[#F59E0B] shadow-sm'
-                : 'bg-[#0B1220] text-[#9FB0C8] border-[#243350] hover:text-[#E6EDF7] hover:bg-[#16213A]'
+                ? 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
+                : 'bg-white text-slate-700 border-[#CBD5E1] hover:bg-slate-50'
             }`}
-            title="Plantilla oficial limpia de 21 páginas sin datos personales"
+            title="Plantilla oficial limpia sin datos personales"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>Plantilla Limpia</span>
           </button>
 
           {/* Toggle Vista Individual vs Continuo */}
-          <div className="bg-[#0B1220] p-1 rounded-xl border border-[#243350] flex items-center ml-1">
+          <div className="bg-slate-50 p-0.5 rounded-md border border-[#CBD5E1] flex items-center">
             <button
+              type="button"
               onClick={() => setViewMode('single')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
+              className={`px-2 py-0.5 rounded text-xs transition cursor-pointer ${
                 viewMode === 'single'
-                  ? 'bg-[#16213A] text-white shadow-xs font-bold'
-                  : 'text-[#9FB0C8] hover:text-[#E6EDF7]'
+                  ? 'bg-white text-[#1E293B] shadow-xs font-semibold'
+                  : 'text-[#64748B] hover:text-[#1E293B]'
               }`}
             >
               1 Pág
             </button>
             <button
+              type="button"
               onClick={() => setViewMode('all')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
+              className={`px-2 py-0.5 rounded text-xs transition cursor-pointer ${
                 viewMode === 'all'
-                  ? 'bg-[#16213A] text-white shadow-xs font-bold'
-                  : 'text-[#9FB0C8] hover:text-[#E6EDF7]'
+                  ? 'bg-white text-[#1E293B] shadow-xs font-semibold'
+                  : 'text-[#64748B] hover:text-[#1E293B]'
               }`}
             >
               21 Págs
@@ -201,17 +211,19 @@ export default function DocumentViewer({
         {/* Acciones de Descarga e Impresión */}
         <div className="flex items-center space-x-2">
           <button
+            type="button"
             onClick={() => downloadPatientDocx(patient, { globalDate: patient?.fechaEvaluacion, globalClub: patient?.club })}
-            className="flex items-center space-x-1.5 bg-[#16213A] hover:bg-[#243350] text-[#E6EDF7] font-semibold text-xs px-3 py-2 rounded-xl transition border border-[#243350] cursor-pointer"
+            className="flex items-center space-x-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs px-2.5 py-1.5 rounded-md transition border border-[#CBD5E1] cursor-pointer"
             title="Descargar el documento Word (.docx) oficial con todos los sellos médicos y firmas intactas"
           >
-            <Download className="w-3.5 h-3.5 text-[#3B82F6]" />
+            <Download className="w-3.5 h-3.5 text-slate-500" />
             <span>Word Oficial (.docx)</span>
           </button>
 
           <button
+            type="button"
             onClick={onPrint}
-            className="flex items-center space-x-1.5 bg-[#3B82F6] hover:bg-[#2563EB] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-md transition cursor-pointer"
+            className="flex items-center space-x-1 bg-[#0284C7] hover:bg-[#0369A1] text-white font-semibold text-xs px-3 py-1.5 rounded-md shadow-xs transition cursor-pointer"
             title="Imprimir el certificado o guardar como PDF"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -222,26 +234,26 @@ export default function DocumentViewer({
       </div>
 
       {/* TITULO Y DESCRIPCIÓN DE LA PÁGINA ACTUAL */}
-      <div className="no-print bg-[#111A2E]/80 border border-[#243350] px-5 py-2.5 rounded-2xl flex items-center justify-between text-xs">
-        <div className="flex items-center space-x-3">
-          <span className="bg-[#C8102E]/20 text-[#C8102E] font-bold px-2 py-0.5 rounded border border-[#C8102E]/30 text-[10px] uppercase">
+      <div className="no-print bg-white border border-[#E2E8F0] px-4 py-2 rounded-lg flex items-center justify-between text-xs">
+        <div className="flex items-center space-x-2.5">
+          <span className="bg-[#B91C1C]/10 text-[#B91C1C] font-bold px-2 py-0.5 rounded border border-[#B91C1C]/20 text-[10px] uppercase">
             {currentPageInfo.section}
           </span>
-          <span className="font-bold text-[#E6EDF7] text-sm">
+          <span className="font-semibold text-[#1E293B]">
             Página {currentPageInfo.number}: {currentPageInfo.title}
           </span>
         </div>
-        <div className="text-[#9FB0C8] hidden sm:block text-xs">
+        <div className="text-[#64748B] hidden sm:block text-xs">
           {isBlankMode ? (
-            <span className="text-[#F59E0B] font-semibold">Formato oficial limpio para firma manuscrita</span>
+            <span className="text-[#B45309] font-medium">Formato oficial limpio para firma manuscrita</span>
           ) : (
-            <span>Expediente: <strong className="text-[#E6EDF7]">{patient.nombreCompleto || 'Futbolista'}</strong></span>
+            <span>Expediente: <strong className="text-[#1E293B]">{patient.nombreCompleto || 'Futbolista'}</strong></span>
           )}
         </div>
       </div>
 
       {/* MESA DE TRABAJO NEUTRAL PARA VISUALIZACIÓN DE HOJA A4 */}
-      <div className="bg-[#0B1220] border border-[#243350] rounded-3xl p-4 sm:p-8 flex justify-center overflow-x-auto shadow-2xl">
+      <div className="bg-slate-200/90 border border-[#CBD5E1] rounded-lg p-4 sm:p-8 flex justify-center overflow-x-auto shadow-inner">
         <div 
           style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }} 
           className="transition-transform duration-150"
@@ -255,7 +267,7 @@ export default function DocumentViewer({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.99 }}
                 transition={{ duration: 0.12 }}
-                className={`w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl shadow-black/80 rounded-xs border border-slate-300 ${
+                className={`w-[210mm] min-h-[297mm] bg-white text-black shadow-lg shadow-slate-400/50 rounded-xs border border-slate-300 ${
                   viewFormat === 'digital' ? 'p-8' : 'p-0'
                 } flex flex-col justify-between relative overflow-hidden select-none`}
               >
@@ -268,11 +280,11 @@ export default function DocumentViewer({
             </AnimatePresence>
           ) : (
             /* Vista 21 Páginas Continuas */
-            <div className="space-y-10">
+            <div className="space-y-8">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(pNum => (
                 <div 
                   key={pNum} 
-                  className={`w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl shadow-black/80 rounded-xs border border-slate-300 ${
+                  className={`w-[210mm] min-h-[297mm] bg-white text-black shadow-lg shadow-slate-400/50 rounded-xs border border-slate-300 ${
                     viewFormat === 'digital' ? 'p-8' : 'p-0'
                   } flex flex-col justify-between relative overflow-hidden print-page`}
                 >
@@ -289,33 +301,34 @@ export default function DocumentViewer({
       </div>
 
       {/* ÍNDICE SECCIONADO EN 5 FASES CLÍNICAS */}
-      <div className="no-print bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Bookmark className="w-4 h-4 text-blue-400" />
+      <div className="no-print bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
+        <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1E293B] flex items-center gap-1.5">
+            <Bookmark className="w-3.5 h-3.5 text-[#0284C7]" />
             Índice de Secciones del Expediente de 21 Páginas
           </h3>
-          <span className="text-xs text-slate-400">Haz clic en cualquier página para navegar</span>
+          <span className="text-[11px] text-[#64748B]">Haz clic en cualquier página para navegar</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {documentPhases.map((phase, idx) => (
-            <div key={idx} className="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 space-y-2.5">
-              <div className="text-xs font-bold text-white leading-tight">{phase.title}</div>
-              <p className="text-[10px] text-slate-400 leading-tight">{phase.desc}</p>
+            <div key={idx} className="bg-slate-50 p-3 rounded-md border border-[#E2E8F0] space-y-2">
+              <div className="text-xs font-bold text-[#1E293B] leading-tight">{phase.title}</div>
+              <p className="text-[10px] text-[#64748B] leading-tight">{phase.desc}</p>
               
-              <div className="flex flex-wrap gap-1.5 pt-1">
+              <div className="flex flex-wrap gap-1 pt-1">
                 {phase.pages.map(num => (
                   <button
                     key={num}
+                    type="button"
                     onClick={() => {
                       setCurrentPage(num);
                       setViewMode('single');
                     }}
-                    className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer flex items-center justify-center ${
+                    className={`w-6 h-6 rounded text-xs font-semibold transition cursor-pointer flex items-center justify-center ${
                       currentPage === num && viewMode === 'single'
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800'
+                        ? 'bg-[#0284C7] text-white shadow-xs'
+                        : 'bg-white hover:bg-slate-100 text-[#1E293B] border border-[#CBD5E1]'
                     }`}
                   >
                     {num}

@@ -423,179 +423,159 @@ export default function PoolManager({
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-6 select-none animate-in fade-in duration-200">
       
       {/* NOTIFICACIÓN FLOTANTE TOAST */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div 
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-24 right-6 z-50 p-4 rounded-2xl shadow-2xl border flex items-center space-x-3 max-w-md ${
+            exit={{ opacity: 0, y: -10 }}
+            className={`fixed top-16 right-6 z-50 p-3 rounded-md shadow-lg border flex items-center space-x-2.5 max-w-md text-xs font-semibold ${
               toastMessage.type === 'success' 
-                ? 'bg-emerald-950/95 border-emerald-500/80 text-emerald-200' 
-                : 'bg-blue-950/95 border-blue-500/80 text-blue-200'
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-800' 
+                : 'bg-sky-50 border-sky-300 text-sky-800'
             }`}
           >
-            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-400" />
-            <span className="text-xs font-semibold leading-relaxed">{toastMessage.text}</span>
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            <span className="leading-relaxed">{toastMessage.text}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* CABECERA PRINCIPAL: POOL 3,000 - 5,000 JUGADORES */}
-      <section className="relative overflow-hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 right-10 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-400 bg-blue-950/80 border border-blue-800/80 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
-                <Database className="w-3 h-3" /> POOL DE 3,000 A 5,000 JUGADORES
-              </span>
-              <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-950/80 border border-emerald-800/80 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Formato Estandarizado FPF / CONMEBOL
-              </span>
-              <span className="text-[10px] text-amber-400 font-semibold bg-amber-950/80 border border-amber-800/80 px-2.5 py-0.5 rounded-full">
-                Temporada Anual 2026
-              </span>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Gestor de Pool Masivo & Rotación por Meses
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Resuelve el reemplazo manual en Word: estandariza el orden de nombres y apellidos, y sincroniza la fecha única en cascada en las 21 páginas para <strong className="text-white">"Sincronización unificada de fecha en lote"</strong> sin errores.
-            </p>
+      <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div>
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0284C7] bg-sky-50 border border-sky-200 px-2 py-0.5 rounded flex items-center gap-1">
+              <Database className="w-3 h-3" /> POOL DE 3,000 A 5,000 JUGADORES
+            </span>
+            <span className="text-[10px] font-bold text-[#15803D] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> Estandarización FPF / CONMEBOL
+            </span>
           </div>
 
-          {/* Métricas del Pool */}
-          <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center space-x-6 shrink-0 shadow-inner">
-            <div>
-              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Capacidad Pool</div>
-              <div className="text-2xl font-black text-white mt-0.5">
-                {pool.length} <span className="text-xs text-slate-500 font-normal">/ 5,000</span>
-              </div>
-              <div className="w-32 bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                <div 
-                  className="bg-blue-500 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, (pool.length / 5000) * 100)}%` }}
-                ></div>
-              </div>
+          <h1 className="text-lg sm:text-xl font-bold text-[#1E293B]">
+            Gestor de Pool Masivo & Rotación por Meses
+          </h1>
+          <p className="text-xs text-[#64748B] mt-0.5 max-w-2xl">
+            Estandariza el orden de nombres y apellidos, y sincroniza la fecha única en cascada en las 21 páginas para exportaciones masivas seguras.
+          </p>
+        </div>
+
+        {/* Métrica compacta de capacidad */}
+        <div className="bg-slate-50 border border-[#E2E8F0] p-3 rounded-md flex items-center space-x-5 shrink-0">
+          <div>
+            <div className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">Capacidad Pool</div>
+            <div className="text-xl font-bold text-[#1E293B] font-mono mt-0.5">
+              {pool.length} <span className="text-xs text-[#64748B] font-normal">/ 5,000</span>
             </div>
-            <div className="border-l border-slate-800 pl-4">
-              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Rotación Activa</div>
-              <div className="text-sm font-black text-emerald-400 mt-1">12 Meses</div>
-              <div className="text-[10px] text-slate-500">Temporada 2026</div>
+            <div className="w-28 bg-slate-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
+              <div 
+                className="bg-[#0284C7] h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (pool.length / 5000) * 100)}%` }}
+              ></div>
             </div>
+          </div>
+          <div className="border-l border-slate-200 pl-4">
+            <div className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">Rotación Activa</div>
+            <div className="text-xs font-bold text-[#15803D] mt-0.5">12 Meses</div>
+            <div className="text-[10px] text-[#64748B]">Temporada 2026</div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* CONTROLES DE ESTANDARIZACIÓN: NOMBRES Y FECHA EN CASCADA */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         
-        {/* PANEL 1: ESTANDARIZADOR DE NOMBRES (Resuelve el audio del cliente) */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div className="flex items-center space-x-2.5">
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
-                <SlidersHorizontal className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white">Estandarizador de Nombres</h3>
-                <p className="text-[11px] text-slate-400">Evita inversiones como "Rodrigo Ceballos" vs "Ceballos Rodrigo"</p>
-              </div>
+        {/* PANEL 1: ESTANDARIZADOR DE NOMBRES */}
+        <div className="bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
+            <div className="flex items-center space-x-2">
+              <SlidersHorizontal className="w-4 h-4 text-[#0284C7]" />
+              <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider">Estandarizador de Nombres</h3>
             </div>
-            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-[#15803D] bg-[#DCFCE7] border border-[#BBF7D0] px-2 py-0.5 rounded">
               Activo
             </span>
           </div>
 
-          <div className="space-y-3">
-            <div className="text-xs text-slate-300">
+          <div className="space-y-2">
+            <div className="text-xs text-[#64748B]">
               Selecciona la regla de nomenclatura obligatoria para todo el lote:
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <button
+                type="button"
                 onClick={() => handleToggleNameFormat('LAST_FIRST')}
-                className={`p-3 rounded-2xl border text-left transition cursor-pointer ${
+                className={`p-2.5 rounded-md border text-left transition cursor-pointer ${
                   nameFormatOrder === 'LAST_FIRST'
-                    ? 'bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-950/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900'
+                    ? 'bg-sky-50 border-[#0284C7] text-[#0284C7]'
+                    : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'
                 }`}
               >
-                <div className="text-[10px] font-extrabold uppercase text-blue-400">Formato Oficial FPF</div>
-                <div className="text-xs font-black mt-0.5">[APELLIDOS NOMBRES]</div>
-                <div className="text-[10px] text-slate-400 mt-1 font-mono">PONCE ECHEVARRIA CARLOS</div>
+                <div className="text-[10px] font-bold uppercase text-[#0284C7]">Formato Oficial FPF</div>
+                <div className="text-xs font-bold font-mono mt-0.5">[APELLIDOS NOMBRES]</div>
+                <div className="text-[10px] text-[#64748B] mt-0.5">PONCE ECHEVARRIA CARLOS</div>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleToggleNameFormat('FIRST_LAST')}
-                className={`p-3 rounded-2xl border text-left transition cursor-pointer ${
+                className={`p-2.5 rounded-md border text-left transition cursor-pointer ${
                   nameFormatOrder === 'FIRST_LAST'
-                    ? 'bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-950/40'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900'
+                    ? 'bg-sky-50 border-[#0284C7] text-[#0284C7]'
+                    : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'
                 }`}
               >
-                <div className="text-[10px] font-extrabold uppercase text-slate-400">Formato Directo</div>
-                <div className="text-xs font-black mt-0.5">[NOMBRES APELLIDOS]</div>
-                <div className="text-[10px] text-slate-400 mt-1 font-mono">CARLOS PONCE ECHEVARRIA</div>
+                <div className="text-[10px] font-bold uppercase text-[#64748B]">Formato Directo</div>
+                <div className="text-xs font-bold font-mono mt-0.5">[NOMBRES APELLIDOS]</div>
+                <div className="text-[10px] text-[#64748B] mt-0.5">CARLOS PONCE ECHEVARRIA</div>
               </button>
-            </div>
-
-            <div className="text-[11px] text-slate-400 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>Garantiza que la búsqueda siempre encuentre al jugador tanto en la carátula como en los 21 reportes médicos.</span>
             </div>
           </div>
         </div>
 
-        {/* PANEL 2: FECHA ÚNICA EN CASCADA ("JALAR DE UNO SOLO") */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div className="flex items-center space-x-2.5">
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
-                <Calendar className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white">Sincronizador de Fecha Única</h3>
-                <p className="text-[11px] text-slate-400">Reemplaza el "Buscar y reemplazar" manual de Word</p>
-              </div>
+        {/* PANEL 2: FECHA ÚNICA EN CASCADA */}
+        <div className="bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
+            <div className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4 text-[#0284C7]" />
+              <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider">Sincronizador de Fecha Única</h3>
             </div>
-            <span className="text-[10px] font-bold text-blue-400 bg-blue-950/80 border border-blue-800 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-[#0284C7] bg-sky-50 border border-sky-200 px-2 py-0.5 rounded">
               21 Págs Sincronizadas
             </span>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl px-3 py-2 flex items-center space-x-2">
+          <div className="space-y-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex-1 bg-slate-50 border border-[#CBD5E1] rounded-md px-3 py-1.5 flex items-center space-x-2">
                 <Calendar className="w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   value={globalDate}
                   onChange={(e) => setGlobalDate(e.target.value)}
                   placeholder="DD-MM-YYYY (ej. 22-01-2026)"
-                  className="bg-transparent text-sm font-mono font-bold text-white focus:outline-none w-full"
+                  className="bg-transparent text-xs font-mono font-bold text-[#1E293B] focus:outline-none w-full"
                 />
               </div>
 
               <button
+                type="button"
                 onClick={handleApplyGlobalDate}
                 disabled={isApplyingCascade}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-lg transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                className="bg-[#0284C7] hover:bg-[#0369A1] text-white font-semibold text-xs px-3.5 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isApplyingCascade ? 'animate-spin' : ''}`} />
-                <span>Aplicar fecha al lote</span>
+                <span>Aplicar al lote</span>
               </button>
             </div>
 
             {/* Check de Cascada a los 21 Documentos */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
               {[
                 'Carátula FPF',
                 'Historia Clínica',
@@ -606,8 +586,8 @@ export default function PoolManager({
                 'Parasitológico',
                 'Dictamen Famiheart'
               ].map((docName, i) => (
-                <div key={i} className="bg-slate-950 p-2 rounded-xl border border-slate-800/80 flex items-center space-x-1.5 text-[10px] text-slate-300">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                <div key={i} className="bg-slate-50 p-1.5 rounded border border-[#E2E8F0] flex items-center space-x-1.5 text-[10px] text-slate-700">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
                   <span className="truncate">{docName}</span>
                 </div>
               ))}
@@ -617,39 +597,38 @@ export default function PoolManager({
 
       </div>
 
-      {/* ROTACIÓN MENSUAL (ENERO A DICIEMBRE 2026) */}
-      <section className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      {/* ROTACIÓN MENSUAL (12 Meses 2026) */}
+      <div className="bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#E2E8F0] pb-2.5">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-emerald-400" />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#1E293B] flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-[#15803D]" />
               Rotación del Calendario Anual (12 Meses)
             </h2>
-            <p className="text-xs text-slate-400">
-              Distribuye los 3,000 a 5,000 jugadores en los meses que exige la Federación
-            </p>
           </div>
 
           <div className="flex items-center space-x-2">
             <button
+              type="button"
               onClick={() => handleGenerateBatch(20)}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+              className="bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-xs font-medium px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1"
             >
-              <Users className="w-3.5 h-3.5 text-blue-400" />
+              <Users className="w-3 h-3 text-[#0284C7]" />
               <span>+ Cargar Lote (+20)</span>
             </button>
             <button
+              type="button"
               onClick={() => handleGenerateBatch(100)}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+              className="bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-xs font-medium px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <Sparkles className="w-3 h-3 text-amber-600" />
               <span>Simular Pool (+100)</span>
             </button>
           </div>
         </div>
 
         {/* Barra Deslizable de Meses */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
+        <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 scrollbar-thin">
           {MONTHS.map(m => {
             const isSelected = selectedMonth === m.id;
             const countForMonth = m.id === 'ALL' 
@@ -659,16 +638,20 @@ export default function PoolManager({
             return (
               <button
                 key={m.id}
-                onClick={() => setSelectedMonth(m.id)}
-                className={`px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition cursor-pointer border flex items-center space-x-2 shrink-0 ${
+                type="button"
+                onClick={() => {
+                  setSelectedMonth(m.id);
+                  setCurrentPage(1);
+                }}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition cursor-pointer border flex items-center space-x-1.5 shrink-0 ${
                   isSelected
-                    ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-950/50'
-                    : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-900'
+                    ? 'bg-[#0284C7] text-white border-[#0284C7] shadow-xs'
+                    : 'bg-slate-50 text-slate-700 border-[#E2E8F0] hover:bg-slate-100'
                 }`}
               >
                 <span>{m.name}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
-                  isSelected ? 'bg-blue-700 text-white' : 'bg-slate-900 text-slate-400'
+                <span className={`text-[10px] px-1 py-0.2 rounded ${
+                  isSelected ? 'bg-[#0369a1] text-white' : 'bg-slate-200 text-slate-600'
                 }`}>
                   {countForMonth}
                 </span>
@@ -676,15 +659,15 @@ export default function PoolManager({
             );
           })}
         </div>
-      </section>
+      </div>
 
       {/* LISTADO DE FUTBOLISTAS DEL POOL CON PAGINACIÓN Y SELECCIÓN MÚLTIPLE */}
-      <section className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl space-y-0">
+      <section className="bg-white border border-[#E2E8F0] rounded-lg overflow-hidden shadow-xs">
         
         {/* Barra de Filtros, Búsqueda y Selección en Lote */}
-        <div className="p-5 sm:p-6 border-b border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div className="p-3.5 sm:p-4 border-b border-[#E2E8F0] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white">
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
@@ -693,13 +676,13 @@ export default function PoolManager({
                 setCurrentPage(1);
               }}
               placeholder="Buscar por Nombre, DNI, Club o Posición..."
-              className="w-full bg-slate-950 border border-slate-800 pl-10 pr-4 py-2.5 rounded-2xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+              className="w-full bg-slate-50 border border-[#CBD5E1] pl-8 pr-3 py-1.5 rounded-md text-xs text-[#1E293B] placeholder-slate-400 focus:outline-none focus:border-[#0284C7] transition"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs text-slate-400">
-              Total: <strong className="text-white">{filteredList.length}</strong> futbolistas
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="text-xs text-[#64748B]">
+              Total: <strong className="text-[#1E293B]">{filteredList.length}</strong> futbolistas
             </span>
 
             {/* Selector de Tamaño de Página */}
@@ -709,7 +692,7 @@ export default function PoolManager({
                 setPageSize(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="bg-slate-950 border border-slate-800 text-xs text-slate-300 font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:border-blue-500"
+              className="bg-slate-50 border border-[#CBD5E1] text-xs text-[#1E293B] font-semibold rounded-md px-2 py-1.5 focus:outline-none focus:border-[#0284C7]"
             >
               <option value={10}>10 por página</option>
               <option value={15}>15 por página</option>
@@ -720,12 +703,13 @@ export default function PoolManager({
             {/* Acción en Lote para Seleccionados */}
             {selectedIds.size > 0 && (
               <button
+                type="button"
                 onClick={() => {
                   setAuthConfirmed(false);
                   setShowAuthModal(true);
                 }}
                 disabled={isExportingZip}
-                className="bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                className="bg-[#0284C7] hover:bg-[#0369A1] text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-xs transition flex items-center space-x-1 cursor-pointer disabled:opacity-50"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Exportar Seleccionados ({selectedIds.size})</span>
@@ -736,34 +720,34 @@ export default function PoolManager({
 
         {/* Tabla Responsiva con Selección */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-slate-50 border-b border-[#E2E8F0] text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
               <tr>
-                <th className="px-4 py-3.5 w-10 text-center">
+                <th className="px-3 py-2.5 w-10 text-center">
                   <input
                     type="checkbox"
                     checked={paginatedList.length > 0 && selectedIds.size >= paginatedList.length}
                     onChange={handleToggleSelectAll}
-                    className="rounded border-slate-700 bg-slate-900 text-blue-600 cursor-pointer"
+                    className="rounded border-[#CBD5E1] text-[#0284C7] cursor-pointer"
                     title="Seleccionar todos los de esta página"
                   />
                 </th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Futbolista</th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Club / Categoría</th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">DNI</th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider">Fecha Evaluación</th>
-                <th className="px-4 py-3.5 font-bold uppercase tracking-wider text-center">Estado FPF</th>
-                <th className="px-6 py-3.5 font-bold uppercase tracking-wider text-right">Acciones</th>
+                <th className="px-4 py-2.5 font-semibold">Futbolista</th>
+                <th className="px-4 py-2.5 font-semibold">Club / Categoría</th>
+                <th className="px-4 py-2.5 font-semibold">DNI</th>
+                <th className="px-4 py-2.5 font-semibold">Fecha Evaluación</th>
+                <th className="px-4 py-2.5 font-semibold text-center">Estado FPF</th>
+                <th className="px-4 py-2.5 font-semibold text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {paginatedList.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center text-slate-400">
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <Users className="w-8 h-8 text-slate-600 mb-1" />
-                      <span className="font-bold text-white text-sm">No hay futbolistas con los criterios actuales</span>
-                      <span className="text-xs text-slate-500">Prueba ajustando la búsqueda o seleccionando otro mes de la temporada.</span>
+                  <td colSpan="7" className="px-4 py-12 text-center text-[#64748B]">
+                    <div className="flex flex-col items-center justify-center space-y-1.5">
+                      <Users className="w-8 h-8 text-slate-400 mb-1" />
+                      <span className="font-semibold text-xs text-[#1E293B]">No hay futbolistas con los criterios actuales</span>
+                      <span className="text-[11px] text-[#64748B]">Prueba ajustando la búsqueda o seleccionando otro mes de la temporada.</span>
                     </div>
                   </td>
                 </tr>
@@ -776,70 +760,72 @@ export default function PoolManager({
                   return (
                     <tr 
                       key={pId} 
-                      className={`hover:bg-slate-900/60 transition group cursor-pointer ${
-                        isSelected ? 'bg-blue-950/30' : ''
+                      className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
+                        isSelected ? 'bg-sky-50/60' : ''
                       }`}
                       onClick={() => handleToggleSelectOne(pId)}
                     >
-                      <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleToggleSelectOne(pId)}
-                          className="rounded border-slate-700 bg-slate-900 text-blue-600 cursor-pointer"
+                          className="rounded border-[#CBD5E1] text-[#0284C7] cursor-pointer"
                         />
                       </td>
 
-                      <td className="px-4 py-4">
-                        <div className="flex items-center space-x-2.5">
-                          <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${status.dotColor}`} />
-                          <div className="font-bold text-white text-sm">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center space-x-2">
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${status.dotColor}`} />
+                          <div className="font-semibold text-[#1E293B] text-xs">
                             {player.nombreCompleto || `${player.apellidos || ''} ${player.nombres || ''}`}
                           </div>
                         </div>
-                        <div className="text-[11px] text-slate-400 pl-5">
+                        <div className="text-[11px] text-[#64748B] pl-4">
                           Posición: {player.posicion || 'Campo'}
                         </div>
                       </td>
 
-                      <td className="px-4 py-4">
-                        <div className="font-semibold text-slate-200">{player.club || 'Club FPF'}</div>
-                        <div className="text-[11px] text-slate-400">{player.categoria || 'Primera / Reserva'}</div>
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-[#1E293B]">{player.club || 'Club FPF'}</div>
+                        <div className="text-[11px] text-[#64748B]">{player.categoria || 'Primera / Reserva'}</div>
                       </td>
 
-                      <td className="px-4 py-4 font-mono text-slate-300">
+                      <td className="px-4 py-3 font-mono text-[#64748B] text-xs">
                         {player.dni || '70000000'}
                       </td>
 
-                      <td className="px-4 py-4 font-mono font-bold text-blue-300">
+                      <td className="px-4 py-3 font-mono font-medium text-[#0284C7] text-xs">
                         {player.fechaEvaluacion || globalDate}
                       </td>
 
-                      <td className="px-4 py-4 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${status.badgeBg} ${status.badgeBorder} ${status.badgeText}`}>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold border ${status.badgeBg} ${status.badgeBorder} ${status.badgeText}`}>
                           {status.shortLabel}
                         </span>
                       </td>
 
-                      <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end space-x-2">
+                      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end space-x-1.5">
                           <button
+                            type="button"
                             onClick={() => {
                               if (onSelectPatient) onSelectPatient(player);
                               if (onNavigateTab) onNavigateTab('documento');
                             }}
-                            className="bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/20 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer min-h-[38px]"
+                            className="bg-[#0284C7] hover:bg-[#0369A1] text-white text-xs font-semibold px-2.5 py-1 rounded-md transition cursor-pointer shadow-xs"
                             title="Ver las 21 páginas del expediente"
                           >
                             <span>Ver 21P</span>
                           </button>
 
                           <button
+                            type="button"
                             onClick={() => downloadPatientDocx(player, { globalDate: player.fechaEvaluacion || globalDate, globalClub: player.club })}
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-2 rounded-xl transition cursor-pointer min-h-[38px]"
+                            className="bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] p-1.5 rounded-md transition cursor-pointer"
                             title="Descargar Word oficial con sellos médicos intactos"
                           >
-                            <Download className="w-3.5 h-3.5 text-blue-300" />
+                            <Download className="w-3.5 h-3.5 text-slate-500" />
                           </button>
                         </div>
                       </td>
@@ -853,16 +839,17 @@ export default function PoolManager({
 
         {/* Barra de Paginación */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800 bg-slate-950 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <span className="text-slate-400">
-              Página <strong className="text-white">{currentPage}</strong> de <strong className="text-white">{totalPages}</strong> ({filteredList.length} registros)
+          <div className="p-3 border-t border-[#E2E8F0] bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <span className="text-[#64748B]">
+              Página <strong className="text-[#1E293B]">{currentPage}</strong> de <strong className="text-[#1E293B]">{totalPages}</strong> ({filteredList.length} registros)
             </span>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1.5">
               <button
+                type="button"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage <= 1}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-30 disabled:hover:text-slate-300 transition cursor-pointer"
+                className="px-2.5 py-1 rounded-md bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white transition cursor-pointer text-xs"
               >
                 Anterior
               </button>
@@ -873,9 +860,10 @@ export default function PoolManager({
                   return (
                     <button
                       key={pNum}
+                      type="button"
                       onClick={() => setCurrentPage(pNum)}
-                      className={`w-7 h-7 rounded-lg font-bold transition cursor-pointer ${
-                        currentPage === pNum ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                      className={`w-6 h-6 rounded font-semibold text-xs transition cursor-pointer ${
+                        currentPage === pNum ? 'bg-[#0284C7] text-white' : 'text-[#64748B] hover:text-[#1E293B]'
                       }`}
                     >
                       {pNum}
@@ -885,9 +873,10 @@ export default function PoolManager({
               </div>
 
               <button
+                type="button"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage >= totalPages}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-30 disabled:hover:text-slate-300 transition cursor-pointer"
+                className="px-2.5 py-1 rounded-md bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white transition cursor-pointer text-xs"
               >
                 Siguiente
               </button>
@@ -902,26 +891,26 @@ export default function PoolManager({
         {showAuthModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div 
-              className="fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity"
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
               onClick={() => setShowAuthModal(false)}
             />
             
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-lg bg-[#111A2E] border border-[#243350] rounded-2xl shadow-2xl p-6 space-y-5 text-left z-10"
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              className="relative w-full max-w-lg bg-white border border-[#CBD5E1] rounded-lg shadow-2xl p-6 space-y-4 text-left z-10 text-[#1E293B]"
             >
-              <div className="flex items-start justify-between border-b border-[#243350] pb-3.5">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2.5 rounded-xl bg-[#3B82F6]/15 text-[#3B82F6]">
+              <div className="flex items-start justify-between border-b border-[#E2E8F0] pb-3">
+                <div className="flex items-center space-x-2.5">
+                  <div className="p-2 rounded-md bg-emerald-50 text-[#15803D] border border-emerald-200">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#E6EDF7]">
+                    <h3 className="text-sm font-bold text-[#1E293B]">
                       Autorización de Firma y Certificación Médica
                     </h3>
-                    <p className="text-xs text-[#9FB0C8]">
+                    <p className="text-xs text-[#64748B]">
                       Emisión de expedientes oficiales FPF & CONMEBOL
                     </p>
                   </div>
@@ -929,43 +918,43 @@ export default function PoolManager({
               </div>
 
               {/* Contenido Clínico */}
-              <div className="bg-[#0B1220] border border-[#243350] rounded-xl p-4 space-y-3 text-xs leading-relaxed">
-                <div className="flex items-center justify-between pb-2 border-b border-[#243350]">
-                  <span className="text-[#9FB0C8]">Médico Evaluador:</span>
-                  <span className="font-bold text-[#E6EDF7]">Dr. Darío Hernández Alarcón</span>
+              <div className="bg-slate-50 border border-[#E2E8F0] rounded-md p-3.5 space-y-2.5 text-xs leading-relaxed">
+                <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+                  <span className="text-[#64748B]">Médico Evaluador:</span>
+                  <span className="font-bold text-[#1E293B]">Dr. Darío Hernández Alarcón</span>
                 </div>
-                <div className="flex items-center justify-between pb-2 border-b border-[#243350]">
-                  <span className="text-[#9FB0C8]">Colegiatura & Registro:</span>
-                  <span className="font-mono text-[#E6EDF7]">C.M.P. 27503 • R.N.E. 15620</span>
+                <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+                  <span className="text-[#64748B]">Colegiatura & Registro:</span>
+                  <span className="font-mono text-[#1E293B]">C.M.P. 27503 • R.N.E. 15620</span>
                 </div>
-                <div className="flex items-center justify-between pb-2 border-b border-[#243350]">
-                  <span className="text-[#9FB0C8]">Expedientes a Certificar:</span>
-                  <span className="font-bold text-[#3B82F6]">{selectedIds.size} futbolistas</span>
+                <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+                  <span className="text-[#64748B]">Expedientes a Certificar:</span>
+                  <span className="font-bold text-[#0284C7]">{selectedIds.size} futbolistas</span>
                 </div>
-                <p className="text-[11px] text-[#9FB0C8] pt-1">
+                <p className="text-[11px] text-[#64748B] pt-0.5">
                   En cumplimiento del Art. 24 de la Ley General de Salud N° 26842 y el protocolo médico FPF 2026, la inserción de sellos y firmas digitales genera validez legal en cada uno de los 21 documentos del expediente.
                 </p>
               </div>
 
               {/* Casilla de Conformidad Obligatoria */}
-              <label className="flex items-start space-x-3 p-3 bg-[#16213A] border border-[#243350] rounded-xl cursor-pointer">
+              <label className="flex items-start space-x-2.5 p-3 bg-white border border-[#CBD5E1] rounded-md cursor-pointer hover:bg-slate-50">
                 <input
                   type="checkbox"
                   checked={authConfirmed}
                   onChange={(e) => setAuthConfirmed(e.target.checked)}
-                  className="mt-0.5 rounded border-[#243350] bg-[#0B1220] text-[#3B82F6] focus:ring-[#3B82F6] cursor-pointer"
+                  className="mt-0.5 rounded border-[#CBD5E1] text-[#0284C7] focus:ring-[#0284C7] cursor-pointer"
                 />
-                <span className="text-xs text-[#E6EDF7] font-medium leading-snug">
+                <span className="text-xs text-[#1E293B] font-medium leading-snug">
                   Como profesional acreditado, ratifico la conformidad de los exámenes pre-competencia y autorizo la inserción de mi firma y sello médico oficial en este lote.
                 </span>
               </label>
 
               {/* Botones de Acción */}
-              <div className="flex items-center justify-end space-x-3 pt-2">
+              <div className="flex items-center justify-end space-x-2.5 pt-1">
                 <button
                   type="button"
                   onClick={() => setShowAuthModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#9FB0C8] hover:text-[#E6EDF7] bg-[#16213A] border border-[#243350] transition cursor-pointer"
+                  className="px-3.5 py-2 rounded-md text-xs font-semibold text-slate-700 hover:bg-slate-100 border border-[#CBD5E1] transition cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -973,7 +962,7 @@ export default function PoolManager({
                   type="button"
                   onClick={handleExecuteBatchExport}
                   disabled={!authConfirmed || isExportingZip}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#3B82F6] hover:bg-[#2563EB] disabled:opacity-40 transition cursor-pointer flex items-center space-x-1.5 shadow-md"
+                  className="px-4 py-2 rounded-md text-xs font-bold text-white bg-[#0284C7] hover:bg-[#0369A1] disabled:opacity-40 transition cursor-pointer flex items-center space-x-1.5 shadow-xs"
                 >
                   <Check className="w-3.5 h-3.5" />
                   <span>{isExportingZip ? 'Generando ZIP...' : `Autorizar y Descargar (${selectedIds.size})`}</span>
