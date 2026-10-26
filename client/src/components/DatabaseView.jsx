@@ -100,22 +100,22 @@ export default function DatabaseView() {
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Banner Superior */}
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+      <div className="bg-[#111A2E] border border-[#243350] rounded-2xl p-6 shadow-xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <span className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1.5">
+              <span className="bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 text-xs font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1.5">
                 <Database className="w-3.5 h-3.5" /> Supabase Cloud Database
               </span>
-              <span className="bg-blue-600/20 text-blue-400 border border-blue-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-md">
+              <span className="bg-[#3B82F6]/15 text-[#3B82F6] border border-[#3B82F6]/30 text-xs font-bold px-2.5 py-0.5 rounded-md">
                 PostgreSQL 15+
               </span>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#E6EDF7] tracking-tight">
               Conexión y Sincronización con Supabase
             </h2>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#9FB0C8] max-w-2xl leading-relaxed">
               Base de datos en la nube para persistencia de futbolistas evaluados, historias clínicas, parámetros cardiológicos y certificados oficiales de la FPF.
             </p>
           </div>
@@ -124,7 +124,7 @@ export default function DatabaseView() {
             <button
               onClick={checkConnection}
               disabled={connStatus.loading}
-              className="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
+              className="flex items-center space-x-2 bg-[#16213A] hover:bg-[#243350] text-[#E6EDF7] border border-[#243350] font-semibold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${connStatus.loading ? 'animate-spin' : ''}`} />
               <span>Probar Conexión</span>
@@ -133,35 +133,35 @@ export default function DatabaseView() {
             <button
               type="button"
               onClick={() => alert('Acceso a la Consola Cloud restringido por política de seguridad a administradores de infraestructura Famiheart S.A.C.')}
-              className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
+              className="flex items-center space-x-1.5 bg-[#16213A] hover:bg-[#243350] text-[#E6EDF7] border border-[#243350] font-semibold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer"
               title="Acceso exclusivo para administradores de infraestructura"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <ShieldCheck className="w-3.5 h-3.5 text-[#22C55E]" />
               <span>Consola Admin (Restringida)</span>
             </button>
           </div>
         </div>
 
         {/* Parámetros de Conexión */}
-        <div className="mt-6 pt-4 border-t border-slate-700 grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+        <div className="mt-6 pt-4 border-t border-[#243350] grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
           <div>
-            <span className="text-slate-400 block font-medium">Estado del Endpoint:</span>
+            <span className="text-[#9FB0C8] block font-medium">Estado del Endpoint:</span>
             <div className="flex items-center space-x-1.5 mt-0.5">
-              <span className={`w-2.5 h-2.5 rounded-full ${connStatus.connected ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'}`}></span>
-              <span className="text-white font-bold">{connStatus.status}</span>
+              <span className={`w-2.5 h-2.5 rounded-full ${connStatus.connected ? 'bg-[#22C55E] animate-pulse' : 'bg-red-500'}`}></span>
+              <span className="text-[#E6EDF7] font-bold">{connStatus.status}</span>
             </div>
           </div>
           <div>
-            <span className="text-slate-400 block font-medium">Latencia de Red:</span>
-            <span className="text-emerald-400 font-mono font-bold mt-0.5 block">{connStatus.latencyMs} ms</span>
+            <span className="text-[#9FB0C8] block font-medium">Latencia de Red:</span>
+            <span className="text-[#22C55E] font-mono font-bold mt-0.5 block">{connStatus.latencyMs} ms</span>
           </div>
           <div>
-            <span className="text-slate-400 block font-medium">Instancia Médica:</span>
-            <span className="text-blue-300 font-mono font-bold mt-0.5 block">fpf_cluster_prod (TLS v1.3)</span>
+            <span className="text-[#9FB0C8] block font-medium">Instancia Médica:</span>
+            <span className="text-[#3B82F6] font-mono font-bold mt-0.5 block">fpf_cluster_prod (TLS v1.3)</span>
           </div>
           <div>
-            <span className="text-slate-400 block font-medium">Seguridad de Datos:</span>
-            <span className="text-emerald-300 font-mono text-[11px] truncate block mt-0.5">
+            <span className="text-[#9FB0C8] block font-medium">Seguridad de Datos:</span>
+            <span className="text-[#22C55E] font-mono text-xs truncate block mt-0.5">
               Cifrado AES-256 / Ley 29733
             </span>
           </div>

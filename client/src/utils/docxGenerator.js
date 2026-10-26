@@ -81,6 +81,10 @@ export async function generatePatientDocx(patient, options = {}) {
     xmlText = xmlText.replace(/22-01-2026/g, targetDate);
     xmlText = xmlText.replace(/____-____-2026/g, targetDate);
     xmlText = xmlText.replace(/06-05-2026/g, targetDate);
+    xmlText = xmlText.replace(/07-10-2026/g, targetDate);
+
+    // E) Estandarización de nombre del médico evaluador al oficial del directorio
+    xmlText = xmlText.replace(/DARIO HERNANDEZ(?! ALARCON)/g, 'DR. DARÍO HERNÁNDEZ ALARCÓN');
 
     // E) DNI si aplica
     if (patient?.dni) {

@@ -234,20 +234,20 @@ export default function Dashboard({
             </section>
 
       {/* BANNER INSTITUCIONAL DE CONFIDENCIALIDAD Y SESIÓN SEGURA */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-[#111A2E] border border-[#243350] rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center space-x-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
-            <Lock className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-[#3B82F6]/15 text-[#3B82F6] flex items-center justify-center shrink-0">
+            <Lock className="w-4 h-4" />
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-white text-xs sm:text-sm">Sesión Médica Segura • Ley N° 29733 (Datos de Salud)</span>
-              <span className="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/80 px-2 py-0.2 rounded-full font-bold">
+              <span className="font-bold text-[#E6EDF7] text-xs sm:text-sm">Sesión Médica Segura • Ley N° 29733 (Datos de Salud)</span>
+              <span className="text-[10px] bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 px-2 py-0.5 rounded-full font-bold">
                 TLS 256-bit Activo
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-tight mt-0.5">
-              Acceso institucional acreditado: <strong className="text-slate-200">
+            <p className="text-xs text-[#9FB0C8] leading-tight mt-0.5">
+              Acceso institucional acreditado: <strong className="text-[#E6EDF7]">
                 {userRole === 'MEDICO' && 'Médico Evaluador (Famiheart S.A.C.) - Emisión y Diagnóstico'}
                 {userRole === 'CLUB' && 'Delegado de Club Oficial FPF - Consulta y Descargas'}
                 {userRole === 'FPF' && 'Comisión Médica FPF / CONMEBOL - Auditoría Reglamentaria'}
@@ -257,9 +257,9 @@ export default function Dashboard({
         </div>
 
         <div className="flex items-center space-x-2 self-end md:self-auto shrink-0">
-          <span className="text-[11px] text-slate-400 hidden sm:inline">Sellos médicos protegidos:</span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-950/80 border border-emerald-700/60 text-emerald-300 text-xs font-bold">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-xs text-[#9FB0C8] hidden sm:inline">Sellos médicos:</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#22C55E]/15 border border-[#22C55E]/30 text-[#22C55E] text-xs font-bold">
+            <ShieldCheck className="w-3.5 h-3.5" />
             <span>29 Sellos Intactos</span>
           </span>
         </div>
@@ -268,7 +268,7 @@ export default function Dashboard({
       {/* SECCIÓN 2: MÉTRICAS EN TARJETAS LIMPIAS Y SEMÁFORO */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#9FB0C8]">
             Resumen General de Temporada
           </h2>
         </div>
@@ -277,23 +277,23 @@ export default function Dashboard({
           
           {/* Card 1: Total Expedientes */}
           <motion.div 
-            whileHover={{ y: -3 }}
+            whileHover={{ y: -2 }}
             onClick={() => setStatusFilter('ALL')}
-            className={`bg-slate-900 border p-5 rounded-2xl shadow-sm transition-all cursor-pointer group ${
-              statusFilter === 'ALL' ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-800/90 hover:border-slate-700'
+            className={`bg-[#111A2E] border p-5 rounded-2xl shadow-sm transition-all cursor-pointer group ${
+              statusFilter === 'ALL' ? 'border-[#3B82F6] ring-2 ring-[#3B82F6]/20' : 'border-[#243350] hover:border-[#3B82F6]/50'
             }`}
           >
-            <div className="flex items-center justify-between text-slate-400">
-              <span className="text-xs font-bold uppercase group-hover:text-blue-400 transition">Total Expedientes</span>
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition">
+            <div className="flex items-center justify-between text-[#9FB0C8]">
+              <span className="text-xs font-bold uppercase group-hover:text-[#3B82F6] transition">Total Expedientes</span>
+              <div className="p-2 rounded-xl bg-[#3B82F6]/10 text-[#3B82F6] group-hover:bg-[#3B82F6]/20 transition">
                 <FileText className="w-4 h-4" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline space-x-2">
-              <span className="text-3xl font-black text-white">{totalCount}</span>
-              <span className="text-[11px] font-semibold text-slate-400">Cargados</span>
+              <span className="text-3xl font-bold text-[#E6EDF7] font-mono">{totalCount}</span>
+              <span className="text-xs font-medium text-[#9FB0C8]">Cargados</span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Clic para ver todos</p>
+            <p className="text-xs text-[#9FB0C8] mt-1">Clic para ver todos</p>
           </motion.div>
 
           {/* Card 2: Vigentes / Aptos FPF */}

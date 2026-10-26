@@ -16,23 +16,23 @@ export default function MedicalStaff() {
     <div className="space-y-8 animate-in fade-in duration-300">
       
       {/* Header Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-[#111A2E] border border-[#243350] rounded-2xl p-6 sm:p-7 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-bold text-blue-400 uppercase tracking-wider">
+          <div className="flex items-center space-x-2 text-xs font-bold text-[#3B82F6] uppercase tracking-wider">
             <span>Directorio Médico Oficial</span>
             <span>•</span>
-            <span className="text-emerald-400">Colegiaturas Acreditadas</span>
+            <span className="text-[#22C55E]">Colegiaturas Acreditadas FPF</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-white mt-1">
-            Profesionales de Salud y Firmas Digitales
+          <h1 className="text-xl sm:text-2xl font-bold text-[#E6EDF7] mt-1">
+            Profesionales de Salud y Firmas Digitalizadas
           </h1>
-          <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-            Personal médico autorizado para la suscripción de certificados de aptitud física FPF y reportes diagnósticos de Famiheart S.A.C.
+          <p className="text-xs sm:text-sm text-[#9FB0C8] mt-1 max-w-2xl leading-relaxed">
+            Personal médico acreditado para la suscripción de certificados de aptitud física FPF y reportes diagnósticos oficiales de Famiheart S.A.C.
           </p>
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="bg-emerald-950/80 border border-emerald-800/80 text-emerald-400 text-xs font-bold px-3.5 py-2 rounded-2xl flex items-center gap-1.5">
+          <span className="bg-[#22C55E]/15 border border-[#22C55E]/30 text-[#22C55E] text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4" />
             4 Profesionales Habilitados
           </span>
@@ -44,35 +44,35 @@ export default function MedicalStaff() {
         {initialStaff.map(staff => (
           <motion.div 
             key={staff.id} 
-            whileHover={{ y: -3 }}
-            className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-3xl p-6 shadow-sm transition-all space-y-4"
+            whileHover={{ y: -2 }}
+            className="bg-[#111A2E] border border-[#243350] hover:border-[#3B82F6]/50 rounded-2xl p-6 shadow-sm transition-all space-y-4"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg shadow-inner">
+                <div className="w-12 h-12 rounded-xl bg-[#3B82F6]/15 text-[#3B82F6] flex items-center justify-center font-bold text-lg">
                   <Stethoscope className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-white">{staff.name}</h3>
-                  <div className="text-xs font-semibold text-blue-400">{staff.role}</div>
-                  <div className="text-[11px] text-slate-400">{staff.specialty}</div>
+                  <h3 className="text-base font-bold text-[#E6EDF7]">{staff.name}</h3>
+                  <div className="text-xs font-semibold text-[#3B82F6]">{staff.role}</div>
+                  <div className="text-xs text-[#9FB0C8]">{staff.specialty}</div>
                 </div>
               </div>
 
-              <span className="bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+              <span className="bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
                 <CheckCircle className="w-3 h-3" /> Habilitado
               </span>
             </div>
 
             {/* Registration Codes */}
-            <div className="grid grid-cols-2 gap-3 bg-slate-950 p-3.5 rounded-2xl border border-slate-800/80 text-xs">
+            <div className="grid grid-cols-2 gap-3 bg-[#0B1220] p-3.5 rounded-xl border border-[#243350] text-xs">
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">Colegiatura Médica</span>
-                <span className="text-slate-200 font-mono font-bold">CMP {staff.cmp}</span>
+                <span className="text-[#9FB0C8] block text-[10px] uppercase font-bold">Colegiatura Médica</span>
+                <span className="text-[#E6EDF7] font-mono font-bold">CMP {staff.cmp}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">Especialidad</span>
-                <span className="text-slate-200 font-mono font-bold">
+                <span className="text-[#9FB0C8] block text-[10px] uppercase font-bold">Especialidad</span>
+                <span className="text-[#E6EDF7] font-mono font-bold">
                   {staff.rne ? `RNE ${staff.rne}` : `CTMP ${staff.ctmp}`}
                 </span>
               </div>

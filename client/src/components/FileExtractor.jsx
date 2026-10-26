@@ -250,33 +250,30 @@ export default function FileExtractor({
       </AnimatePresence>
 
       {/* CABECERA EXPLICATIVA */}
-      <section className="relative overflow-hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 right-10 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
+      <section className="relative overflow-hidden bg-[#111A2E] border border-[#243350] rounded-2xl p-6 sm:p-8 shadow-xl">
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-3xl">
+          <div className="space-y-2.5 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3" /> EXTRACCIÓN AUTOMÁTICA DE NOMBRES
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#3B82F6] bg-[#3B82F6]/15 border border-[#3B82F6]/30 px-2.5 py-0.5 rounded-md flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> Extracción Automática de Nombres
               </span>
-              <span className="text-[10px] text-blue-400 font-semibold bg-blue-950/80 border border-blue-800/80 px-2.5 py-0.5 rounded-full">
-                Cero Llenado Manual de Campos
+              <span className="text-[11px] text-[#22C55E] font-semibold bg-[#22C55E]/15 border border-[#22C55E]/30 px-2.5 py-0.5 rounded-md">
+                Estandarización FPF
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#E6EDF7] tracking-tight">
               Carga de Archivos & Extracción de Nombres
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              No necesitas tipear datos a mano. Sube las imágenes o PDFs de los futbolistas y el sistema <strong className="text-white">extrae automáticamente el nombre del paciente a partir del nombre del archivo</strong> (ej. <code className="text-blue-300 font-mono">AGURTO ROMERO FERNANDO.pdf</code>) vinculándolo al expediente de 21 páginas con fecha unificada.
+            <p className="text-xs sm:text-sm text-[#9FB0C8] leading-relaxed">
+              No necesitas tipear datos a mano. Sube las imágenes o PDFs de los futbolistas y el sistema <strong className="text-[#E6EDF7]">extrae automáticamente el nombre del paciente a partir del nombre del archivo</strong> vinculándolo al expediente de 21 páginas con fecha unificada.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-xl shadow-emerald-950/40 border border-emerald-500/40 transition cursor-pointer flex items-center justify-center space-x-2"
+              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition cursor-pointer flex items-center justify-center space-x-2"
             >
               <UploadCloud className="w-4 h-4" />
               <span>Seleccionar Nuevos Archivos</span>
@@ -284,7 +281,7 @@ export default function FileExtractor({
             {patientsList.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="bg-red-950/80 hover:bg-red-900/80 text-red-300 border border-red-800 font-semibold text-xs px-4 py-3 rounded-2xl transition cursor-pointer flex items-center justify-center space-x-1.5"
+                className="bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-500/30 font-semibold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center space-x-1.5"
                 title="Limpiar toda la data cargada"
               >
                 <Trash2 className="w-4 h-4" />
@@ -305,10 +302,10 @@ export default function FileExtractor({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`lg:col-span-2 border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 relative overflow-hidden group ${
+          className={`lg:col-span-2 border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 relative overflow-hidden group ${
             isDragging
-              ? 'border-blue-400 bg-blue-950/60 scale-[1.02] shadow-2xl shadow-blue-500/20 ring-4 ring-blue-500/30'
-              : 'border-slate-700 bg-slate-900/70 hover:bg-slate-900 hover:border-blue-500/60'
+              ? 'border-[#3B82F6] bg-[#3B82F6]/10 scale-[1.01] shadow-xl'
+              : 'border-[#243350] bg-[#111A2E] hover:bg-[#16213A] hover:border-[#3B82F6]/60'
           }`}
         >
           <input 

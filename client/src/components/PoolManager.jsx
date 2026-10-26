@@ -201,6 +201,46 @@ export default function PoolManager({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authConfirmed, setAuthConfirmed] = useState(false);
+  const [isExportingZip, setIsExportingZip] = useState(false);
+
+  // Ejecución segura de exportación tras ratificación médica
+  const handleExecuteBatchExport = async () => {
+    if (!authConfirmed) {
+      setToastMessage({
+        type: 'error',
+        text: 'Debe marcar la casilla de ratificación médica oficial para continuar.'
+      });
+      return;
+    }
+    const selectedPatients = pool.filter(p => selectedIds.has(p.id || p.fileName));
+    if (selectedPatients.length === 0) return;
+
+    setIsExportingZip(true);
+    setShowAuthModal(false);
+    try {
+      setToastMessage({
+        type: 'info',
+        text: `Compilando lote oficial de ${selectedPatients.length} expedientes Word (.docx) con sellos médicos...`
+      });
+      await downloadBatchDocxZip(selectedPatients, { 
+        globalDate, 
+        globalClub: 'Club FPF / Liga Formativa', 
+        nameOrder: nameFormatOrder 
+      });
+      setToastMessage({
+        type: 'success',
+        text: `¡Lote de ${selectedPatients.length} expedientes descargado con firma médica autorizada!`
+      });
+    } catch (e) {
+      setToastMessage({ type: 'error', text: e.message });
+    } finally {
+      setIsExportingZip(false);
+      setAuthConfirmed(false);
+      setTimeout(() => setToastMessage(null), 4000);
+    }
+  };
 
   // Normalizador defensivo de nombres
   const formatPlayerName = (apellidos = '', nombres = '', order) => {
@@ -680,24 +720,12 @@ export default function PoolManager({
             {/* Acción en Lote para Seleccionados */}
             {selectedIds.size > 0 && (
               <button
-                onClick={async () => {
-                  const selectedPatients = pool.filter(p => selectedIds.has(p.id || p.fileName));
-                  try {
-                    setToastMessage({
-                      type: 'info',
-                      text: `Compilando lote ZIP de ${selectedPatients.length} futbolistas seleccionados...`
-                    });
-                    await downloadBatchDocxZip(selectedPatients, { globalDate, globalClub: 'FPF' });
-                    setToastMessage({
-                      type: 'success',
-                      text: `¡ZIP con ${selectedPatients.length} Words oficiales descargado exitosamente!`
-                    });
-                  } catch (e) {
-                    setToastMessage({ type: 'error', text: e.message });
-                  }
-                  setTimeout(() => setToastMessage(null), 4000);
+                onClick={() => {
+                  setAuthConfirmed(false);
+                  setShowAuthModal(true);
                 }}
-                className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-lg transition flex items-center space-x-1.5 cursor-pointer"
+                disabled={isExportingZip}
+                className="bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Exportar Seleccionados ({selectedIds.size})</span>
@@ -868,6 +896,93 @@ export default function PoolManager({
         )}
 
       </section>
+
+      {/* MODAL DE AUTORIZACIÓN MÉDICA PARA FIRMA DIGITAL MASIVA */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div 
+              className="fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity"
+              onClick={() => setShowAuthModal(false)}
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-lg bg-[#111A2E] border border-[#243350] rounded-2xl shadow-2xl p-6 space-y-5 text-left z-10"
+            >
+              <div className="flex items-start justify-between border-b border-[#243350] pb-3.5">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2.5 rounded-xl bg-[#3B82F6]/15 text-[#3B82F6]">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#E6EDF7]">
+                      Autorización de Firma y Certificación Médica
+                    </h3>
+                    <p className="text-xs text-[#9FB0C8]">
+                      Emisión de expedientes oficiales FPF & CONMEBOL
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contenido Clínico */}
+              <div className="bg-[#0B1220] border border-[#243350] rounded-xl p-4 space-y-3 text-xs leading-relaxed">
+                <div className="flex items-center justify-between pb-2 border-b border-[#243350]">
+                  <span className="text-[#9FB0C8]">Médico Evaluador:</span>
+                  <span className="font-bold text-[#E6EDF7]">Dr. Darío Hernández Alarcón</span>
+                </div>
+                <div className="flex items-center justify-between pb-2 border-b border-[#243350]">
+                  <span className="text-[#9FB0C8]">Colegiatura & Registro:</span>
+                  <span className="font-mono text-[#E6EDF7]">C.M.P. 27503 • R.N.E. 15620</span>
+                </div>
+                <div className="flex items-center justify-between pb-2 border-b border-[#243350]">
+                  <span className="text-[#9FB0C8]">Expedientes a Certificar:</span>
+                  <span className="font-bold text-[#3B82F6]">{selectedIds.size} futbolistas</span>
+                </div>
+                <p className="text-[11px] text-[#9FB0C8] pt-1">
+                  En cumplimiento del Art. 24 de la Ley General de Salud N° 26842 y el protocolo médico FPF 2026, la inserción de sellos y firmas digitales genera validez legal en cada uno de los 21 documentos del expediente.
+                </p>
+              </div>
+
+              {/* Casilla de Conformidad Obligatoria */}
+              <label className="flex items-start space-x-3 p-3 bg-[#16213A] border border-[#243350] rounded-xl cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={authConfirmed}
+                  onChange={(e) => setAuthConfirmed(e.target.checked)}
+                  className="mt-0.5 rounded border-[#243350] bg-[#0B1220] text-[#3B82F6] focus:ring-[#3B82F6] cursor-pointer"
+                />
+                <span className="text-xs text-[#E6EDF7] font-medium leading-snug">
+                  Como profesional acreditado, ratifico la conformidad de los exámenes pre-competencia y autorizo la inserción de mi firma y sello médico oficial en este lote.
+                </span>
+              </label>
+
+              {/* Botones de Acción */}
+              <div className="flex items-center justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-[#9FB0C8] hover:text-[#E6EDF7] bg-[#16213A] border border-[#243350] transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExecuteBatchExport}
+                  disabled={!authConfirmed || isExportingZip}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#3B82F6] hover:bg-[#2563EB] disabled:opacity-40 transition cursor-pointer flex items-center space-x-1.5 shadow-md"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{isExportingZip ? 'Generando ZIP...' : `Autorizar y Descargar (${selectedIds.size})`}</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
