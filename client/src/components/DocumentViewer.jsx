@@ -144,7 +144,7 @@ export default function DocumentViewer({
         {/* Selector de Formato Oficial */}
         <div className="flex items-center space-x-2">
           
-          {/* Modo 1: Certificado Vectorial Oficial 1:1 */}
+          {/* Modo 1: Certificado y Expediente Oficial 1:1 */}
           <button
             type="button"
             onClick={() => {
@@ -156,10 +156,10 @@ export default function DocumentViewer({
                 ? 'bg-[#0369A1] text-white border-[#0369A1] shadow-xs'
                 : 'bg-white text-slate-700 border-[#CBD5E1] hover:bg-slate-50'
             }`}
-            title="Certificado Oficial FPF 1:1 vectorial de alta fidelidad"
+            title="Expediente oficial de 21 páginas con plantilla original y datos superpuestos"
           >
             <FileCheck2 className="w-3.5 h-3.5" />
-            <span>Oficial Vectorial (1:1)</span>
+            <span>Expediente Oficial (1:1)</span>
           </button>
 
           {/* Modo 2: Plantilla en Blanco */}
@@ -607,9 +607,49 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
   const formattedPage = pageNumber.toString().padStart(2, '0');
   const ekgSrc = patient?.ekgImage || patient?.fileUrl;
 
-  // PÁGINA 1: RENDER VECTORIAL DE ALTA DEFINICIÓN (Sin defectos de escaneo)
+  // PÁGINA 1: CERTIFICADO MÉDICO OFICIAL FPF (FACSÍMIL 1:1 PLANTILLA ORIGINAL SIN FIRMA DUPLICADA)
   if (pageNumber === 1) {
-    return <ReconstructedOfficialPage1 patient={patient} />;
+    return (
+      <div className="w-full h-full relative select-none">
+        <img 
+          src="/assets/pages_blank/page_01.png" 
+          alt="Certificado Médico Página 1" 
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+
+        {/* 1. Nombre Completo del Futbolista: Calibri 11pt, regular, #000, 2-3px sobre la línea */}
+        <div 
+          className="absolute fpf-doc-text uppercase font-normal tracking-wide whitespace-nowrap"
+          style={{ top: '11.40%', left: '20.16%' }}
+        >
+          {patient?.nombreCompleto || `${patient?.apellidos || ''} ${patient?.nombres || ''}`.trim()}
+        </div>
+
+        {/* 2. Club Deportivo: Calibri 11pt, regular, #000, 2-3px sobre la línea */}
+        <div 
+          className="absolute fpf-doc-text uppercase font-normal tracking-wide whitespace-nowrap"
+          style={{ top: '14.07%', left: '18.06%' }}
+        >
+          {patient?.club || 'Club FPF / Liga Formativa'}
+        </div>
+
+        {/* 3. Fecha Oficial FPF (Recuadro Derecho): Calibri 11pt, #000 */}
+        <div 
+          className="absolute fpf-doc-text font-normal font-mono"
+          style={{ top: '82.21%', left: '62.62%' }}
+        >
+          {patient?.fechaEvaluacion || '22-01-2026'}
+        </div>
+
+        {/* 4. Número de Recibo Oficial */}
+        <div 
+          className="absolute text-[10px] font-mono text-slate-800"
+          style={{ top: '94.50%', left: '12.00%' }}
+        >
+          {patient?.receiptNum || '004128'}
+        </div>
+      </div>
+    );
   }
 
   // PÁGINA 2: FICHA DE EVALUACIÓN PRE-COMPETENCIA (PCMA)
