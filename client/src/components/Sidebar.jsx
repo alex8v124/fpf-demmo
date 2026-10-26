@@ -6,10 +6,7 @@ import {
   FileCheck2, 
   Stethoscope, 
   Database, 
-  ShieldCheck, 
-  Lock,
   X,
-  Building2,
   ChevronRight
 } from 'lucide-react';
 
@@ -17,8 +14,7 @@ export default function Sidebar({
   currentTab, 
   setCurrentTab, 
   mobileOpen = false, 
-  setMobileOpen,
-  userRole = 'MEDICO'
+  setMobileOpen
 }) {
   const navItems = [
     { id: 'dashboard', label: 'Bandeja Principal', icon: LayoutDashboard },
@@ -39,20 +35,22 @@ export default function Sidebar({
   const sidebarContent = (
     <div className="flex flex-col h-full bg-[#0F172A] text-slate-300 border-r border-slate-800 select-none">
       
-      {/* 1. Header con Logos Institucionales */}
-      <div className="p-5 border-b border-slate-800/80">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2.5">
+      {/* 1. Header con Cabecera Blanca para Logos Oficiales (Sin colisión de fondos ni recortes) */}
+      <div className="p-4 border-b border-slate-800/80">
+        
+        {/* Contenedor blanco nítido para los logos institucionales */}
+        <div className="bg-white rounded-lg p-2.5 shadow-xs border border-slate-700/60 flex items-center justify-between gap-2.5">
+          <div className="flex items-center space-x-2 min-w-0">
             <img 
               src="/assets/famiheart-logo-clean.png" 
               alt="Famiheart" 
-              className="h-7 w-auto object-contain brightness-110" 
+              className="h-7 w-auto object-contain max-w-[125px]" 
             />
-            <span className="h-5 w-px bg-slate-700"></span>
+            <span className="h-5 w-px bg-slate-200 shrink-0"></span>
             <img 
               src="/assets/fpf-logo.png" 
               alt="FPF" 
-              className="h-7 w-auto object-contain" 
+              className="h-7 w-auto object-contain shrink-0" 
             />
           </div>
 
@@ -61,28 +59,29 @@ export default function Sidebar({
             <button 
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="md:hidden text-slate-400 hover:text-white p-1 rounded-md"
+              className="md:hidden text-slate-400 hover:text-slate-800 p-1 rounded-md"
               aria-label="Cerrar menú"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        <div className="mt-3">
+        {/* Título de entidad y categoría */}
+        <div className="mt-3 px-1">
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-bold text-white tracking-wide">FAMIHEART</span>
             <span className="text-[10px] bg-[#B91C1C] text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
               FPF 2026
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">
+          <div className="text-[11px] text-slate-400 mt-0.5 leading-snug">
             Certificación Médica Pre-Competencia
           </div>
         </div>
       </div>
 
-      {/* 2. Menú de Navegación Vertical */}
+      {/* 2. Menú de Navegación Vertical Limpio */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
           Módulos Clínicos
@@ -111,38 +110,10 @@ export default function Sidebar({
         })}
       </nav>
 
-      {/* 3. Perfil de Médico Evaluador y Seguridad */}
-      <div className="p-3.5 border-t border-slate-800/80 bg-slate-900/50 space-y-3">
-        <div className="bg-slate-900 border border-slate-800 rounded-md p-2.5">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-md bg-[#0284C7]/20 text-[#38BDF8] flex items-center justify-center font-bold text-xs shrink-0 border border-[#0284C7]/30">
-              DH
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold text-white truncate">
-                Dr. Darío Hernández A.
-              </div>
-              <div className="text-[10px] text-slate-400 truncate">
-                CMP 27503 • RNE 15620
-              </div>
-            </div>
-          </div>
-          <div className="mt-2 pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
-            <span>Cardiología Deportiva</span>
-            <span className="text-emerald-400 font-semibold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
-              Acreditado
-            </span>
-          </div>
-        </div>
-
-        {/* Indicador discreto de seguridad */}
-        <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
-          <div className="flex items-center gap-1.5">
-            <Lock className="w-3 h-3 text-slate-400" />
-            <span>TLS 256-bit • Ley 29733</span>
-          </div>
-          <span className="font-mono text-[9px] text-slate-400">v1.2.6</span>
+      {/* 3. Cierre Inferior Discreto del Sidebar (Sin duplicidad técnica ni perfil repetido) */}
+      <div className="p-3 border-t border-slate-800/80 text-center">
+        <div className="text-[10px] text-slate-400 font-medium">
+          Sistema Oficial FPF • CONMEBOL 2026
         </div>
       </div>
 

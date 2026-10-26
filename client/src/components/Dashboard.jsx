@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, 
@@ -21,7 +21,8 @@ import {
   Filter, 
   Calendar,
   Eye,
-  Check
+  Check,
+  X
 } from 'lucide-react';
 import { getPlayerCertificationStatus } from '../utils/statusClassifier';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
@@ -44,6 +45,7 @@ export default function Dashboard({
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'VIGENTE' | 'POR_RENOVAR' | 'OBSERVADO'
+  const [clubFilter, setClubFilter] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [isDragging, setIsDragging] = useState(false);
@@ -56,6 +58,15 @@ export default function Dashboard({
   const vigentesCount = patientsList.filter(p => getPlayerCertificationStatus(p).code === 'VIGENTE').length;
   const porRenovarCount = patientsList.filter(p => getPlayerCertificationStatus(p).code === 'POR_RENOVAR').length;
   const observadosCount = patientsList.filter(p => getPlayerCertificationStatus(p).code === 'OBSERVADO').length;
+
+  // Lista única de clubes para el filtro real de la tabla
+  const uniqueClubs = useMemo(() => {
+    const clubsSet = new Set();
+    patientsList.forEach(p => {
+      if (p.club && p.club.trim()) clubsSet.add(p.club.trim());
+    });
+    return Array.from(clubsSet).sort();
+  }, [patientsList]);
 
   // Procesamiento directo de archivos subidos desde el Dashboard
   const handleProcessFiles = (files) => {
@@ -134,6 +145,13 @@ export default function Dashboard({
       player.club?.toLowerCase().includes(q);
     
     if (!matchesSearch) return false;
+
+    // Filtro por Club
+    if (clubFilter !== 'ALL' && player.club !== clubFilter) {
+      return false;
+    }
+
+    // Filtro por Estado (desde las tarjetas superiores)
     if (statusFilter === 'ALL') return true;
     const statusCode = getPlayerCertificationStatus(player).code;
     return statusCode === statusFilter;
@@ -165,6 +183,13 @@ export default function Dashboard({
     }
   };
 
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('ALL');
+    setClubFilter('ALL');
+    setCurrentPage(1);
+  };
+
   return (
     <div className="space-y-6 select-none animate-in fade-in duration-200">
       
@@ -191,7 +216,7 @@ export default function Dashboard({
         className="hidden"
       />
 
-      {/* 1. ENCABEZADO DE PÁGINA LIMPIO (Sin Hero Banner redundante) */}
+      {/* 1. ENCABEZADO DE PÁGINA LIMPIO */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-[#1E293B] tracking-tight">
@@ -206,7 +231,7 @@ export default function Dashboard({
           <button
             type="button"
             onClick={() => onNavigateTab('pool')}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-md bg-white border border-[#CBD5E1] hover:bg-slate-50 text-xs font-semibold text-[#1E293B] transition cursor-pointer shadow-xs"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-[#1E293B] transition cursor-pointer shadow-2xs"
           >
             <Users className="w-3.5 h-3.5 text-slate-500" />
             <span>Pool de Rotación</span>
@@ -223,14 +248,16 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* 2. TARJETAS DE RESUMEN DE TEMPORADA (Left-Border Accent, altura compactada) */}
+      {/* 2. TARJETAS DE RESUMEN QUE FUNCIONAN COMO FILTROS ACTIVOS (Left-Border Accent) */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         
         {/* Card 1: Total Expedientes */}
         <div 
           onClick={() => { setStatusFilter('ALL'); setCurrentPage(1); }}
-          className={`bg-white border rounded-lg p-3.5 shadow-xs transition cursor-pointer border-l-4 border-l-[#0284C7] ${
-            statusFilter === 'ALL' ? 'border-[#0284C7] ring-1 ring-[#0284C7]/30' : 'border-[#E2E8F0] hover:border-slate-300'
+          className={`bg-white border rounded-lg p-3.5 shadow-2xs transition cursor-pointer border-l-4 border-l-[#0284C7] relative ${
+            statusFilter === 'ALL' 
+              ? 'border-[#0284C7] ring-2 ring-[#0284C7]/20 bg-sky-50/25' 
+              : 'border-[#E2E8F0] hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -241,13 +268,21 @@ export default function Dashboard({
             <span className="text-2xl font-bold font-mono text-[#1E293B]">{totalCount}</span>
             <span className="text-[11px] text-[#64748B]">cargados</span>
           </div>
+          {statusFilter === 'ALL' && (
+            <div className="mt-1.5 text-[10px] font-semibold text-[#0284C7] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0284C7] inline-block"></span>
+              Filtro activo (Ver todos)
+            </div>
+          )}
         </div>
 
         {/* Card 2: Vigentes / Aptos FPF */}
         <div 
           onClick={() => { setStatusFilter('VIGENTE'); setCurrentPage(1); }}
-          className={`bg-white border rounded-lg p-3.5 shadow-xs transition cursor-pointer border-l-4 border-l-[#15803D] ${
-            statusFilter === 'VIGENTE' ? 'border-[#15803D] ring-1 ring-[#15803D]/30' : 'border-[#E2E8F0] hover:border-slate-300'
+          className={`bg-white border rounded-lg p-3.5 shadow-2xs transition cursor-pointer border-l-4 border-l-[#15803D] relative ${
+            statusFilter === 'VIGENTE' 
+              ? 'border-[#15803D] ring-2 ring-[#15803D]/20 bg-emerald-50/25' 
+              : 'border-[#E2E8F0] hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -258,13 +293,21 @@ export default function Dashboard({
             <span className="text-2xl font-bold font-mono text-[#15803D]">{vigentesCount}</span>
             <span className="text-[11px] text-[#64748B]">aptos FPF</span>
           </div>
+          {statusFilter === 'VIGENTE' && (
+            <div className="mt-1.5 text-[10px] font-semibold text-[#15803D] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#15803D] inline-block"></span>
+              Filtro activo (Solo Aptos)
+            </div>
+          )}
         </div>
 
         {/* Card 3: Por Renovar (< 30 días) */}
         <div 
           onClick={() => { setStatusFilter('POR_RENOVAR'); setCurrentPage(1); }}
-          className={`bg-white border rounded-lg p-3.5 shadow-xs transition cursor-pointer border-l-4 border-l-[#B45309] ${
-            statusFilter === 'POR_RENOVAR' ? 'border-[#B45309] ring-1 ring-[#B45309]/30' : 'border-[#E2E8F0] hover:border-slate-300'
+          className={`bg-white border rounded-lg p-3.5 shadow-2xs transition cursor-pointer border-l-4 border-l-[#B45309] relative ${
+            statusFilter === 'POR_RENOVAR' 
+              ? 'border-[#B45309] ring-2 ring-[#B45309]/20 bg-amber-50/25' 
+              : 'border-[#E2E8F0] hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -275,13 +318,21 @@ export default function Dashboard({
             <span className="text-2xl font-bold font-mono text-[#B45309]">{porRenovarCount}</span>
             <span className="text-[11px] text-[#64748B]">próximos</span>
           </div>
+          {statusFilter === 'POR_RENOVAR' && (
+            <div className="mt-1.5 text-[10px] font-semibold text-[#B45309] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B45309] inline-block"></span>
+              Filtro activo (Próximos)
+            </div>
+          )}
         </div>
 
         {/* Card 4: Observaciones Clínicas */}
         <div 
           onClick={() => { setStatusFilter('OBSERVADO'); setCurrentPage(1); }}
-          className={`bg-white border rounded-lg p-3.5 shadow-xs transition cursor-pointer border-l-4 border-l-[#B91C1C] ${
-            statusFilter === 'OBSERVADO' ? 'border-[#B91C1C] ring-1 ring-[#B91C1C]/30' : 'border-[#E2E8F0] hover:border-slate-300'
+          className={`bg-white border rounded-lg p-3.5 shadow-2xs transition cursor-pointer border-l-4 border-l-[#B91C1C] relative ${
+            statusFilter === 'OBSERVADO' 
+              ? 'border-[#B91C1C] ring-2 ring-[#B91C1C]/20 bg-rose-50/25' 
+              : 'border-[#E2E8F0] hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -292,6 +343,12 @@ export default function Dashboard({
             <span className="text-2xl font-bold font-mono text-[#B91C1C]">{observadosCount}</span>
             <span className="text-[11px] text-[#64748B]">pendientes</span>
           </div>
+          {statusFilter === 'OBSERVADO' && (
+            <div className="mt-1.5 text-[10px] font-semibold text-[#B91C1C] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B91C1C] inline-block"></span>
+              Filtro activo (Observados)
+            </div>
+          )}
         </div>
 
       </section>
@@ -302,78 +359,67 @@ export default function Dashboard({
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`bg-white border border-[#E2E8F0] rounded-lg shadow-xs overflow-hidden transition-all duration-150 ${
+        className={`bg-white border border-[#E2E8F0] rounded-lg shadow-2xs overflow-hidden transition-all duration-150 ${
           isDragging ? 'ring-2 ring-[#0284C7] bg-sky-50/50' : ''
         }`}
       >
         
-        {/* Barra de Filtros y Búsqueda Superior */}
+        {/* Barra de Filtros Real: Buscador + Filtro de Club + Estado Activo (Sin píldoras redundantes) */}
         <div className="p-3.5 sm:p-4 border-b border-[#E2E8F0] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white">
           
-          {/* Pestañas de Estado */}
-          <div className="flex items-center space-x-1 overflow-x-auto pb-1 md:pb-0">
-            <button
-              type="button"
-              onClick={() => { setStatusFilter('ALL'); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer ${
-                statusFilter === 'ALL'
-                  ? 'bg-[#1E293B] text-white'
-                  : 'text-[#64748B] hover:text-[#1E293B] hover:bg-slate-100'
-              }`}
-            >
-              Todos ({totalCount})
-            </button>
-            <button
-              type="button"
-              onClick={() => { setStatusFilter('VIGENTE'); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer flex items-center space-x-1.5 ${
-                statusFilter === 'VIGENTE'
-                  ? 'bg-[#15803D] text-white'
-                  : 'text-[#15803D] hover:bg-emerald-50'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-              <span>Vigentes ({vigentesCount})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setStatusFilter('POR_RENOVAR'); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer flex items-center space-x-1.5 ${
-                statusFilter === 'POR_RENOVAR'
-                  ? 'bg-[#B45309] text-white'
-                  : 'text-[#B45309] hover:bg-amber-50'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
-              <span>Por Renovar ({porRenovarCount})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setStatusFilter('OBSERVADO'); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer flex items-center space-x-1.5 ${
-                statusFilter === 'OBSERVADO'
-                  ? 'bg-[#B91C1C] text-white'
-                  : 'text-[#B91C1C] hover:bg-rose-50'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span>
-              <span>Observados ({observadosCount})</span>
-            </button>
+          {/* Lado Izquierdo: Buscador y Filtro por Club */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
+            
+            {/* Buscador de Jugadores */}
+            <div className="relative w-full sm:w-72">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Buscar por futbolista, DNI o archivo..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-[#1E293B] focus:outline-none focus:border-[#0284C7] focus:bg-white transition"
+              />
+            </div>
+
+            {/* Selector Útil de Club Deportivo */}
+            <div className="relative w-full sm:w-56">
+              <select
+                value={clubFilter}
+                onChange={(e) => {
+                  setClubFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-[#1E293B] font-medium focus:outline-none focus:border-[#0284C7] focus:bg-white transition cursor-pointer"
+              >
+                <option value="ALL">Todos los Clubes ({patientsList.length})</option>
+                {uniqueClubs.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Etiqueta de Filtro Activo con botón de reinicio rápido */}
+            {(statusFilter !== 'ALL' || clubFilter !== 'ALL' || searchTerm.trim() !== '') && (
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="inline-flex items-center space-x-1 px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[#1E293B] text-[11px] font-semibold transition cursor-pointer shrink-0"
+                title="Quitar todos los filtros aplicados"
+              >
+                <span>Limpiar filtros</span>
+                <X className="w-3 h-3 text-slate-500" />
+              </button>
+            )}
+
           </div>
 
-          {/* Buscador */}
-          <div className="relative w-full md:w-72">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, DNI o club..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-[#CBD5E1] rounded-md text-[#1E293B] focus:outline-none focus:border-[#0284C7] focus:bg-white transition"
-            />
+          {/* Lado Derecho: Conteo de Registros */}
+          <div className="text-xs text-[#64748B] shrink-0 text-right">
+            Mostrando <strong className="text-[#1E293B]">{filteredPlayers.length}</strong> de <strong className="text-[#1E293B]">{totalCount}</strong> expedientes
           </div>
 
         </div>
@@ -383,12 +429,12 @@ export default function Dashboard({
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-[#E2E8F0] text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
-                <th className="py-2.5 px-4 font-semibold">Futbolista / DNI</th>
-                <th className="py-2.5 px-4 font-semibold">Club / Categoría</th>
-                <th className="py-2.5 px-4 font-semibold">Fecha Evaluación</th>
-                <th className="py-2.5 px-4 font-semibold">Estado FPF</th>
-                <th className="py-2.5 px-4 font-semibold">Expediente</th>
-                <th className="py-2.5 px-4 font-semibold text-right">Acciones</th>
+                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[200px]">Futbolista / DNI</th>
+                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[170px]">Club / Categoría</th>
+                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[120px]">Fecha Evaluación</th>
+                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[170px]">Estado FPF</th>
+                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[100px]">Expediente</th>
+                <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap min-w-[210px]">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
@@ -397,17 +443,17 @@ export default function Dashboard({
                   <td colSpan={6} className="py-12 text-center text-[#64748B]">
                     <div className="max-w-sm mx-auto space-y-2">
                       <p className="font-semibold text-sm text-[#1E293B]">
-                        No se encontraron futbolistas
+                        No se encontraron futbolistas con los filtros seleccionados
                       </p>
                       <p className="text-xs">
-                        {searchTerm ? `No hay resultados para "${searchTerm}".` : 'Arrastra archivos PDF o imágenes para cargarlos.'}
+                        {searchTerm ? `No hay resultados para "${searchTerm}".` : 'No hay registros en el club o estado seleccionado.'}
                       </p>
                       <button
                         type="button"
-                        onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}
+                        onClick={clearAllFilters}
                         className="mt-2 text-xs text-[#0284C7] font-semibold hover:underline"
                       >
-                        Limpiar filtros
+                        Restablecer todos los filtros
                       </button>
                     </div>
                   </td>
@@ -424,7 +470,7 @@ export default function Dashboard({
                       className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                     >
                       {/* 1. Futbolista / DNI */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 min-w-[200px]">
                         <div className="flex items-center space-x-2.5">
                           <div className="w-7 h-7 rounded-md bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200 group-hover:bg-[#0284C7]/10 group-hover:text-[#0284C7] group-hover:border-[#0284C7]/30 transition">
                             {player.apellidos?.charAt(0) || player.nombres?.charAt(0) || player.nombreCompleto?.charAt(0) || 'P'}
@@ -441,8 +487,8 @@ export default function Dashboard({
                       </td>
 
                       {/* 2. Club / Categoría */}
-                      <td className="py-3 px-4">
-                        <div className="font-medium text-[#1E293B] truncate max-w-[200px]">
+                      <td className="py-3 px-4 min-w-[170px]">
+                        <div className="font-medium text-[#1E293B] truncate max-w-[180px]">
                           {player.club || globalClub}
                         </div>
                         <div className="text-[11px] text-[#64748B]">
@@ -451,47 +497,49 @@ export default function Dashboard({
                       </td>
 
                       {/* 3. Fecha Evaluación */}
-                      <td className="py-3 px-4 text-[#1E293B] font-mono text-[11px]">
+                      <td className="py-3 px-4 text-[#1E293B] font-mono text-[11px] whitespace-nowrap min-w-[120px]">
                         {player.fechaEvaluacion || globalDate}
                       </td>
 
-                      {/* 4. Estado FPF */}
-                      <td className="py-3 px-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold ${
+                      {/* 4. Estado FPF (Sin división en múltiples líneas, formato limpio en 1 sola línea) */}
+                      <td className="py-3 px-4 whitespace-nowrap min-w-[170px]">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap ${
                           status.code === 'VIGENTE'
                             ? 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]'
                             : status.code === 'POR_RENOVAR'
                             ? 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]'
                             : 'bg-[#FEE2E2] text-[#B91C1C] border border-[#FECACA]'
                         }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                             status.code === 'VIGENTE' ? 'bg-emerald-600' : status.code === 'POR_RENOVAR' ? 'bg-amber-600' : 'bg-red-600'
                           }`}></span>
-                          <span>{status.label}</span>
+                          <span className="whitespace-nowrap">
+                            {status.code === 'VIGENTE' ? '• Vigente / Apto FPF' : status.code === 'POR_RENOVAR' ? '• Por Renovar (30d)' : '• Observado'}
+                          </span>
                         </span>
                       </td>
 
                       {/* 5. Expediente 21P */}
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1 text-[11px] text-slate-600 font-medium">
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <td className="py-3 px-4 whitespace-nowrap min-w-[100px]">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-slate-600 font-medium whitespace-nowrap">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                           <span>21 Págs</span>
                         </span>
                       </td>
 
-                      {/* 6. Acciones */}
-                      <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="inline-flex items-center space-x-1.5">
+                      {/* 6. Acciones (Botones compactos en 1 línea que nunca se cortan ni desbordan) */}
+                      <td className="py-3 px-4 text-right whitespace-nowrap min-w-[210px]" onClick={(e) => e.stopPropagation()}>
+                        <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap">
                           <button
                             type="button"
                             onClick={() => {
                               handleChoosePlayer(player);
                               onNavigateTab('documento');
                             }}
-                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-[#0284C7] hover:bg-[#0369A1] text-white text-[11px] font-semibold transition cursor-pointer shadow-xs"
+                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-[#0284C7] hover:bg-[#0369A1] text-white text-[11px] font-semibold transition cursor-pointer shadow-xs shrink-0 whitespace-nowrap"
                             title="Ver expediente completo de 21 páginas"
                           >
-                            <FileCheck2 className="w-3.5 h-3.5" />
+                            <FileCheck2 className="w-3.5 h-3.5 shrink-0" />
                             <span>Ver 21P</span>
                           </button>
 
@@ -501,10 +549,10 @@ export default function Dashboard({
                               handleChoosePlayer(player);
                               onNavigateTab('editor');
                             }}
-                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-white border border-[#CBD5E1] hover:bg-slate-50 text-slate-700 text-[11px] font-medium transition cursor-pointer"
+                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[11px] font-medium transition cursor-pointer shrink-0 whitespace-nowrap"
                             title="Editar ficha médica"
                           >
-                            <FileText className="w-3.5 h-3.5 text-slate-500" />
+                            <FileText className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                             <span>Editar</span>
                           </button>
 
@@ -512,11 +560,11 @@ export default function Dashboard({
                             type="button"
                             disabled={isWordDownloading}
                             onClick={(e) => handleDownloadWord(e, player)}
-                            className="hidden sm:inline-flex items-center space-x-1 px-2 py-1.5 rounded-md bg-white border border-[#CBD5E1] hover:bg-slate-50 text-slate-700 text-[11px] font-medium transition cursor-pointer disabled:opacity-50"
+                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[11px] font-medium transition cursor-pointer disabled:opacity-50 shrink-0 whitespace-nowrap"
                             title="Descargar documento oficial Word (.docx) con los 29 sellos"
                           >
-                            <Download className="w-3.5 h-3.5 text-slate-500" />
-                            <span className="hidden md:inline">Word</span>
+                            <Download className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <span>Word</span>
                           </button>
                         </div>
                       </td>
@@ -542,7 +590,7 @@ export default function Dashboard({
               type="button"
               disabled={validCurrentPage <= 1}
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              className="p-1.5 rounded-md border border-[#CBD5E1] bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-[#1E293B]"
+              className="p-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-[#1E293B]"
               aria-label="Página anterior"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -556,7 +604,7 @@ export default function Dashboard({
               type="button"
               disabled={validCurrentPage >= totalPages}
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              className="p-1.5 rounded-md border border-[#CBD5E1] bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-[#1E293B]"
+              className="p-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-[#1E293B]"
               aria-label="Página siguiente"
             >
               <ChevronRight className="w-4 h-4" />
@@ -577,7 +625,7 @@ export default function Dashboard({
           {/* Bloque Cardiología Deportiva */}
           <div 
             onClick={() => onNavigateTab('editor')}
-            className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-lg p-4 shadow-xs transition cursor-pointer space-y-2.5"
+            className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-lg p-4 shadow-2xs transition cursor-pointer space-y-2.5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -602,7 +650,7 @@ export default function Dashboard({
           {/* Bloque Laboratorio Clínico */}
           <div 
             onClick={() => onNavigateTab('editor')}
-            className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-lg p-4 shadow-xs transition cursor-pointer space-y-2.5"
+            className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-lg p-4 shadow-2xs transition cursor-pointer space-y-2.5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -627,7 +675,7 @@ export default function Dashboard({
           {/* Bloque Radiología de Tórax */}
           <div 
             onClick={() => onNavigateTab('editor')}
-            className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-lg p-4 shadow-xs transition cursor-pointer space-y-2.5"
+            className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-lg p-4 shadow-2xs transition cursor-pointer space-y-2.5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
