@@ -52,9 +52,9 @@ export default function FileExtractor({
     const hasDniOrNums = /\d{6,}/.test(fn);
     const parts = (player.nombreCompleto || '').trim().split(/\s+/);
     if (parts.length >= 3 && !hasDniOrNums) {
-      return { level: 'ALTA', text: 'Alta Certeza (99%)', badgeBg: 'bg-emerald-50 border-emerald-200 text-[#15803D]' };
+      return { level: 'ALTA', text: 'Alta Certeza (99%)', badgeBg: 'bg-[#DCFCE7] text-[#166534]' };
     }
-    return { level: 'REVISAR', text: 'Revisión Sugerida', badgeBg: 'bg-amber-50 border-amber-200 text-[#B45309]' };
+    return { level: 'REVISAR', text: 'Revisión Sugerida', badgeBg: 'bg-[#FEF3C7] text-[#92400E]' };
   };
 
   const handleStartEdit = (player) => {
@@ -213,10 +213,10 @@ export default function FileExtractor({
       <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0284C7] bg-sky-50 border border-sky-200 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0369A1] bg-sky-50 px-2 py-0.5 rounded">
               Extracción Automática FPF
             </span>
-            <span className="text-[10px] font-bold text-[#15803D] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded">
               Cero Tipeo Manual
             </span>
           </div>
@@ -232,7 +232,7 @@ export default function FileExtractor({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-md bg-[#0284C7] hover:bg-[#0369A1] text-xs font-semibold text-white transition cursor-pointer shadow-xs"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-md bg-[#0369A1] hover:bg-[#075985] text-xs font-semibold text-white transition cursor-pointer shadow-xs"
           >
             <UploadCloud className="w-3.5 h-3.5" />
             <span>Seleccionar Archivos</span>
@@ -264,8 +264,8 @@ export default function FileExtractor({
           onClick={() => fileInputRef.current?.click()}
           className={`lg:col-span-2 border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 relative bg-white ${
             isDragging
-              ? 'border-[#0284C7] bg-sky-50/60 ring-2 ring-[#0284C7]/20'
-              : 'border-[#CBD5E1] hover:border-[#0284C7] hover:bg-slate-50/50'
+              ? 'border-[#0369A1] bg-sky-50/60 ring-2 ring-[#0369A1]/20'
+              : 'border-slate-300 hover:border-[#0369A1] hover:bg-slate-50/50'
           }`}
         >
           <input 
@@ -282,7 +282,7 @@ export default function FileExtractor({
             className="hidden"
           />
 
-          <div className="w-12 h-12 rounded-lg bg-sky-50 text-[#0284C7] border border-sky-200 flex items-center justify-center mb-3">
+          <div className="w-12 h-12 rounded-lg bg-sky-50 text-[#0369A1] border border-sky-200 flex items-center justify-center mb-3">
             <UploadCloud className="w-6 h-6" />
           </div>
 
@@ -290,7 +290,7 @@ export default function FileExtractor({
             {isDragging ? '¡Suelta aquí los archivos para procesarlos!' : 'Arrastra aquí tus Imágenes o PDFs de Exámenes'}
           </h3>
           <p className="text-xs text-[#64748B] max-w-md mt-1">
-            Archivos con formato <strong className="text-[#1E293B]">[APELLIDOS] [NOMBRES].pdf</strong> (ej. <span className="text-[#0284C7] font-mono">BARAYBAR COLLANTES FABIANO.pdf</span>).
+            Archivos con formato <strong className="text-[#1E293B]">[APELLIDOS] [NOMBRES].pdf</strong> (ej. <span className="text-[#0369A1] font-mono">BARAYBAR COLLANTES FABIANO.pdf</span>).
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
@@ -300,7 +300,7 @@ export default function FileExtractor({
             <span className="text-[11px] font-medium text-slate-700 bg-slate-100 px-2.5 py-1 rounded">
               Imágenes JPG / PNG de Estudios
             </span>
-            <span className="text-[11px] font-semibold text-[#15803D] bg-[#DCFCE7] border border-[#BBF7D0] px-2.5 py-1 rounded">
+            <span className="text-[11px] font-semibold text-[#166534] bg-[#DCFCE7] px-2.5 py-1 rounded">
               Extracción en Vivo
             </span>
           </div>
@@ -314,7 +314,7 @@ export default function FileExtractor({
         <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs flex flex-col justify-between space-y-4">
           <div className="space-y-4">
             <div className="flex items-center space-x-2 border-b border-[#E2E8F0] pb-2.5">
-              <SlidersHorizontal className="w-4 h-4 text-[#0284C7]" />
+              <SlidersHorizontal className="w-4 h-4 text-[#0369A1]" />
               <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider">
                 Reglas de Extracción
               </h3>
@@ -329,11 +329,11 @@ export default function FileExtractor({
                   onClick={() => handleToggleNameOrder('LAST_FIRST')}
                   className={`w-full p-2.5 rounded-md border text-left text-xs transition cursor-pointer ${
                     nameOrder === 'LAST_FIRST'
-                      ? 'bg-sky-50 border-[#0284C7] text-[#0284C7] font-semibold'
+                      ? 'bg-sky-50 border-[#0369A1] text-[#0369A1] font-semibold'
                       : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'
                   }`}
                 >
-                  <div className="text-[10px] uppercase font-bold text-[#0284C7]">Oficial FPF</div>
+                  <div className="text-[10px] uppercase font-bold text-[#0369A1]">Oficial FPF</div>
                   <div className="font-mono text-xs">[APELLIDOS NOMBRES]</div>
                   <div className="text-[10px] text-[#64748B]">AGURTO ROMERO FERNANDO</div>
                 </button>
@@ -343,7 +343,7 @@ export default function FileExtractor({
                   onClick={() => handleToggleNameOrder('FIRST_LAST')}
                   className={`w-full p-2.5 rounded-md border text-left text-xs transition cursor-pointer ${
                     nameOrder === 'FIRST_LAST'
-                      ? 'bg-sky-50 border-[#0284C7] text-[#0284C7] font-semibold'
+                      ? 'bg-sky-50 border-[#0369A1] text-[#0369A1] font-semibold'
                       : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'
                   }`}
                 >
@@ -454,13 +454,13 @@ export default function FileExtractor({
                               if (e.key === 'Enter') handleSaveEdit(pId);
                               if (e.key === 'Escape') setEditingId(null);
                             }}
-                            className="bg-white border border-[#0284C7] rounded px-2 py-1 text-xs text-[#1E293B] font-mono font-bold focus:outline-none w-full"
+                            className="bg-white border border-[#0369A1] rounded px-2 py-1 text-xs text-[#1E293B] font-mono font-bold focus:outline-none w-full"
                             autoFocus
                           />
                           <button
                             type="button"
                             onClick={() => handleSaveEdit(pId)}
-                            className="p-1 rounded bg-[#0284C7] hover:bg-[#0369A1] text-white transition cursor-pointer"
+                            className="p-1 rounded bg-[#0369A1] hover:bg-[#075985] text-white transition cursor-pointer"
                             title="Guardar nombre corregido"
                           >
                             <Check className="w-3.5 h-3.5" />
@@ -474,7 +474,7 @@ export default function FileExtractor({
                           <button
                             type="button"
                             onClick={() => handleStartEdit(player)}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-slate-100 text-slate-400 hover:text-[#0284C7] transition cursor-pointer"
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-slate-100 text-slate-400 hover:text-[#0369A1] transition cursor-pointer"
                             title="Editar nombre manualmente si hay dudas"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
@@ -484,7 +484,7 @@ export default function FileExtractor({
                       <div className="text-[11px] text-[#64748B] flex items-center space-x-1.5 mt-0.5">
                         <span>DNI: {player.dni || '74290500'}</span>
                         <span>•</span>
-                        <span className={`text-[10px] font-semibold px-1.5 py-0.2 rounded border ${confidence.badgeBg}`}>
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${confidence.badgeBg}`}>
                           {confidence.text}
                         </span>
                       </div>
@@ -511,7 +511,7 @@ export default function FileExtractor({
                     </td>
 
                     <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]">
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-[#DCFCE7] text-[#166534]">
                         <CheckCircle2 className="w-3 h-3" />
                         <span>{player.estadoAptitud || 'APTO'}</span>
                       </span>
@@ -524,7 +524,7 @@ export default function FileExtractor({
                           onSelectPatient(player);
                           onNavigateTab('documento');
                         }}
-                        className="bg-[#0284C7] hover:bg-[#0369A1] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-xs"
+                        className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-xs"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>Ver 21 Págs</span>

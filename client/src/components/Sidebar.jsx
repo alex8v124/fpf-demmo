@@ -35,49 +35,47 @@ export default function Sidebar({
   const sidebarContent = (
     <div className="flex flex-col h-full bg-[#0F172A] text-slate-300 border-r border-slate-800 select-none">
       
-      {/* 1. Header con Cabecera Blanca para Logos Oficiales (Sin colisión de fondos ni recortes) */}
-      <div className="p-4 border-b border-slate-800/80">
-        
-        {/* Contenedor blanco nítido para los logos institucionales */}
-        <div className="bg-white rounded-lg p-2.5 shadow-xs border border-slate-700/60 flex items-center justify-between gap-2.5">
-          <div className="flex items-center space-x-2 min-w-0">
-            <img 
-              src="/assets/famiheart-logo-clean.png" 
-              alt="Famiheart" 
-              className="h-7 w-auto object-contain max-w-[125px]" 
-            />
-            <span className="h-5 w-px bg-slate-200 shrink-0"></span>
-            <img 
-              src="/assets/fpf-logo.png" 
-              alt="FPF" 
-              className="h-7 w-auto object-contain shrink-0" 
-            />
-          </div>
-
-          {/* Botón de cierre para móvil */}
-          {setMobileOpen && (
-            <button 
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="md:hidden text-slate-400 hover:text-slate-800 p-1 rounded-md"
-              aria-label="Cerrar menú"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+      {/* 1. Cabecera Institucional Blanca Edge-to-Edge (Full-Bleed 64px, alineado con Topbar) */}
+      <div className="h-16 bg-white border-b border-slate-200 px-4 flex items-center justify-between shrink-0">
+        <div className="flex items-center space-x-2.5 min-w-0">
+          <img 
+            src="/assets/famiheart-logo-clean.png" 
+            alt="Famiheart" 
+            className="h-7 sm:h-8 w-auto object-contain max-w-[130px]" 
+          />
+          <span className="h-6 w-px bg-slate-200 shrink-0"></span>
+          <img 
+            src="/assets/fpf-logo.png" 
+            alt="FPF" 
+            className="h-7 sm:h-8 w-auto object-contain shrink-0" 
+          />
         </div>
 
-        {/* Título de entidad y categoría */}
-        <div className="mt-3 px-1">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-white tracking-wide">FAMIHEART</span>
-            <span className="text-[10px] bg-[#B91C1C] text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-              FPF 2026
-            </span>
-          </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-            Certificación Médica Pre-Competencia
-          </div>
+        {/* Botón de cierre para móvil */}
+        {setMobileOpen && (
+          <button 
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="md:hidden text-slate-400 hover:text-slate-800 p-1.5 rounded-md cursor-pointer"
+            aria-label="Cerrar menú"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+
+      {/* Subtítulo institucional sobre fondo oscuro */}
+      <div className="px-4 pt-3.5 pb-2.5 border-b border-slate-800/80">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold text-slate-200 tracking-wider uppercase">
+            Sistema Oficial
+          </span>
+          <span className="text-[10px] bg-[#B91C1C] text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+            FPF 2026
+          </span>
+        </div>
+        <div className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+          Certificación Médica Pre-Competencia
         </div>
       </div>
 
@@ -96,7 +94,7 @@ export default function Sidebar({
               onClick={() => handleSelectNav(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-xs transition cursor-pointer ${
                 isActive
-                  ? 'bg-[#0284C7]/20 text-[#38BDF8] border-l-4 border-[#0284C7] font-semibold shadow-xs'
+                  ? 'bg-[#0369A1]/25 text-[#38BDF8] border-l-4 border-[#0369A1] font-semibold shadow-xs'
                   : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 font-medium'
               }`}
             >

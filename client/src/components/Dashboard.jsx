@@ -231,7 +231,7 @@ export default function Dashboard({
           <button
             type="button"
             onClick={() => onNavigateTab('pool')}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-[#1E293B] transition cursor-pointer shadow-2xs"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-[#1E293B] transition cursor-pointer shadow-xs"
           >
             <Users className="w-3.5 h-3.5 text-slate-500" />
             <span>Pool de Rotación</span>
@@ -240,7 +240,7 @@ export default function Dashboard({
           <button
             type="button"
             onClick={() => dashboardFileInputRef.current?.click()}
-            className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-md bg-[#0284C7] hover:bg-[#0369A1] text-xs font-semibold text-white transition cursor-pointer shadow-xs"
+            className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-md bg-[#0369A1] hover:bg-[#075985] text-xs font-semibold text-white transition cursor-pointer shadow-xs"
           >
             <UploadCloud className="w-3.5 h-3.5" />
             <span>+ Subir Archivos</span>
@@ -248,16 +248,16 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* 2. TARJETAS DE RESUMEN QUE FUNCIONAN COMO FILTROS ACTIVOS (Left-Border Accent) */}
+      {/* 2. TARJETAS DE RESUMEN QUE FUNCIONAN COMO FILTROS ACTIVOS (Elevación Sutil y Left-Border Institucional) */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         
         {/* Card 1: Total Expedientes */}
         <div 
           onClick={() => { setStatusFilter('ALL'); setCurrentPage(1); }}
-          className={`bg-white border rounded-lg p-3.5 shadow-2xs transition cursor-pointer border-l-4 border-l-[#0284C7] relative ${
+          className={`bg-white border rounded-lg p-3.5 transition cursor-pointer border-l-4 border-l-[#0369A1] relative ${
             statusFilter === 'ALL' 
-              ? 'border-[#0284C7] ring-2 ring-[#0284C7]/20 bg-sky-50/25' 
-              : 'border-[#E2E8F0] hover:border-slate-300'
+              ? 'border-[#0369A1] ring-2 ring-[#0369A1]/20 bg-sky-50/20 shadow-xs' 
+              : 'border-slate-200/90 shadow-xs hover:shadow-sm hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -269,8 +269,8 @@ export default function Dashboard({
             <span className="text-[11px] text-[#64748B]">cargados</span>
           </div>
           {statusFilter === 'ALL' && (
-            <div className="mt-1.5 text-[10px] font-semibold text-[#0284C7] flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#0284C7] inline-block"></span>
+            <div className="mt-1.5 text-[10px] font-semibold text-[#0369A1] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0369A1] inline-block"></span>
               Filtro activo (Ver todos)
             </div>
           )}
@@ -279,23 +279,23 @@ export default function Dashboard({
         {/* Card 2: Vigentes / Aptos FPF */}
         <div 
           onClick={() => { setStatusFilter('VIGENTE'); setCurrentPage(1); }}
-          className={`bg-white border rounded-lg p-3.5 shadow-2xs transition cursor-pointer border-l-4 border-l-[#15803D] relative ${
+          className={`bg-white border rounded-lg p-3.5 transition cursor-pointer border-l-4 border-l-[#166534] relative ${
             statusFilter === 'VIGENTE' 
-              ? 'border-[#15803D] ring-2 ring-[#15803D]/20 bg-emerald-50/25' 
-              : 'border-[#E2E8F0] hover:border-slate-300'
+              ? 'border-[#166534] ring-2 ring-[#166534]/20 bg-emerald-50/20 shadow-xs' 
+              : 'border-slate-200/90 shadow-xs hover:shadow-sm hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#15803D]">Vigentes (Aptos)</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#166534]">Vigentes (Aptos)</span>
             <ShieldCheck className="w-4 h-4 text-slate-400" />
           </div>
           <div className="mt-2 flex items-baseline space-x-1.5">
-            <span className="text-2xl font-bold font-mono text-[#15803D]">{vigentesCount}</span>
+            <span className="text-2xl font-bold font-mono text-[#166534]">{vigentesCount}</span>
             <span className="text-[11px] text-[#64748B]">aptos FPF</span>
           </div>
           {statusFilter === 'VIGENTE' && (
-            <div className="mt-1.5 text-[10px] font-semibold text-[#15803D] flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#15803D] inline-block"></span>
+            <div className="mt-1.5 text-[10px] font-semibold text-[#166534] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#166534] inline-block"></span>
               Filtro activo (Solo Aptos)
             </div>
           )}
@@ -304,23 +304,23 @@ export default function Dashboard({
         {/* Card 3: Por Renovar (< 30 días) */}
         <div 
           onClick={() => { setStatusFilter('POR_RENOVAR'); setCurrentPage(1); }}
-          className={`bg-white border rounded-lg p-3.5 shadow-2xs transition cursor-pointer border-l-4 border-l-[#B45309] relative ${
+          className={`bg-white border rounded-lg p-3.5 transition cursor-pointer border-l-4 border-l-[#92400E] relative ${
             statusFilter === 'POR_RENOVAR' 
-              ? 'border-[#B45309] ring-2 ring-[#B45309]/20 bg-amber-50/25' 
-              : 'border-[#E2E8F0] hover:border-slate-300'
+              ? 'border-[#92400E] ring-2 ring-[#92400E]/20 bg-amber-50/20 shadow-xs' 
+              : 'border-slate-200/90 shadow-xs hover:shadow-sm hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#B45309]">Por Renovar (30d)</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#92400E]">Por Renovar (30d)</span>
             <Clock className="w-4 h-4 text-slate-400" />
           </div>
           <div className="mt-2 flex items-baseline space-x-1.5">
-            <span className="text-2xl font-bold font-mono text-[#B45309]">{porRenovarCount}</span>
+            <span className="text-2xl font-bold font-mono text-[#92400E]">{porRenovarCount}</span>
             <span className="text-[11px] text-[#64748B]">próximos</span>
           </div>
           {statusFilter === 'POR_RENOVAR' && (
-            <div className="mt-1.5 text-[10px] font-semibold text-[#B45309] flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#B45309] inline-block"></span>
+            <div className="mt-1.5 text-[10px] font-semibold text-[#92400E] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#92400E] inline-block"></span>
               Filtro activo (Próximos)
             </div>
           )}
@@ -329,23 +329,23 @@ export default function Dashboard({
         {/* Card 4: Observaciones Clínicas */}
         <div 
           onClick={() => { setStatusFilter('OBSERVADO'); setCurrentPage(1); }}
-          className={`bg-white border rounded-lg p-3.5 shadow-2xs transition cursor-pointer border-l-4 border-l-[#B91C1C] relative ${
+          className={`bg-white border rounded-lg p-3.5 transition cursor-pointer border-l-4 border-l-[#991B1B] relative ${
             statusFilter === 'OBSERVADO' 
-              ? 'border-[#B91C1C] ring-2 ring-[#B91C1C]/20 bg-rose-50/25' 
-              : 'border-[#E2E8F0] hover:border-slate-300'
+              ? 'border-[#991B1B] ring-2 ring-[#991B1B]/20 bg-rose-50/20 shadow-xs' 
+              : 'border-slate-200/90 shadow-xs hover:shadow-sm hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#B91C1C]">Observados</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#991B1B]">Observados</span>
             <AlertTriangle className="w-4 h-4 text-slate-400" />
           </div>
           <div className="mt-2 flex items-baseline space-x-1.5">
-            <span className="text-2xl font-bold font-mono text-[#B91C1C]">{observadosCount}</span>
+            <span className="text-2xl font-bold font-mono text-[#991B1B]">{observadosCount}</span>
             <span className="text-[11px] text-[#64748B]">pendientes</span>
           </div>
           {statusFilter === 'OBSERVADO' && (
-            <div className="mt-1.5 text-[10px] font-semibold text-[#B91C1C] flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#B91C1C] inline-block"></span>
+            <div className="mt-1.5 text-[10px] font-semibold text-[#991B1B] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#991B1B] inline-block"></span>
               Filtro activo (Observados)
             </div>
           )}
@@ -359,13 +359,13 @@ export default function Dashboard({
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`bg-white border border-[#E2E8F0] rounded-lg shadow-2xs overflow-hidden transition-all duration-150 ${
-          isDragging ? 'ring-2 ring-[#0284C7] bg-sky-50/50' : ''
+        className={`bg-white border border-slate-200/90 rounded-lg shadow-xs overflow-hidden transition-all duration-150 ${
+          isDragging ? 'ring-2 ring-[#0369A1] bg-sky-50/50' : ''
         }`}
       >
         
         {/* Barra de Filtros Real: Buscador + Filtro de Club + Estado Activo (Sin píldoras redundantes) */}
-        <div className="p-3.5 sm:p-4 border-b border-[#E2E8F0] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white">
+        <div className="p-3.5 sm:p-4 border-b border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white">
           
           {/* Lado Izquierdo: Buscador y Filtro por Club */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
@@ -381,7 +381,7 @@ export default function Dashboard({
                   setSearchTerm(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-[#1E293B] focus:outline-none focus:border-[#0284C7] focus:bg-white transition"
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-[#1E293B] focus:outline-none focus:border-[#0369A1] focus:bg-white transition"
               />
             </div>
 
@@ -393,7 +393,7 @@ export default function Dashboard({
                   setClubFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-[#1E293B] font-medium focus:outline-none focus:border-[#0284C7] focus:bg-white transition cursor-pointer"
+                className="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-md text-[#1E293B] font-medium focus:outline-none focus:border-[#0369A1] focus:bg-white transition cursor-pointer"
               >
                 <option value="ALL">Todos los Clubes ({patientsList.length})</option>
                 {uniqueClubs.map(c => (
@@ -428,16 +428,16 @@ export default function Dashboard({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-[#E2E8F0] text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
-                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[200px]">Futbolista / DNI</th>
-                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[170px]">Club / Categoría</th>
-                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[120px]">Fecha Evaluación</th>
-                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[170px]">Estado FPF</th>
-                <th className="py-2.5 px-4 font-semibold whitespace-nowrap min-w-[100px]">Expediente</th>
-                <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap min-w-[210px]">Acciones</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <th className="py-3 px-4 font-semibold whitespace-nowrap min-w-[200px]">Futbolista / DNI</th>
+                <th className="py-3 px-4 font-semibold whitespace-nowrap min-w-[170px]">Club / Categoría</th>
+                <th className="py-3 px-4 font-semibold whitespace-nowrap min-w-[120px]">Fecha Evaluación</th>
+                <th className="py-3 px-4 font-semibold whitespace-nowrap min-w-[160px]">Estado FPF</th>
+                <th className="py-3 px-4 font-semibold whitespace-nowrap min-w-[90px]">Expediente</th>
+                <th className="py-3 px-4 font-semibold text-right whitespace-nowrap w-[200px] min-w-[200px]">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E2E8F0]">
+            <tbody className="divide-y divide-slate-100">
               {paginatedPlayers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-[#64748B]">
@@ -451,7 +451,7 @@ export default function Dashboard({
                       <button
                         type="button"
                         onClick={clearAllFilters}
-                        className="mt-2 text-xs text-[#0284C7] font-semibold hover:underline"
+                        className="mt-2 text-xs text-[#0369A1] font-semibold hover:underline"
                       >
                         Restablecer todos los filtros
                       </button>
@@ -467,16 +467,16 @@ export default function Dashboard({
                     <tr 
                       key={player.id || player.fileName}
                       onClick={() => handleChoosePlayer(player)}
-                      className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                      className="hover:bg-slate-50/70 transition-colors cursor-pointer group border-b border-slate-100 last:border-b-0"
                     >
                       {/* 1. Futbolista / DNI */}
                       <td className="py-3 px-4 min-w-[200px]">
                         <div className="flex items-center space-x-2.5">
-                          <div className="w-7 h-7 rounded-md bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200 group-hover:bg-[#0284C7]/10 group-hover:text-[#0284C7] group-hover:border-[#0284C7]/30 transition">
+                          <div className="w-7 h-7 rounded-md bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200 group-hover:bg-[#0369A1]/10 group-hover:text-[#0369A1] group-hover:border-[#0369A1]/30 transition">
                             {player.apellidos?.charAt(0) || player.nombres?.charAt(0) || player.nombreCompleto?.charAt(0) || 'P'}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-semibold text-[#1E293B] group-hover:text-[#0284C7] transition truncate">
+                            <div className="font-semibold text-[#1E293B] group-hover:text-[#0369A1] transition truncate">
                               {player.nombreCompleto || `${player.apellidos || ''} ${player.nombres || ''}`.trim()}
                             </div>
                             <div className="text-[11px] text-[#64748B] font-mono">
@@ -501,34 +501,34 @@ export default function Dashboard({
                         {player.fechaEvaluacion || globalDate}
                       </td>
 
-                      {/* 4. Estado FPF (Sin división en múltiples líneas, formato limpio en 1 sola línea) */}
-                      <td className="py-3 px-4 whitespace-nowrap min-w-[170px]">
+                      {/* 4. Estado FPF (Pastel Clínico sin bordes) */}
+                      <td className="py-3 px-4 whitespace-nowrap min-w-[160px]">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap ${
                           status.code === 'VIGENTE'
-                            ? 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]'
+                            ? 'bg-[#DCFCE7] text-[#166534]'
                             : status.code === 'POR_RENOVAR'
-                            ? 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]'
-                            : 'bg-[#FEE2E2] text-[#B91C1C] border border-[#FECACA]'
+                            ? 'bg-[#FEF3C7] text-[#92400E]'
+                            : 'bg-[#FEE2E2] text-[#991B1B]'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                            status.code === 'VIGENTE' ? 'bg-emerald-600' : status.code === 'POR_RENOVAR' ? 'bg-amber-600' : 'bg-red-600'
+                            status.code === 'VIGENTE' ? 'bg-[#166534]' : status.code === 'POR_RENOVAR' ? 'bg-[#92400E]' : 'bg-[#991B1B]'
                           }`}></span>
                           <span className="whitespace-nowrap">
-                            {status.code === 'VIGENTE' ? '• Vigente / Apto FPF' : status.code === 'POR_RENOVAR' ? '• Por Renovar (30d)' : '• Observado'}
+                            {status.code === 'VIGENTE' ? 'Vigente / Apto FPF' : status.code === 'POR_RENOVAR' ? 'Por Renovar (30d)' : 'Observado'}
                           </span>
                         </span>
                       </td>
 
                       {/* 5. Expediente 21P */}
-                      <td className="py-3 px-4 whitespace-nowrap min-w-[100px]">
+                      <td className="py-3 px-4 whitespace-nowrap min-w-[90px]">
                         <span className="inline-flex items-center gap-1 text-[11px] text-slate-600 font-medium whitespace-nowrap">
                           <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                           <span>21 Págs</span>
                         </span>
                       </td>
 
-                      {/* 6. Acciones (Botones compactos en 1 línea que nunca se cortan ni desbordan) */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap min-w-[210px]" onClick={(e) => e.stopPropagation()}>
+                      {/* 6. Acciones (Botones refinados y compactos que nunca desbordan) */}
+                      <td className="py-2.5 px-4 text-right whitespace-nowrap w-[200px] min-w-[200px]" onClick={(e) => e.stopPropagation()}>
                         <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap">
                           <button
                             type="button"
@@ -536,8 +536,8 @@ export default function Dashboard({
                               handleChoosePlayer(player);
                               onNavigateTab('documento');
                             }}
-                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-[#0284C7] hover:bg-[#0369A1] text-white text-[11px] font-semibold transition cursor-pointer shadow-xs shrink-0 whitespace-nowrap"
-                            title="Ver expediente completo de 21 páginas"
+                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-[#0369A1] hover:bg-[#075985] text-white text-[11px] font-semibold transition cursor-pointer shadow-xs shrink-0 whitespace-nowrap"
+                            title="Ver expediente oficial de 21 páginas"
                           >
                             <FileCheck2 className="w-3.5 h-3.5 shrink-0" />
                             <span>Ver 21P</span>
@@ -549,7 +549,7 @@ export default function Dashboard({
                               handleChoosePlayer(player);
                               onNavigateTab('editor');
                             }}
-                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[11px] font-medium transition cursor-pointer shrink-0 whitespace-nowrap"
+                            className="inline-flex items-center space-x-1 px-2 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-[11px] font-medium transition cursor-pointer shrink-0 whitespace-nowrap"
                             title="Editar ficha médica"
                           >
                             <FileText className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -560,7 +560,7 @@ export default function Dashboard({
                             type="button"
                             disabled={isWordDownloading}
                             onClick={(e) => handleDownloadWord(e, player)}
-                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[11px] font-medium transition cursor-pointer disabled:opacity-50 shrink-0 whitespace-nowrap"
+                            className="inline-flex items-center space-x-1 px-2 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-[11px] font-medium transition cursor-pointer disabled:opacity-50 shrink-0 whitespace-nowrap"
                             title="Descargar documento oficial Word (.docx) con los 29 sellos"
                           >
                             <Download className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -625,7 +625,7 @@ export default function Dashboard({
           {/* Bloque Cardiología Deportiva */}
           <div 
             onClick={() => onNavigateTab('editor')}
-            className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-lg p-4 shadow-2xs transition cursor-pointer space-y-2.5"
+            className="bg-white border border-slate-200/90 hover:border-slate-300 rounded-lg p-4 shadow-xs hover:shadow-sm transition cursor-pointer space-y-2.5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -634,14 +634,14 @@ export default function Dashboard({
                   Cardiología Deportiva
                 </h3>
               </div>
-              <span className="text-[10px] bg-emerald-50 text-[#15803D] border border-emerald-200 px-2 py-0.5 rounded font-semibold">
+              <span className="text-[10px] bg-[#DCFCE7] text-[#166534] px-2 py-0.5 rounded font-semibold">
                 Calibrado
               </span>
             </div>
             <p className="text-xs text-[#64748B] leading-relaxed">
               Electrocardiograma de 12 derivaciones (CONMEBOL) y Ecocardiograma Doppler transtorácico.
             </p>
-            <div className="text-[11px] font-semibold text-[#0284C7] flex items-center gap-1 pt-0.5">
+            <div className="text-[11px] font-semibold text-[#0369A1] hover:text-[#075985] flex items-center gap-1 pt-0.5">
               <span>Abrir protocolo cardiológico</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -650,23 +650,23 @@ export default function Dashboard({
           {/* Bloque Laboratorio Clínico */}
           <div 
             onClick={() => onNavigateTab('editor')}
-            className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-lg p-4 shadow-2xs transition cursor-pointer space-y-2.5"
+            className="bg-white border border-slate-200/90 hover:border-slate-300 rounded-lg p-4 shadow-xs hover:shadow-sm transition cursor-pointer space-y-2.5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <FlaskConical className="w-4 h-4 text-[#15803D]" />
+                <FlaskConical className="w-4 h-4 text-[#166534]" />
                 <h3 className="text-xs font-bold text-[#1E293B]">
                   Laboratorio Clínico
                 </h3>
               </div>
-              <span className="text-[10px] bg-emerald-50 text-[#15803D] border border-emerald-200 px-2 py-0.5 rounded font-semibold">
+              <span className="text-[10px] bg-[#DCFCE7] text-[#166534] px-2 py-0.5 rounded font-semibold">
                 Validado FPF
               </span>
             </div>
             <p className="text-xs text-[#64748B] leading-relaxed">
               Hemograma automatizado, bioquímica sérica (Glucosa) y examen parasitológico seriado.
             </p>
-            <div className="text-[11px] font-semibold text-[#0284C7] flex items-center gap-1 pt-0.5">
+            <div className="text-[11px] font-semibold text-[#0369A1] hover:text-[#075985] flex items-center gap-1 pt-0.5">
               <span>Abrir módulo de laboratorio</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -675,23 +675,23 @@ export default function Dashboard({
           {/* Bloque Radiología de Tórax */}
           <div 
             onClick={() => onNavigateTab('editor')}
-            className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-lg p-4 shadow-2xs transition cursor-pointer space-y-2.5"
+            className="bg-white border border-slate-200/90 hover:border-slate-300 rounded-lg p-4 shadow-xs hover:shadow-sm transition cursor-pointer space-y-2.5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <ImageIcon className="w-4 h-4 text-[#0284C7]" />
+                <ImageIcon className="w-4 h-4 text-[#0369A1]" />
                 <h3 className="text-xs font-bold text-[#1E293B]">
                   Radiología de Tórax
                 </h3>
               </div>
-              <span className="text-[10px] bg-emerald-50 text-[#15803D] border border-emerald-200 px-2 py-0.5 rounded font-semibold">
+              <span className="text-[10px] bg-[#DCFCE7] text-[#166534] px-2 py-0.5 rounded font-semibold">
                 Favorable
               </span>
             </div>
             <p className="text-xs text-[#64748B] leading-relaxed">
               Informe radiológico en incidencia PA, campos pulmonares e índice cardiotorácico.
             </p>
-            <div className="text-[11px] font-semibold text-[#0284C7] flex items-center gap-1 pt-0.5">
+            <div className="text-[11px] font-semibold text-[#0369A1] hover:text-[#075985] flex items-center gap-1 pt-0.5">
               <span>Abrir reporte e imagen Rx</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>

@@ -153,7 +153,7 @@ export default function DocumentViewer({
             }}
             className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-md text-xs font-semibold border transition cursor-pointer ${
               viewFormat === 'facsimile'
-                ? 'bg-[#0284C7] text-white border-[#0284C7] shadow-xs'
+                ? 'bg-[#0369A1] text-white border-[#0369A1] shadow-xs'
                 : 'bg-white text-slate-700 border-[#CBD5E1] hover:bg-slate-50'
             }`}
             title="Certificado Oficial FPF 1:1 vectorial de alta fidelidad"
@@ -223,7 +223,7 @@ export default function DocumentViewer({
           <button
             type="button"
             onClick={onPrint}
-            className="flex items-center space-x-1 bg-[#0284C7] hover:bg-[#0369A1] text-white font-semibold text-xs px-3 py-1.5 rounded-md shadow-xs transition cursor-pointer"
+            className="flex items-center space-x-1 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-1.5 rounded-md shadow-xs transition cursor-pointer"
             title="Imprimir el certificado o guardar como PDF"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -304,7 +304,7 @@ export default function DocumentViewer({
       <div className="no-print bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
         <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#1E293B] flex items-center gap-1.5">
-            <Bookmark className="w-3.5 h-3.5 text-[#0284C7]" />
+            <Bookmark className="w-3.5 h-3.5 text-[#0369A1]" />
             Índice de Secciones del Expediente de 21 Páginas
           </h3>
           <span className="text-[11px] text-[#64748B]">Haz clic en cualquier página para navegar</span>
@@ -327,7 +327,7 @@ export default function DocumentViewer({
                     }}
                     className={`w-6 h-6 rounded text-xs font-semibold transition cursor-pointer flex items-center justify-center ${
                       currentPage === num && viewMode === 'single'
-                        ? 'bg-[#0284C7] text-white shadow-xs'
+                        ? 'bg-[#0369A1] text-white shadow-xs'
                         : 'bg-white hover:bg-slate-100 text-[#1E293B] border border-[#CBD5E1]'
                     }`}
                   >

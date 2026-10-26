@@ -104,10 +104,10 @@ export default function DatabaseView() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center space-x-2">
-              <span className="bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0] text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+              <span className="bg-[#DCFCE7] text-[#166534] text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
                 <Database className="w-3.5 h-3.5" /> Supabase Cloud Database
               </span>
-              <span className="bg-sky-50 text-[#0284C7] border border-sky-200 text-[11px] font-semibold px-2 py-0.5 rounded">
+              <span className="bg-sky-50 text-[#0369A1] text-[11px] font-semibold px-2 py-0.5 rounded">
                 PostgreSQL 15+
               </span>
             </div>
@@ -154,15 +154,15 @@ export default function DatabaseView() {
           </div>
           <div>
             <span className="text-[#64748B] block font-medium">Latencia de Red:</span>
-            <span className="text-[#15803D] font-mono font-bold mt-0.5 block">{connStatus.latencyMs} ms</span>
+            <span className="text-[#166534] font-mono font-bold mt-0.5 block">{connStatus.latencyMs} ms</span>
           </div>
           <div>
             <span className="text-[#64748B] block font-medium">Instancia Médica:</span>
-            <span className="text-[#0284C7] font-mono font-bold mt-0.5 block">fpf_cluster_prod (TLS v1.3)</span>
+            <span className="text-[#0369A1] font-mono font-bold mt-0.5 block">fpf_cluster_prod (TLS v1.3)</span>
           </div>
           <div>
             <span className="text-[#64748B] block font-medium">Seguridad de Datos:</span>
-            <span className="text-[#15803D] font-mono text-xs truncate block mt-0.5">
+            <span className="text-[#166534] font-mono text-xs truncate block mt-0.5">
               Cifrado AES-256 / Ley 29733
             </span>
           </div>
@@ -173,10 +173,10 @@ export default function DatabaseView() {
       {syncMessage && (
         <div className={`p-3 rounded-md border text-xs flex items-start space-x-2.5 ${
           syncMessage.type === 'success'
-            ? 'bg-emerald-50 border-emerald-200 text-[#15803D]'
+            ? 'bg-emerald-50 border-emerald-200 text-[#166534]'
             : syncMessage.type === 'warning'
-            ? 'bg-amber-50 border-amber-200 text-[#B45309]'
-            : 'bg-sky-50 border-sky-200 text-[#0284C7]'
+            ? 'bg-amber-50 border-amber-200 text-[#92400E]'
+            : 'bg-sky-50 border-sky-200 text-[#0369A1]'
         }`}>
           {syncMessage.type === 'success' ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -194,7 +194,7 @@ export default function DatabaseView() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-2">
-              <UploadCloud className="w-4 h-4 text-[#15803D]" />
+              <UploadCloud className="w-4 h-4 text-[#166534]" />
               Expedientes Persistidos en Supabase ({dbPatients.length})
             </h3>
             <p className="text-xs text-[#64748B] mt-0.5">
@@ -206,7 +206,7 @@ export default function DatabaseView() {
             type="button"
             onClick={handleSeedPatients}
             disabled={syncing}
-            className="flex items-center space-x-1.5 bg-[#0284C7] hover:bg-[#0369A1] text-white font-semibold text-xs px-3.5 py-2 rounded-md shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3.5 py-2 rounded-md shadow-xs transition cursor-pointer disabled:opacity-50"
           >
             <Zap className={`w-3.5 h-3.5 ${syncing ? 'animate-bounce' : ''}`} />
             <span>{syncing ? 'Sincronizando...' : 'Sincronizar Lote Drive con Supabase'}</span>
@@ -246,11 +246,11 @@ export default function DatabaseView() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-1.5">
-              <Code2 className="w-4 h-4 text-[#0284C7]" />
+              <Code2 className="w-4 h-4 text-[#0369A1]" />
               Script SQL para Crear la Tabla en Supabase
             </h3>
             <p className="text-xs text-[#64748B] mt-0.5">
-              Copia este script y pégalo en el <a href={`https://supabase.com/dashboard/project/${projectId}/sql`} target="_blank" rel="noopener noreferrer" className="text-[#0284C7] hover:underline inline-flex items-center gap-0.5 font-semibold">SQL Editor de Supabase <ExternalLink className="w-3 h-3" /></a> para inicializar la tabla Postgres
+              Copia este script y pégalo en el <a href={`https://supabase.com/dashboard/project/${projectId}/sql`} target="_blank" rel="noopener noreferrer" className="text-[#0369A1] hover:underline inline-flex items-center gap-0.5 font-semibold">SQL Editor de Supabase <ExternalLink className="w-3 h-3" /></a> para inicializar la tabla Postgres
             </p>
           </div>
 
@@ -274,7 +274,7 @@ export default function DatabaseView() {
       {/* Parámetros de Conexión Directa a Postgres */}
       <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs space-y-3">
         <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-1.5">
-          <Server className="w-4 h-4 text-[#0284C7]" />
+          <Server className="w-4 h-4 text-[#0369A1]" />
           Credenciales de Conexión Directa (PostgreSQL)
         </h3>
         

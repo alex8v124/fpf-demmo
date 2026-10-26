@@ -18,10 +18,10 @@ export default function MedicalStaff() {
       {/* Header Banner */}
       <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-[#0284C7] uppercase tracking-wider">
+          <div className="flex items-center space-x-2 text-xs font-semibold text-[#0369A1] uppercase tracking-wider">
             <span>Directorio Médico Oficial</span>
             <span>•</span>
-            <span className="text-[#15803D]">Colegiaturas Acreditadas FPF</span>
+            <span className="text-[#166534]">Colegiaturas Acreditadas FPF</span>
           </div>
           <h1 className="text-lg sm:text-xl font-bold text-[#1E293B] mt-0.5">
             Profesionales de Salud y Firmas Digitalizadas
@@ -32,7 +32,7 @@ export default function MedicalStaff() {
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="bg-[#DCFCE7] border border-[#BBF7D0] text-[#15803D] text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5">
+          <span className="bg-[#DCFCE7] text-[#166534] text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5" />
             4 Profesionales Habilitados
           </span>
@@ -48,17 +48,17 @@ export default function MedicalStaff() {
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-md bg-sky-50 text-[#0284C7] border border-sky-200 flex items-center justify-center font-bold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-md bg-sky-50 text-[#0369A1] border border-sky-200 flex items-center justify-center font-bold text-sm shrink-0">
                   <Stethoscope className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-[#1E293B]">{staff.name}</h3>
-                  <div className="text-xs font-medium text-[#0284C7]">{staff.role}</div>
+                  <div className="text-xs font-medium text-[#0369A1]">{staff.role}</div>
                   <div className="text-[11px] text-[#64748B]">{staff.specialty}</div>
                 </div>
               </div>
 
-              <span className="bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0] text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+              <span className="bg-[#DCFCE7] text-[#166534] text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
                 <CheckCircle className="w-3 h-3" /> Habilitado
               </span>
             </div>

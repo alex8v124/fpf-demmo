@@ -448,10 +448,10 @@ export default function PoolManager({
       <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0284C7] bg-sky-50 border border-sky-200 px-2 py-0.5 rounded flex items-center gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0369A1] bg-sky-50 px-2 py-0.5 rounded flex items-center gap-1">
               <Database className="w-3 h-3" /> POOL DE 3,000 A 5,000 JUGADORES
             </span>
-            <span className="text-[10px] font-bold text-[#15803D] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded flex items-center gap-1">
+            <span className="text-[10px] font-bold text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" /> Estandarización FPF / CONMEBOL
             </span>
           </div>
@@ -465,7 +465,7 @@ export default function PoolManager({
         </div>
 
         {/* Métrica compacta de capacidad */}
-        <div className="bg-slate-50 border border-[#E2E8F0] p-3 rounded-md flex items-center space-x-5 shrink-0">
+        <div className="bg-slate-50 border border-[#E2E8F0] p-3 rounded-md flex items-center space-x-5 shrink-0 shadow-xs">
           <div>
             <div className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">Capacidad Pool</div>
             <div className="text-xl font-bold text-[#1E293B] font-mono mt-0.5">
@@ -473,14 +473,14 @@ export default function PoolManager({
             </div>
             <div className="w-28 bg-slate-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
               <div 
-                className="bg-[#0284C7] h-full rounded-full transition-all duration-500"
+                className="bg-[#0369A1] h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, (pool.length / 5000) * 100)}%` }}
               ></div>
             </div>
           </div>
           <div className="border-l border-slate-200 pl-4">
             <div className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">Rotación Activa</div>
-            <div className="text-xs font-bold text-[#15803D] mt-0.5">12 Meses</div>
+            <div className="text-xs font-bold text-[#166534] mt-0.5">12 Meses</div>
             <div className="text-[10px] text-[#64748B]">Temporada 2026</div>
           </div>
         </div>
@@ -493,10 +493,10 @@ export default function PoolManager({
         <div className="bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
           <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
             <div className="flex items-center space-x-2">
-              <SlidersHorizontal className="w-4 h-4 text-[#0284C7]" />
+              <SlidersHorizontal className="w-4 h-4 text-[#0369A1]" />
               <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider">Estandarizador de Nombres</h3>
             </div>
-            <span className="text-[10px] font-bold text-[#15803D] bg-[#DCFCE7] border border-[#BBF7D0] px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded">
               Activo
             </span>
           </div>
@@ -512,11 +512,11 @@ export default function PoolManager({
                 onClick={() => handleToggleNameFormat('LAST_FIRST')}
                 className={`p-2.5 rounded-md border text-left transition cursor-pointer ${
                   nameFormatOrder === 'LAST_FIRST'
-                    ? 'bg-sky-50 border-[#0284C7] text-[#0284C7]'
+                    ? 'bg-sky-50 border-[#0369A1] text-[#0369A1]'
                     : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'
                 }`}
               >
-                <div className="text-[10px] font-bold uppercase text-[#0284C7]">Formato Oficial FPF</div>
+                <div className="text-[10px] font-bold uppercase text-[#0369A1]">Formato Oficial FPF</div>
                 <div className="text-xs font-bold font-mono mt-0.5">[APELLIDOS NOMBRES]</div>
                 <div className="text-[10px] text-[#64748B] mt-0.5">PONCE ECHEVARRIA CARLOS</div>
               </button>
@@ -526,7 +526,7 @@ export default function PoolManager({
                 onClick={() => handleToggleNameFormat('FIRST_LAST')}
                 className={`p-2.5 rounded-md border text-left transition cursor-pointer ${
                   nameFormatOrder === 'FIRST_LAST'
-                    ? 'bg-sky-50 border-[#0284C7] text-[#0284C7]'
+                    ? 'bg-sky-50 border-[#0369A1] text-[#0369A1]'
                     : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'
                 }`}
               >
@@ -542,10 +542,10 @@ export default function PoolManager({
         <div className="bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
           <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
             <div className="flex items-center space-x-2">
-              <Calendar className="w-4 h-4 text-[#0284C7]" />
+              <Calendar className="w-4 h-4 text-[#0369A1]" />
               <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider">Sincronizador de Fecha Única</h3>
             </div>
-            <span className="text-[10px] font-bold text-[#0284C7] bg-sky-50 border border-sky-200 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold text-[#0369A1] bg-sky-50 px-2 py-0.5 rounded">
               21 Págs Sincronizadas
             </span>
           </div>
@@ -567,7 +567,7 @@ export default function PoolManager({
                 type="button"
                 onClick={handleApplyGlobalDate}
                 disabled={isApplyingCascade}
-                className="bg-[#0284C7] hover:bg-[#0369A1] text-white font-semibold text-xs px-3.5 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                className="bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3.5 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isApplyingCascade ? 'animate-spin' : ''}`} />
                 <span>Aplicar al lote</span>
@@ -709,7 +709,7 @@ export default function PoolManager({
                   setShowAuthModal(true);
                 }}
                 disabled={isExportingZip}
-                className="bg-[#0284C7] hover:bg-[#0369A1] text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-xs transition flex items-center space-x-1 cursor-pointer disabled:opacity-50"
+                className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-xs transition flex items-center space-x-1 cursor-pointer disabled:opacity-50"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Exportar Seleccionados ({selectedIds.size})</span>
@@ -728,7 +728,7 @@ export default function PoolManager({
                     type="checkbox"
                     checked={paginatedList.length > 0 && selectedIds.size >= paginatedList.length}
                     onChange={handleToggleSelectAll}
-                    className="rounded border-[#CBD5E1] text-[#0284C7] cursor-pointer"
+                    className="rounded border-[#CBD5E1] text-[#0369A1] cursor-pointer"
                     title="Seleccionar todos los de esta página"
                   />
                 </th>
@@ -770,7 +770,7 @@ export default function PoolManager({
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleToggleSelectOne(pId)}
-                          className="rounded border-[#CBD5E1] text-[#0284C7] cursor-pointer"
+                          className="rounded border-[#CBD5E1] text-[#0369A1] cursor-pointer"
                         />
                       </td>
 
@@ -795,12 +795,18 @@ export default function PoolManager({
                         {player.dni || '70000000'}
                       </td>
 
-                      <td className="px-4 py-3 font-mono font-medium text-[#0284C7] text-xs">
+                      <td className="px-4 py-3 font-mono font-medium text-[#0369A1] text-xs">
                         {player.fechaEvaluacion || globalDate}
                       </td>
 
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold border ${status.badgeBg} ${status.badgeBorder} ${status.badgeText}`}>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold ${
+                          status.code === 'VIGENTE'
+                            ? 'bg-[#DCFCE7] text-[#166534]'
+                            : status.code === 'POR_RENOVAR'
+                            ? 'bg-[#FEF3C7] text-[#92400E]'
+                            : 'bg-[#FEE2E2] text-[#991B1B]'
+                        }`}>
                           {status.shortLabel}
                         </span>
                       </td>
@@ -813,7 +819,7 @@ export default function PoolManager({
                               if (onSelectPatient) onSelectPatient(player);
                               if (onNavigateTab) onNavigateTab('documento');
                             }}
-                            className="bg-[#0284C7] hover:bg-[#0369A1] text-white text-xs font-semibold px-2.5 py-1 rounded-md transition cursor-pointer shadow-xs"
+                            className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-semibold px-2.5 py-1 rounded-md transition cursor-pointer shadow-xs"
                             title="Ver las 21 páginas del expediente"
                           >
                             <span>Ver 21P</span>
@@ -929,7 +935,7 @@ export default function PoolManager({
                 </div>
                 <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
                   <span className="text-[#64748B]">Expedientes a Certificar:</span>
-                  <span className="font-bold text-[#0284C7]">{selectedIds.size} futbolistas</span>
+                  <span className="font-bold text-[#0369A1]">{selectedIds.size} futbolistas</span>
                 </div>
                 <p className="text-[11px] text-[#64748B] pt-0.5">
                   En cumplimiento del Art. 24 de la Ley General de Salud N° 26842 y el protocolo médico FPF 2026, la inserción de sellos y firmas digitales genera validez legal en cada uno de los 21 documentos del expediente.
@@ -942,7 +948,7 @@ export default function PoolManager({
                   type="checkbox"
                   checked={authConfirmed}
                   onChange={(e) => setAuthConfirmed(e.target.checked)}
-                  className="mt-0.5 rounded border-[#CBD5E1] text-[#0284C7] focus:ring-[#0284C7] cursor-pointer"
+                  className="mt-0.5 rounded border-[#CBD5E1] text-[#0369A1] focus:ring-[#0369A1] cursor-pointer"
                 />
                 <span className="text-xs text-[#1E293B] font-medium leading-snug">
                   Como profesional acreditado, ratifico la conformidad de los exámenes pre-competencia y autorizo la inserción de mi firma y sello médico oficial en este lote.
@@ -962,7 +968,7 @@ export default function PoolManager({
                   type="button"
                   onClick={handleExecuteBatchExport}
                   disabled={!authConfirmed || isExportingZip}
-                  className="px-4 py-2 rounded-md text-xs font-bold text-white bg-[#0284C7] hover:bg-[#0369A1] disabled:opacity-40 transition cursor-pointer flex items-center space-x-1.5 shadow-xs"
+                  className="px-4 py-2 rounded-md text-xs font-bold text-white bg-[#0369A1] hover:bg-[#075985] disabled:opacity-40 transition cursor-pointer flex items-center space-x-1.5 shadow-xs"
                 >
                   <Check className="w-3.5 h-3.5" />
                   <span>{isExportingZip ? 'Generando ZIP...' : `Autorizar y Descargar (${selectedIds.size})`}</span>

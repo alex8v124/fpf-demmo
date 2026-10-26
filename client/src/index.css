@@ -5,12 +5,12 @@
   --color-surface: #FFFFFF;
   --color-surface-elevated: #F1F5F9;
   --color-border: #E2E8F0;
-  --color-primary: #0284C7;
-  --color-primary-hover: #0369A1;
+  --color-primary: #0369A1;
+  --color-primary-hover: #075985;
   --color-sidebar: #0F172A;
-  --color-success: #15803D;
-  --color-warning: #B45309;
-  --color-danger: #B91C1C;
+  --color-success: #166534;
+  --color-warning: #92400E;
+  --color-danger: #991B1B;
   --color-text: #1E293B;
   --color-text-muted: #64748B;
   --color-fpf-red: #B91C1C;
@@ -31,23 +31,23 @@
   }
 }
 
-/* Status Badges - Clinical Pastel Palettes (Anti-Neon) */
+/* Status Badges - Solid Clinical Pastel Palettes (Border-free, high contrast dark-on-soft) */
 .badge-apto {
   background-color: #DCFCE7;
-  color: #15803D;
-  border: 1px solid #BBF7D0;
+  color: #166534;
+  border: none !important;
 }
 
 .badge-renovar {
   background-color: #FEF3C7;
-  color: #B45309;
-  border: 1px solid #FDE68A;
+  color: #92400E;
+  border: none !important;
 }
 
 .badge-observado {
   background-color: #FEE2E2;
-  color: #B91C1C;
-  border: 1px solid #FECACA;
+  color: #991B1B;
+  border: none !important;
 }
 
 /* Print specific styles for exact 1:1 medical document rendering */

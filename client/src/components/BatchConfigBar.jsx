@@ -201,7 +201,7 @@ export default function BatchConfigBar({
         {/* Header row */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#E2E8F0] pb-2.5">
           <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-md bg-sky-50 text-[#0284C7] border border-sky-200 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-md bg-sky-50 text-[#0369A1] border border-sky-200 flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5" />
             </div>
             <div>
@@ -209,13 +209,13 @@ export default function BatchConfigBar({
                 <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider">
                   Configuración Masiva de Expedientes
                 </h3>
-                <span className="text-[10px] bg-sky-50 text-[#0284C7] border border-sky-200 px-1.5 py-0.2 rounded font-bold">
+                <span className="text-[10px] bg-sky-50 text-[#0369A1] px-1.5 py-0.5 rounded font-bold">
                   Lote FPF
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="text-[11px] text-[#0284C7] hover:underline font-semibold px-2 py-0.5 rounded bg-slate-50 border border-[#CBD5E1] transition cursor-pointer"
+                  className="text-[11px] text-[#0369A1] hover:underline font-semibold px-2 py-0.5 rounded bg-slate-50 border border-[#CBD5E1] transition cursor-pointer"
                 >
                   {isCollapsed ? 'Mostrar Controles ▾' : 'Ocultar Controles ▴'}
                 </button>
@@ -230,7 +230,7 @@ export default function BatchConfigBar({
           </div>
 
           {/* Sellos Médicos Badge */}
-          <div className="flex items-center space-x-1.5 bg-[#DCFCE7] border border-[#BBF7D0] px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#15803D]">
+          <div className="flex items-center space-x-1.5 bg-[#DCFCE7] px-2.5 py-1 rounded-md text-[11px] font-semibold text-[#166534]">
             <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
             <span>29 Sellos Médicos Protegidos</span>
           </div>
@@ -243,7 +243,7 @@ export default function BatchConfigBar({
             {/* 1. Control de Fecha Global */}
             <div className="md:col-span-3 space-y-1">
               <label className="text-xs font-semibold text-[#1E293B] flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-[#0284C7]" />
+                <Calendar className="w-3.5 h-3.5 text-[#0369A1]" />
                 <span>Fecha Oficial Evaluación</span>
               </label>
               <div className="flex space-x-1.5">
@@ -252,7 +252,7 @@ export default function BatchConfigBar({
                   value={localDate}
                   onChange={(e) => setLocalDate(e.target.value)}
                   placeholder="DD-MM-AAAA (ej: 22-01-2026)"
-                  className="flex-1 bg-slate-50 border border-[#CBD5E1] rounded-md px-2.5 py-1.5 text-xs font-mono font-bold text-[#1E293B] placeholder-slate-400 focus:outline-none focus:border-[#0284C7]"
+                  className="flex-1 bg-slate-50 border border-[#CBD5E1] rounded-md px-2.5 py-1.5 text-xs font-mono font-bold text-[#1E293B] placeholder-slate-400 focus:outline-none focus:border-[#0369A1]"
                 />
                 <button
                   type="button"
@@ -269,7 +269,7 @@ export default function BatchConfigBar({
             {/* 2. Control de Nombre del Club */}
             <div className="md:col-span-4 space-y-1">
               <label className="text-xs font-semibold text-[#1E293B] flex items-center gap-1">
-                <Building2 className="w-3.5 h-3.5 text-[#0284C7]" />
+                <Building2 className="w-3.5 h-3.5 text-[#0369A1]" />
                 <span>Nombre del Club Deportivo</span>
               </label>
               <div className="flex space-x-1.5">
@@ -280,7 +280,7 @@ export default function BatchConfigBar({
                     value={localClub}
                     onChange={(e) => setLocalClub(e.target.value)}
                     placeholder="Escribe o elige el Club..."
-                    className="w-full bg-slate-50 border border-[#CBD5E1] rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#1E293B] placeholder-slate-400 focus:outline-none focus:border-[#0284C7]"
+                    className="w-full bg-slate-50 border border-[#CBD5E1] rounded-md px-2.5 py-1.5 text-xs font-semibold text-[#1E293B] placeholder-slate-400 focus:outline-none focus:border-[#0369A1]"
                   />
                   <datalist id="club-options-list">
                     {POPULAR_CLUBS.map((c, i) => (
@@ -303,7 +303,7 @@ export default function BatchConfigBar({
             {/* 3. Toggle Orden de Nombres y Apellidos */}
             <div className="md:col-span-2 space-y-1">
               <label className="text-xs font-semibold text-[#1E293B] flex items-center gap-1">
-                <ArrowLeftRight className="w-3.5 h-3.5 text-[#0284C7]" />
+                <ArrowLeftRight className="w-3.5 h-3.5 text-[#0369A1]" />
                 <span>Orden de Nombres</span>
               </label>
               <button
@@ -313,14 +313,14 @@ export default function BatchConfigBar({
                 title="Cambiar formato para todos los expedientes simultáneamente"
               >
                 <span className="text-[11px] truncate">{nameOrder === 'LAST_FIRST' ? '[APELLIDOS NOMBRES]' : '[NOMBRES APELLIDOS]'}</span>
-                <RefreshCw className="w-3 h-3 text-[#0284C7] shrink-0" />
+                <RefreshCw className="w-3 h-3 text-[#0369A1] shrink-0" />
               </button>
             </div>
 
             {/* 4. Acciones de Descarga Word (.docx) */}
             <div className="md:col-span-3 space-y-1">
               <label className="text-xs font-semibold text-[#1E293B] flex items-center gap-1">
-                <FileText className="w-3.5 h-3.5 text-[#0284C7]" />
+                <FileText className="w-3.5 h-3.5 text-[#0369A1]" />
                 <span>Exportar Word con Sellos</span>
               </label>
               <div className="flex space-x-1.5">
@@ -339,7 +339,7 @@ export default function BatchConfigBar({
                   type="button"
                   onClick={handleDownloadBatchZip}
                   disabled={isExportingWord || !patientsList || patientsList.length === 0}
-                  className="bg-[#0284C7] hover:bg-[#0369A1] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-center space-x-1 shadow-xs disabled:opacity-40"
+                  className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center justify-center space-x-1 shadow-xs disabled:opacity-40"
                   title="Generar y descargar un archivo ZIP con todos los Words oficiales del lote"
                 >
                   <Download className="w-3 h-3" />

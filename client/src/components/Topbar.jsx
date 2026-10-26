@@ -86,7 +86,7 @@ export default function Topbar({
   });
 
   return (
-    <header className="no-print h-16 shrink-0 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 select-none shadow-xs">
+    <header className="no-print h-16 shrink-0 bg-slate-50 border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 select-none shadow-2xs">
       
       {/* 1. Lado Izquierdo: Botón móvil + Breadcrumbs de Contexto + Badge de Entidad */}
       <div className="flex items-center space-x-3 min-w-0">
@@ -126,9 +126,9 @@ export default function Topbar({
       {/* 2. Lado Derecho: Estado de Sellos + Selector de Paciente Activo + Perfil del Médico Unificado */}
       <div className="flex items-center space-x-3 shrink-0">
         
-        {/* Indicador de Estado: 29 Sellos Médicos Verificados (No botón, solo indicador compacto) */}
-        <div className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0] text-xs font-semibold shrink-0">
-          <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-[#15803D]" />
+        {/* Indicador de Estado: 29 Sellos Médicos Verificados (Pastel clínico sin borde tosco) */}
+        <div className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DCFCE7] text-[#166534] text-xs font-semibold shrink-0">
+          <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-[#166534]" />
           <span>29 Sellos Verificados</span>
         </div>
 
@@ -148,7 +148,7 @@ export default function Topbar({
               className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md bg-white border border-slate-300 hover:border-slate-400 text-xs text-[#1E293B] font-semibold transition cursor-pointer max-w-[170px] sm:max-w-[220px] shadow-2xs"
               title="Cambiar futbolista activo"
             >
-              <User className="w-3.5 h-3.5 text-[#0284C7] shrink-0" />
+              <User className="w-3.5 h-3.5 text-[#0369A1] shrink-0" />
               <span className="truncate text-left">
                 {currentPatient?.nombreCompleto || 'Seleccionar Jugador'}
               </span>
@@ -170,7 +170,7 @@ export default function Topbar({
                         placeholder="Buscar por nombre o DNI..."
                         value={playerFilter}
                         onChange={(e) => setPlayerFilter(e.target.value)}
-                        className="w-full pl-8 pr-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-[#0284C7]"
+                        className="w-full pl-8 pr-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-[#0369A1]"
                         autoFocus
                       />
                     </div>
@@ -188,7 +188,7 @@ export default function Topbar({
                             setPatientDropdownOpen(false);
                           }}
                           className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-slate-50 cursor-pointer ${
-                            isSelected ? 'bg-sky-50 text-[#0284C7] font-semibold' : 'text-[#1E293B]'
+                            isSelected ? 'bg-sky-50 text-[#0369A1] font-semibold' : 'text-[#1E293B]'
                           }`}
                         >
                           <div className="min-w-0 pr-2">
@@ -197,7 +197,7 @@ export default function Topbar({
                               {p.club} • DNI {p.dni || 'S/D'}
                             </div>
                           </div>
-                          {isSelected && <Check className="w-3.5 h-3.5 text-[#0284C7] shrink-0" />}
+                          {isSelected && <Check className="w-3.5 h-3.5 text-[#0369A1] shrink-0" />}
                         </button>
                       );
                     })}
@@ -224,7 +224,7 @@ export default function Topbar({
             className="flex items-center space-x-2.5 p-1 rounded-md hover:bg-slate-50 transition cursor-pointer"
             title="Perfil de Médico Evaluador"
           >
-            <div className="w-8 h-8 rounded-md bg-[#0284C7] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+            <div className="w-8 h-8 rounded-md bg-[#0369A1] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
               DH
             </div>
             <div className="hidden sm:flex flex-col text-left leading-tight">
@@ -264,14 +264,14 @@ export default function Topbar({
                       setProfileDropdownOpen(false);
                     }}
                     className={`w-full text-left px-3 py-1.5 rounded-md flex items-center justify-between text-xs cursor-pointer ${
-                      userRole === 'MEDICO' ? 'bg-sky-50 text-[#0284C7] font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                      userRole === 'MEDICO' ? 'bg-sky-50 text-[#0369A1] font-semibold' : 'text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <div className="flex items-center space-x-2">
-                      <Stethoscope className="w-3.5 h-3.5 text-[#0284C7]" />
+                      <Stethoscope className="w-3.5 h-3.5 text-[#0369A1]" />
                       <span>Médico Evaluador</span>
                     </div>
-                    {userRole === 'MEDICO' && <Check className="w-3.5 h-3.5 text-[#0284C7]" />}
+                    {userRole === 'MEDICO' && <Check className="w-3.5 h-3.5 text-[#0369A1]" />}
                   </button>
 
                   <button
@@ -298,14 +298,14 @@ export default function Topbar({
                       setProfileDropdownOpen(false);
                     }}
                     className={`w-full text-left px-3 py-1.5 rounded-md flex items-center justify-between text-xs cursor-pointer ${
-                      userRole === 'FPF' ? 'bg-green-50 text-[#15803D] font-semibold' : 'text-slate-700 hover:bg-slate-50'
+                      userRole === 'FPF' ? 'bg-[#DCFCE7] text-[#166534] font-semibold' : 'text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <div className="flex items-center space-x-2">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#15803D]" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#166534]" />
                       <span>Auditor FPF / CONMEBOL</span>
                     </div>
-                    {userRole === 'FPF' && <Check className="w-3.5 h-3.5 text-[#15803D]" />}
+                    {userRole === 'FPF' && <Check className="w-3.5 h-3.5 text-[#166534]" />}
                   </button>
                 </div>
 

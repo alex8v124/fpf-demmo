@@ -94,7 +94,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] text-[#1E293B] flex font-sans selection:bg-[#0284C7] selection:text-white">
+    <div className="h-screen w-screen overflow-hidden bg-[#F8FAFC] text-[#1E293B] flex font-sans selection:bg-[#0369A1] selection:text-white">
       
       {/* 1. Menú Lateral Izquierdo Fijo (Sidebar) */}
       <Sidebar
