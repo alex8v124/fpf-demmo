@@ -123,12 +123,6 @@ export default function Navbar({
           {/* 3. Acciones Derecha: Sellos, Paciente Activo, Perfil Médico e Imprimir */}
           <div className="flex items-center space-x-2 sm:space-x-2.5 shrink-0">
             
-            {/* Badge de Sellos Verificados */}
-            <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DCFCE7] text-[#166534] text-xs font-semibold shrink-0">
-              <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-[#166534]" />
-              <span>29 Sellos Verificados</span>
-            </div>
-
             {/* Selector de Contexto de Paciente Activo */}
             <div className="relative">
               <div className="flex items-center space-x-1.5">
