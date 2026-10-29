@@ -54,7 +54,7 @@ export default function Navbar({
 
   return (
     <header className="no-print sticky top-0 z-50 bg-white border-b border-slate-200 shadow-xs select-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-5 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-3">
           
           {/* 1. Logo & Identidad Institucional */}
@@ -73,7 +73,7 @@ export default function Navbar({
               />
             </div>
 
-            <div className="hidden min-[1700px]:block leading-tight">
+            <div className="hidden 2xl:block leading-tight">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-bold text-[#1E293B] tracking-wide">FAMIHEART</span>
                 <span className="text-[10px] bg-[#C8102E] text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shadow-2xs">
@@ -95,7 +95,7 @@ export default function Navbar({
                 <button
                   key={item.id}
                   onClick={() => setCurrentTab(item.id)}
-                  className={`relative flex items-center space-x-1.5 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
+                  className={`relative flex items-center space-x-1.5 px-2 xl:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
                     isActive 
                       ? 'text-white shadow-xs' 
                       : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
@@ -125,7 +125,7 @@ export default function Navbar({
             {/* Selector de Contexto de Paciente Activo */}
             <div className="relative">
               <div className="flex items-center space-x-1.5">
-                <span className="text-[11px] text-slate-500 font-medium hidden min-[1700px]:inline shrink-0">
+                <span className="text-[11px] text-slate-500 font-medium hidden 2xl:inline shrink-0">
                   Paciente activo:
                 </span>
                 <button
@@ -134,13 +134,13 @@ export default function Navbar({
                     setDropdownOpen(!dropdownOpen);
                     setRoleDropdownOpen(false);
                   }}
-                  className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 transition cursor-pointer shadow-2xs min-h-[38px] max-w-[150px] xl:max-w-[210px]"
+                  className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 transition cursor-pointer shadow-2xs min-h-[38px] max-w-[130px] sm:max-w-[170px] 2xl:max-w-[220px]"
                   title="Cambiar futbolista o expediente activo"
                 >
                   <div className="w-7 h-7 rounded-lg bg-[#0369A1] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                     {currentPatient?.apellidos ? currentPatient.apellidos.charAt(0) : (currentPatient?.nombreCompleto ? currentPatient.nombreCompleto.charAt(0) : 'P')}
                   </div>
-                  <div className="text-left hidden sm:block min-w-0 max-w-[120px] xl:max-w-[170px]">
+                  <div className="text-left hidden sm:block min-w-0 max-w-[100px] sm:max-w-[140px] 2xl:max-w-[180px]">
                     <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 leading-none">
                       <span>Expediente</span>
                       {currentPatient?.id === 'plantilla-en-blanco' && (
@@ -290,7 +290,7 @@ export default function Navbar({
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#0369A1] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                   DH
                 </div>
-                <div className="hidden xl:flex flex-col text-left leading-tight">
+                <div className="hidden 2xl:flex flex-col text-left leading-tight">
                   <span className="text-xs font-bold text-slate-800">Dr. Darío Hernández</span>
                   <span className="text-[10px] text-slate-500 font-mono">
                     {userRole === 'MEDICO' && 'CMP 27503 • Médico'}
@@ -298,7 +298,7 @@ export default function Navbar({
                     {userRole === 'FPF' && 'Auditor FPF'}
                   </span>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden 2xl:block" />
               </button>
 
               <AnimatePresence>
@@ -383,11 +383,11 @@ export default function Navbar({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onPrint}
-              className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3.5 py-2 rounded-xl shadow-xs min-h-[38px] transition cursor-pointer shrink-0"
+              className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 sm:px-3.5 py-2 rounded-xl shadow-xs min-h-[38px] transition cursor-pointer shrink-0 whitespace-nowrap"
               title="Imprimir el expediente completo o guardar como PDF oficial"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Imprimir PDF</span>
+              <span className="inline font-bold">Imprimir PDF</span>
             </motion.button>
 
           </div>
