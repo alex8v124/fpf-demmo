@@ -22,11 +22,13 @@ import {
 } from 'lucide-react';
 import { pagesCatalog } from '../data/initialData';
 import { downloadPatientDocx } from '../utils/docxGenerator';
+import AttachmentSlots from './AttachmentSlots';
 
 export default function DocumentViewer({ 
   patient, 
   isBlankMode, 
   setIsBlankMode, 
+  onUpdatePatient,
   onPrint 
 }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -298,6 +300,10 @@ export default function DocumentViewer({
           )}
         </div>
       </div>
+
+      {!isBlankMode && onUpdatePatient && (
+        <AttachmentSlots patient={patient} onUpdatePatient={onUpdatePatient} />
+      )}
 
       {/* CONTENEDOR EXCLUSIVO DE IMPRESIÓN OFICIAL (21 PÁGINAS PURAS 1:1) */}
       <div className="print-only">
@@ -1067,7 +1073,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         {/* Captura Doppler 2D Color */}
         <div className="absolute" style={{ top: '16.50%', left: '11.50%', width: '77.00%', height: '33.00%' }}>
           <img 
-            src="/assets/echo_sample_2d.png" 
+            src={patient?.attachments?.eco2d?.url || "/assets/echo_sample_2d.png"} 
             alt="Ecocardiograma 2D Doppler" 
             className="w-full h-full object-cover rounded-xs border border-slate-300"
           />
@@ -1075,7 +1081,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         {/* Captura Doppler M-Mode / Espectral */}
         <div className="absolute" style={{ top: '53.50%', left: '11.50%', width: '77.00%', height: '33.00%' }}>
           <img 
-            src="/assets/echo_sample_mmode.png" 
+            src={patient?.attachments?.ecoMmode?.url || "/assets/echo_sample_mmode.png"} 
             alt="Ecocardiograma M-Mode" 
             className="w-full h-full object-cover rounded-xs border border-slate-300"
           />
@@ -1110,7 +1116,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         {/* Tira térmica oficial de 12 derivaciones */}
         <div className="absolute" style={{ top: '23.00%', left: '11.00%', width: '78.00%', height: '62.00%' }}>
           <img 
-            src="/assets/ecg_sample_strip.png" 
+            src={patient?.attachments?.ecg?.url || "/assets/ecg_sample_strip.png"} 
             alt="Trazado ECG 12 Derivaciones" 
             className="w-full h-full object-contain mix-blend-multiply"
           />
@@ -1126,6 +1132,14 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
       18: { nameTop: '21.00%', nameLeft: '28.95%', dateTop: '26.16%', dateLeft: '80.38%' },
       19: { nameTop: '22.82%', nameLeft: '26.77%', dateTop: '29.76%', dateLeft: '86.81%' }
     }[pageNumber];
+
+    if (pageNumber === 17 && patient?.attachments?.laboratorio) {
+      return (
+        <div className="w-full h-full relative select-none">
+          <img src={patient.attachments.laboratorio.url} alt="Laboratorio Clínico" className="w-full h-full object-contain block" />
+        </div>
+      );
+    }
 
     return (
       <div className="w-full h-full relative select-none">
@@ -1171,6 +1185,11 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         >
           {cleanDate}
         </div>
+        {patient?.attachments?.rayosX && (
+          <div className="absolute" style={{ top: '62%', left: '14%', width: '72%', height: '30%' }}>
+            <img src={patient.attachments.rayosX.url} alt="Radiografía de tórax" className="w-full h-full object-contain" />
+          </div>
+        )}
       </div>
     );
   }

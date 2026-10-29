@@ -82,6 +82,13 @@ export default function App() {
     }
   };
 
+  // Actualiza un jugador (lista + jugador activo) con cambios parciales, ej. adjuntos
+  const handleUpdatePatient = (target, changes) => {
+    const same = (p) => p.id === target.id && p.fileName === target.fileName;
+    setPatientsList(prev => (prev || []).map(p => (same(p) ? { ...p, ...changes } : p)));
+    setCurrentPatient(prev => (prev && same(prev) ? { ...prev, ...changes } : prev));
+  };
+
   const handleResetBlank = () => {
     setCurrentPatient(blankPatientTemplate);
     setIsBlankMode(true);
@@ -184,6 +191,7 @@ export default function App() {
                   setPatientsList={setPatientsList}
                   onSelectPatient={handleSelectPatient}
                   onNavigateTab={setCurrentTab}
+                  onUpdatePatient={handleUpdatePatient}
                   globalDate={globalDate}
                   globalClub={globalClub}
                   nameOrder={nameOrder}
@@ -215,6 +223,7 @@ export default function App() {
                   patient={currentPatient}
                   isBlankMode={isBlankMode}
                   setIsBlankMode={setIsBlankMode}
+                  onUpdatePatient={handleUpdatePatient}
                   onPrint={handlePrint}
                 />
               )}

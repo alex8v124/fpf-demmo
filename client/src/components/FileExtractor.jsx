@@ -22,6 +22,7 @@ import {
   Layers,
   Search
 } from 'lucide-react';
+import AttachmentSlots from './AttachmentSlots';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
 import drivePatients from '../data/drivePatients.json';
 import { supabase, saveBatchPatientsToSupabase } from '../lib/supabase';
@@ -31,6 +32,7 @@ export default function FileExtractor({
   setPatientsList, 
   onSelectPatient, 
   onNavigateTab,
+  onUpdatePatient,
   globalDate: parentDate,
   globalClub: parentClub,
   nameOrder: parentOrder
@@ -43,6 +45,7 @@ export default function FileExtractor({
   const [searchFilter, setSearchFilter] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [attachId, setAttachId] = useState(null);
   const [editNameValue, setEditNameValue] = useState('');
   const fileInputRef = useRef(null);
 
@@ -441,7 +444,8 @@ export default function FileExtractor({
                 const confidence = getExtractionConfidence(player);
 
                 return (
-                  <tr key={pId} className="hover:bg-slate-50/80 transition-colors group">
+                  <React.Fragment key={pId}>
+                  <tr className="hover:bg-slate-50/80 transition-colors group">
                     <td className="px-4 py-3">
                       {isEditing ? (
                         <div className="flex items-center space-x-1.5">
@@ -516,7 +520,15 @@ export default function FileExtractor({
                       </span>
                     </td>
 
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => setAttachId(attachId === pId ? null : pId)}
+                        className="mr-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer inline-flex items-center space-x-1"
+                      >
+                        <ImageIcon className="w-3.5 h-3.5" />
+                        <span>Adjuntos ({Object.keys(player.attachments || {}).length}/5)</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -530,6 +542,14 @@ export default function FileExtractor({
                       </button>
                     </td>
                   </tr>
+                  {attachId === pId && onUpdatePatient && (
+                    <tr className="bg-slate-50">
+                      <td colSpan={6} className="px-4 py-3">
+                        <AttachmentSlots patient={player} onUpdatePatient={onUpdatePatient} compact />
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 );
               })}
 
