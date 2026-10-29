@@ -39,8 +39,7 @@ export default function Navbar({
     { id: 'extractor', label: 'Subir Archivos', icon: UploadCloud },
     { id: 'pool', label: 'Pool Rotación', icon: Users },
     { id: 'documento', label: 'Expediente', icon: FileCheck2 },
-    { id: 'medicos', label: 'Médicos', icon: Stethoscope },
-    { id: 'database', label: 'Base de Datos', icon: Database }
+    { id: 'medicos', label: 'Médicos', icon: Stethoscope }
   ];
 
   const filteredPatients = (patientsList || []).filter(p => {

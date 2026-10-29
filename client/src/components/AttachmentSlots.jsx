@@ -12,7 +12,7 @@ export const ATTACHMENT_SLOTS = [
 ];
 
 // Reduce la imagen para no saturar la memoria del navegador.
-function fileToDataUrl(file, maxSize = 1600) {
+export function fileToDataUrl(file, maxSize = 1600) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error('No se pudo leer el archivo'));

@@ -23,6 +23,7 @@ import {
   Search
 } from 'lucide-react';
 import AttachmentSlots from './AttachmentSlots';
+import BulkAttachmentUpload from './BulkAttachmentUpload';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
 import drivePatients from '../data/drivePatients.json';
 import { supabase, saveBatchPatientsToSupabase } from '../lib/supabase';
@@ -253,6 +254,10 @@ export default function FileExtractor({
           )}
         </div>
       </div>
+
+      {onUpdatePatient && (
+        <BulkAttachmentUpload patientsList={patientsList} onUpdatePatient={onUpdatePatient} />
+      )}
 
       {/* ZONA DE ARRASTRE DRAG & DROP Y REGLAS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
