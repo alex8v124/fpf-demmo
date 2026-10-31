@@ -22,7 +22,8 @@ import {
   Calendar,
   Eye,
   Check,
-  X
+  X,
+  ExternalLink
 } from 'lucide-react';
 import { getPlayerCertificationStatus } from '../utils/statusClassifier';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
@@ -520,16 +521,46 @@ export default function Dashboard({
                       </td>
 
                       {/* 5. Expediente 21P */}
-                      <td className="py-3 px-4 whitespace-nowrap min-w-[90px]">
-                        <span className="inline-flex items-center gap-1 text-[11px] text-slate-600 font-medium whitespace-nowrap">
-                          <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <span>21 Págs</span>
-                        </span>
+                      <td className="py-3 px-4 whitespace-nowrap min-w-[100px]">
+                        {player.pdfUrl ? (
+                          <a
+                            href={player.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded hover:bg-emerald-200 transition whitespace-nowrap shadow-2xs"
+                            title="Abrir PDF oficial archivado en Supabase Storage"
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                            <span>PDF en Nube</span>
+                            <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-slate-600 font-medium whitespace-nowrap">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span>21 Págs</span>
+                          </span>
+                        )}
                       </td>
 
                       {/* 6. Acciones (Botones refinados y compactos que nunca desbordan) */}
                       <td className="py-2.5 px-4 text-right whitespace-nowrap w-[200px] min-w-[200px]" onClick={(e) => e.stopPropagation()}>
                         <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap">
+                          {player.pdfUrl && (
+                            <a
+                              href={player.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center space-x-1 px-2 py-1.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-[#166534] border border-emerald-300 text-[11px] font-semibold transition cursor-pointer shrink-0 whitespace-nowrap shadow-2xs"
+                              title="Abrir el PDF oficial archivado en Supabase"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              <span>PDF</span>
+                              <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                            </a>
+                          )}
+
                           <button
                             type="button"
                             onClick={() => {

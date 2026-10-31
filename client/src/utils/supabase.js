@@ -155,6 +155,9 @@ export async function savePatientToSupabase(patient) {
       ecocardiograma: patient.ecocardiograma || {},
       laboratorio: patient.laboratorio || {},
       radiografia: patient.radiografia || {},
+      pdf_url: patient.pdfUrl || null,
+      pdf_size_bytes: patient.pdfSizeBytes || null,
+      pdf_updated_at: patient.pdfUpdatedAt || null,
       updated_at: new Date().toISOString()
     };
 
@@ -237,6 +240,9 @@ export function mapDbToPatient(row) {
     estadoAptitud: row.estado_aptitud || 'APTO',
     resultadoEkg: row.ekg?.resultado || 'APTO (EKG NORMAL)',
     ekgImage: row.ekg?.imagen || `/assets/ekg/${row.nombre_completo}.jpg`,
+    pdfUrl: row.pdf_url || null,
+    pdfSizeBytes: row.pdf_size_bytes || null,
+    pdfUpdatedAt: row.pdf_updated_at || null,
     origen: 'Supabase DB',
     synced21Pages: true
   };
@@ -269,6 +275,9 @@ export async function saveBatchPatientsToSupabase(patients = []) {
         resultado: p.resultadoEkg || 'APTO (EKG NORMAL)',
         fileName: p.fileName || ''
       },
+      pdf_url: p.pdfUrl || null,
+      pdf_size_bytes: p.pdfSizeBytes || null,
+      pdf_updated_at: p.pdfUpdatedAt || null,
       updated_at: new Date().toISOString()
     }));
 
@@ -291,3 +300,89 @@ export async function saveBatchPatientsToSupabase(patients = []) {
   }
 }
 
+
+
+/**
+ * Sube el archivo PDF oficial resultante a Supabase Storage y actualiza la BD
+ */
+export async function uploadPatientPdf(patient, file) {
+  if (!file || !patient) return { success: false, error: 'Archivo o paciente no especificado' };
+  try {
+    const rawName = patient.nombreCompleto || `${patient.apellidos || ''} ${patient.nombres || ''}`.trim() || patient.id;
+    const cleanName = rawName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .replace(/[^A-Z0-9_-]+/g, '_');
+    const dni = (patient.dni || 'sin_dni').toString().trim();
+    const storagePath = `${dni}/${cleanName}_FPF_2026.pdf`;
+
+    const { data: uploadData, error: upError } = await supabase.storage
+      .from('expedientes-pdf')
+      .upload(storagePath, file, {
+        contentType: 'application/pdf',
+        upsert: true
+      });
+
+    if (upError) {
+      console.error('Error al subir PDF a Supabase Storage:', upError);
+      return { success: false, error: upError.message };
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('expedientes-pdf')
+      .getPublicUrl(storagePath);
+
+    const now = new Date().toISOString();
+    const updatePayload = {
+      pdf_url: publicUrl,
+      pdf_size_bytes: file.size,
+      pdf_updated_at: now
+    };
+
+    // Actualiza en la tabla de expedientes
+    await supabase
+      .from('expedientes_medicos')
+      .update(updatePayload)
+      .eq('id', patient.id);
+
+    return {
+      success: true,
+      publicUrl,
+      sizeBytes: file.size,
+      updatedAt: now
+    };
+  } catch (err) {
+    console.error('Excepción en uploadPatientPdf:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Elimina el PDF oficial de Supabase Storage y limpia la BD
+ */
+export async function deletePatientPdf(patient) {
+  if (!patient) return { success: false };
+  try {
+    const rawName = patient.nombreCompleto || patient.id;
+    const cleanName = rawName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .replace(/[^A-Z0-9_-]+/g, '_');
+    const dni = (patient.dni || 'sin_dni').toString().trim();
+    const storagePath = `${dni}/${cleanName}_FPF_2026.pdf`;
+
+    await supabase.storage.from('expedientes-pdf').remove([storagePath]);
+
+    await supabase
+      .from('expedientes_medicos')
+      .update({ pdf_url: null, pdf_size_bytes: null, pdf_updated_at: null })
+      .eq('id', patient.id);
+
+    return { success: true };
+  } catch (err) {
+    console.error('Error al eliminar PDF:', err);
+    return { success: false, error: err.message };
+  }
+}

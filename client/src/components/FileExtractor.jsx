@@ -26,7 +26,8 @@ import AttachmentSlots from './AttachmentSlots';
 import BulkAttachmentUpload from './BulkAttachmentUpload';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
 import drivePatients from '../data/drivePatients.json';
-import { supabase, saveBatchPatientsToSupabase } from '../lib/supabase';
+import { supabase, saveBatchPatientsToSupabase, uploadPatientPdf } from '../lib/supabase';
+import { ExternalLink } from 'lucide-react';
 
 export default function FileExtractor({ 
   patientsList = [], 
@@ -109,6 +110,19 @@ export default function FileExtractor({
         parsed.club = globalClub;
         parsed.nombreCompleto = formatPlayerDisplayName(parsed.apellidos, parsed.nombres, nameOrder);
         newPatients.push(parsed);
+
+        // Si el archivo subido es un PDF oficial, archivarlo en Supabase Storage
+        if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+          uploadPatientPdf(parsed, file).then(res => {
+            if (res.success && onUpdatePatient) {
+              onUpdatePatient(parsed, {
+                pdfUrl: res.publicUrl,
+                pdfSizeBytes: res.sizeBytes,
+                pdfUpdatedAt: res.updatedAt
+              });
+            }
+          });
+        }
       }
     }
 
@@ -526,6 +540,19 @@ export default function FileExtractor({
                     </td>
 
                     <td className="px-4 py-3 text-right whitespace-nowrap">
+                      {player.pdfUrl && (
+                        <a
+                          href={player.pdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mr-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#166534] border border-emerald-300 text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-2xs"
+                          title="Abrir PDF oficial archivado en Supabase"
+                        >
+                          <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>PDF</span>
+                          <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                        </a>
+                      )}
                       <button
                         type="button"
                         onClick={() => setAttachId(attachId === pId ? null : pId)}

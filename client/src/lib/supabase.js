@@ -5,5 +5,7 @@ export {
   savePatientToSupabase, 
   saveBatchPatientsToSupabase,
   loadPatientsFromSupabase,
-  mapDbToPatient
+  mapDbToPatient,
+  uploadPatientPdf,
+  deletePatientPdf
 } from '../utils/supabase';

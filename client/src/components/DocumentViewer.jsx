@@ -18,10 +18,15 @@ import {
   Maximize2,
   Bookmark,
   Building2,
-  Calendar
+  Calendar,
+  UploadCloud,
+  RefreshCw,
+  ExternalLink,
+  Trash2
 } from 'lucide-react';
 import { pagesCatalog } from '../data/initialData';
 import { downloadPatientDocx } from '../utils/docxGenerator';
+import { uploadPatientPdf, deletePatientPdf } from '../lib/supabase';
 import AttachmentSlots from './AttachmentSlots';
 
 export default function DocumentViewer({ 
@@ -35,6 +40,37 @@ export default function DocumentViewer({
   const [viewMode, setViewMode] = useState('single'); // 'single' | 'all'
   const [zoomLevel, setZoomLevel] = useState(100);
   const [viewFormat, setViewFormat] = useState(isBlankMode ? 'blank' : 'facsimile'); // 'facsimile' | 'blank' | 'digital'
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [pdfToast, setPdfToast] = useState(null);
+  const pdfFileInputRef = React.useRef(null);
+
+  const handleUploadOfficialPdf = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+      window.alert('Solo se admiten archivos PDF (.pdf)');
+      return;
+    }
+
+    setIsUploadingPdf(true);
+    const res = await uploadPatientPdf(patient, file);
+    setIsUploadingPdf(false);
+
+    if (res.success) {
+      if (onUpdatePatient) {
+        onUpdatePatient(patient, {
+          pdfUrl: res.publicUrl,
+          pdfSizeBytes: res.sizeBytes,
+          pdfUpdatedAt: res.updatedAt
+        });
+      }
+      setPdfToast('¡PDF oficial archivado permanentemente en Supabase Storage!');
+      setTimeout(() => setPdfToast(null), 4000);
+    } else {
+      window.alert('Error al archivar el PDF: ' + res.error);
+    }
+  };
 
   const totalPages = 21;
 
@@ -74,6 +110,21 @@ export default function DocumentViewer({
   return (
     <div className="space-y-4 select-none animate-in fade-in duration-200">
       
+      {/* Toast Alert Flotante para PDF */}
+      <AnimatePresence>
+        {pdfToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed top-16 right-6 z-50 p-3 rounded-md shadow-lg border bg-white border-emerald-300 text-emerald-800 flex items-center space-x-2.5 max-w-md text-xs font-semibold"
+          >
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            <span>{pdfToast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* BARRA SUPERIOR DE CONTROL MINIMALISTA */}
       <div className="no-print bg-white border border-[#E2E8F0] rounded-lg p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
         
@@ -210,7 +261,44 @@ export default function DocumentViewer({
         </div>
 
         {/* Acciones de Descarga e Impresión */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1.5 sm:space-x-2">
+          {patient?.pdfUrl && (
+            <a
+              href={patient.pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-1 bg-emerald-50 hover:bg-emerald-100 text-[#166534] border border-emerald-300 font-semibold text-xs px-2.5 py-1.5 rounded-md transition cursor-pointer shadow-2xs"
+              title="Abrir o descargar el PDF oficial guardado en Supabase Storage"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">Ver PDF Archivado</span>
+              <span className="sm:hidden">PDF</span>
+              <ExternalLink className="w-3 h-3 text-emerald-600 opacity-70" />
+            </a>
+          )}
+
+          <input
+            ref={pdfFileInputRef}
+            type="file"
+            accept=".pdf,application/pdf"
+            className="hidden"
+            onChange={handleUploadOfficialPdf}
+          />
+          <button
+            type="button"
+            disabled={isUploadingPdf}
+            onClick={() => pdfFileInputRef.current?.click()}
+            className="flex items-center space-x-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs px-2.5 py-1.5 rounded-md transition border border-[#CBD5E1] cursor-pointer disabled:opacity-50"
+            title="Archivar el archivo PDF oficial resultante en la nube de Supabase"
+          >
+            {isUploadingPdf ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#0369A1]" />
+            ) : (
+              <UploadCloud className="w-3.5 h-3.5 text-[#0369A1]" />
+            )}
+            <span>{isUploadingPdf ? 'Archivando...' : (patient?.pdfUrl ? 'Reemplazar PDF' : 'Archivar PDF en Nube')}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => downloadPatientDocx(patient, { globalDate: patient?.fechaEvaluacion, globalClub: patient?.club })}
@@ -218,7 +306,8 @@ export default function DocumentViewer({
             title="Descargar el documento Word (.docx) oficial con todos los sellos médicos y firmas intactas"
           >
             <Download className="w-3.5 h-3.5 text-slate-500" />
-            <span>Word Oficial (.docx)</span>
+            <span className="hidden md:inline">Word Oficial (.docx)</span>
+            <span className="md:hidden">Word</span>
           </button>
 
           <button
