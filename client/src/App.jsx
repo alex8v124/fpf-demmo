@@ -11,8 +11,8 @@ import MedicalStaff from './components/MedicalStaff';
 import DatabaseView from './components/DatabaseView';
 import BatchConfigBar from './components/BatchConfigBar';
 import drivePatients from './data/drivePatients.json';
-import { blankPatientTemplate } from './data/initialData';
-import { loadPatientsFromSupabase, mapDbToPatient } from './lib/supabase';
+import { blankPatientTemplate, initialStaff } from './data/initialData';
+import { loadPatientsFromSupabase, mapDbToPatient, loadStaffFromSupabase } from './lib/supabase';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('dashboard');
@@ -21,6 +21,34 @@ export default function App() {
     drivePatients && drivePatients.length > 0 ? drivePatients[0] : blankPatientTemplate
   );
   const [isBlankMode, setIsBlankMode] = useState(false);
+  const [staffList, setStaffList] = useState(initialStaff || []);
+  const [activeDoctor, setActiveDoctor] = useState(
+    initialStaff && initialStaff.length > 0 ? initialStaff[0] : null
+  );
+
+  useEffect(() => {
+    loadStaffFromSupabase().then((res) => {
+      if (res.success && res.data && res.data.length > 0) {
+        setStaffList(res.data);
+        const firstActive = res.data.find((d) => d.active) || res.data[0];
+        setActiveDoctor(firstActive);
+      }
+    });
+  }, []);
+
+  const handleSelectActiveDoctor = (doctor, applyToCurrent = true) => {
+    if (!doctor) return;
+    setActiveDoctor(doctor);
+    if (applyToCurrent && currentPatient) {
+      setCurrentPatient((prev) => ({
+        ...prev,
+        medicoEvaluador: doctor.name || `${doctor.nombres || ''} ${doctor.apellidos || ''}`.trim(),
+        medicoCmp: doctor.cmp || '',
+        medicoRne: doctor.rne || ''
+      }));
+    }
+  };
+
   const [editorInitialStep, setEditorInitialStep] = useState(1);
 
   const handleOpenEditor = (step = 1) => {
@@ -187,6 +215,7 @@ export default function App() {
           onPrint={handlePrint}
           userRole={userRole}
           setUserRole={setUserRole}
+          activeDoctor={activeDoctor}
         />
 
         {/* 2. Contenedor Principal (Ancho Completo, Sin Barra Lateral) */}
@@ -269,6 +298,7 @@ export default function App() {
                     onResetBlank={handleResetBlank}
                     onPrint={handlePrint}
                     initialStep={editorInitialStep}
+                    staffList={staffList}
                   />
                 )}
 
@@ -283,7 +313,14 @@ export default function App() {
                   />
                 )}
 
-                {currentTab === 'medicos' && <MedicalStaff />}
+                {currentTab === 'medicos' && (
+                  <MedicalStaff
+                    staffList={staffList}
+                    setStaffList={setStaffList}
+                    activeDoctor={activeDoctor}
+                    onSelectActiveDoctor={handleSelectActiveDoctor}
+                  />
+                )}
 
                 {currentTab === 'database' && <DatabaseView />}
               </motion.div>

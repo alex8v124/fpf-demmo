@@ -8,5 +8,9 @@ export {
   loadPatientsFromSupabase,
   mapDbToPatient,
   uploadPatientPdf,
-  deletePatientPdf
+  deletePatientPdf,
+  mapDbToStaff,
+  loadStaffFromSupabase,
+  saveStaffToSupabase,
+  deleteStaffFromSupabase
 } from '../utils/supabase';

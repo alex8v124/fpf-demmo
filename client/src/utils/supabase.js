@@ -471,3 +471,131 @@ export async function deletePatientPdf(patient) {
     return { success: false, error: err.message };
   }
 }
+
+/**
+ * Mapea una fila de public.personal_salud al modelo de médicos del frontend
+ */
+export function mapDbToStaff(row) {
+  const nombres = (row.nombres || '').trim();
+  const apellidos = (row.apellidos || '').trim();
+  const fullName = `${nombres} ${apellidos}`.trim() || 'Profesional de Salud';
+  return {
+    id: row.id,
+    nombres,
+    apellidos,
+    name: fullName,
+    role: row.rol_institucional || 'Médico Evaluador',
+    specialty: row.especialidad || 'Medicina Deportiva',
+    cmp: row.cmp || '',
+    rne: row.rne || '',
+    ctmp: row.ctmp || '',
+    signatureImg: row.firma_url || '/assets/firma-cardiologo.jpeg',
+    stampText:
+      row.sello_texto ||
+      `${fullName.replace(/^Dr\.?\s*|^Dra\.?\s*|^Lic\.?\s*/i, '').toUpperCase()}\nC.M.P ${row.cmp || ''}${
+        row.rne ? ` RNE ${row.rne}` : row.ctmp ? ` CTMP ${row.ctmp}` : ''
+      }`,
+    active: row.activo !== false
+  };
+}
+
+/**
+ * Carga todo el directorio médico acreditado desde public.personal_salud en Supabase
+ */
+export async function loadStaffFromSupabase() {
+  try {
+    const { data, error } = await supabase
+      .from('personal_salud')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+    return { success: true, data: (data || []).map(mapDbToStaff) };
+  } catch (err) {
+    return { success: false, error: err.message, data: [] };
+  }
+}
+
+/**
+ * Crea o actualiza un profesional médico en public.personal_salud (Supabase)
+ */
+export async function saveStaffToSupabase(staff) {
+  try {
+    const isUuid =
+      typeof staff?.id === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(staff.id);
+    const resolvedId =
+      isUuid
+        ? staff.id
+        : typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : '11111111-1111-4111-8111-' + String(Date.now()).padStart(12, '0').slice(-12);
+
+    let nombres = (staff.nombres ?? '').trim();
+    let apellidos = (staff.apellidos ?? '').trim();
+    if (!nombres && !apellidos && staff.name) {
+      const clean = staff.name.trim();
+      const parts = clean.split(/\s+/);
+      if (parts.length >= 3) {
+        nombres = parts.slice(0, 2).join(' ');
+        apellidos = parts.slice(2).join(' ');
+      } else if (parts.length === 2) {
+        nombres = parts[0];
+        apellidos = parts[1];
+      } else {
+        nombres = clean;
+        apellidos = '-';
+      }
+    }
+
+    const fullName = `${nombres} ${apellidos}`.replace(/\s+-\s*$/, '').trim();
+    const payload = {
+      id: resolvedId,
+      nombres: nombres || fullName || 'Dr.',
+      apellidos: apellidos || '-',
+      cmp: staff.cmp ? String(staff.cmp).trim() : null,
+      rne: staff.rne ? String(staff.rne).trim() : null,
+      ctmp: staff.ctmp ? String(staff.ctmp).trim() : null,
+      especialidad: (staff.specialty || '').trim() || 'Medicina Deportiva',
+      rol_institucional: (staff.role || '').trim() || 'Médico Evaluador',
+      firma_url: staff.signatureImg || '/assets/firma-cardiologo.jpeg',
+      sello_texto:
+        (staff.stampText || '').trim() ||
+        `${fullName.replace(/^Dr\.?\s*|^Dra\.?\s*|^Lic\.?\s*/i, '').toUpperCase()}\nC.M.P ${staff.cmp || ''}${
+          staff.rne ? ` RNE ${staff.rne}` : ''
+        }`,
+      activo: staff.active !== false
+    };
+
+    const { data, error } = await supabase
+      .from('personal_salud')
+      .upsert(payload, { onConflict: 'id' })
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true, data: mapDbToStaff(data) };
+  } catch (err) {
+    console.error('Error guardando médico en Supabase:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Elimina un profesional médico de public.personal_salud (Supabase)
+ */
+export async function deleteStaffFromSupabase(id) {
+  try {
+    const { error } = await supabase.from('personal_salud').delete().eq('id', id);
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}

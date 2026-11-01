@@ -33,6 +33,14 @@ export default function Navbar({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [playerFilter, setPlayerFilter] = useState('');
+  const doctorName = activeDoctor?.name || 'Dr. Darío Hernández';
+  const doctorInitials = activeDoctor?.apellidos
+    ? ((activeDoctor.nombres?.charAt(0) || '') + activeDoctor.apellidos.charAt(0)).toUpperCase()
+    : activeDoctor?.name
+      ? activeDoctor.name.replace(/^Dr\.?\s*|^Lic\.?\s*/i, '').split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase()
+      : 'DH';
+  const doctorCmp = activeDoctor?.cmp ? `CMP ${activeDoctor.cmp}` : 'CMP 27503';
+
 
   const navItems = [
     { id: 'dashboard', label: 'Bandeja', icon: LayoutDashboard },
@@ -288,12 +296,12 @@ export default function Navbar({
                 title="Perfil y permisos de usuario activo"
               >
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#0369A1] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-                  DH
+                  {doctorInitials}
                 </div>
                 <div className="hidden 2xl:flex flex-col text-left leading-tight">
-                  <span className="text-xs font-bold text-slate-800">Dr. Darío Hernández</span>
+                  <span className="text-xs font-bold text-slate-800">{doctorName}</span>
                   <span className="text-[10px] text-slate-500 font-mono">
-                    {userRole === 'MEDICO' && 'CMP 27503 • Médico'}
+                    {userRole === 'MEDICO' && `${doctorCmp} • Médico`}
                     {userRole === 'CLUB' && 'Delegado Club'}
                     {userRole === 'FPF' && 'Auditor FPF'}
                   </span>
@@ -329,7 +337,7 @@ export default function Navbar({
                           <Stethoscope className="w-4 h-4 text-[#0369A1] shrink-0" />
                           <div>
                             <div className="text-xs">Médico Evaluador</div>
-                            <div className="text-[10px] text-slate-500 font-normal">Dr. Darío Hernández • CMP 27503</div>
+                            <div className="text-[10px] text-slate-500 font-normal">{doctorName} • {doctorCmp}</div>
                           </div>
                         </div>
                         {userRole === 'MEDICO' && <Check className="w-3.5 h-3.5 text-[#0369A1]" />}

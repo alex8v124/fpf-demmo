@@ -54,7 +54,8 @@ export default function ClinicalEditor({
   onNavigateTab,
   onResetBlank,
   onPrint,
-  initialStep = 1
+  initialStep = 1,
+  staffList = []
 }) {
   const [currentStep, setCurrentStep] = useState(initialStep || 1);
   const [toast, setToast] = useState(null); // { type: 'success' | 'error', title, subtitle }
@@ -490,7 +491,33 @@ export default function ClinicalEditor({
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Médico Certificador</label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-slate-700">Médico Certificador</label>
+                      {staffList && staffList.length > 0 && (
+                        <select
+                          className="text-[10px] bg-sky-50 text-[#0369A1] font-semibold border border-sky-200 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none"
+                          onChange={(e) => {
+                            const found = staffList.find((s) => s.id === e.target.value);
+                            if (found) {
+                              setPatient((prev) => ({
+                                ...prev,
+                                medicoEvaluador: found.name.replace(/^Dr\.?\s*|^Dra\.?\s*/i, '').toUpperCase(),
+                                medicoCmp: found.cmp || prev?.medicoCmp || '',
+                                medicoRne: found.rne || prev?.medicoRne || ''
+                              }));
+                            }
+                          }}
+                          value=""
+                        >
+                          <option value="" disabled>Seleccionar de staff acreditado...</option>
+                          {staffList.filter(s => s.active !== false).map((doc) => (
+                            <option key={doc.id} value={doc.id}>
+                              {doc.name} (CMP {doc.cmp})
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
                     <input
                       type="text"
                       value={patient?.medicoEvaluador ?? 'DARIO HERNANDEZ'}

@@ -45,131 +45,6 @@ const MONTHS = [
   { id: 'DIC', name: 'Diciembre', count: 140 },
 ];
 
-// Generador de muestra representativa para el pool masivo (clubes peruanos)
-const initialPoolData = [];
-const oldSamplePool = [
-  {
-    id: 'carlos-ponce',
-    nombres: 'CARLOS',
-    apellidos: 'PONCE ECHEVARRIA',
-    nombreCompleto: 'PONCE ECHEVARRIA CARLOS',
-    dni: '72194850',
-    club: 'C.D. Zúñiga',
-    categoria: 'Primera División',
-    posicion: 'Volante Mixto',
-    mes: 'ENE',
-    fechaEvaluacion: '22-01-2026',
-    estado: 'APTO',
-    docType: 'Expediente DOCX / PDF',
-    synced21Pages: true
-  },
-  {
-    id: 'talexsio-guzman',
-    nombres: 'ADDU ELIAS',
-    apellidos: 'TALEXSIO GUZMAN',
-    nombreCompleto: 'TALEXSIO GUZMAN ADDU ELIAS',
-    dni: '74829103',
-    club: 'Universitario de Deportes',
-    categoria: 'Reserva / Primera',
-    posicion: 'Delantero Extremo',
-    mes: 'OCT',
-    fechaEvaluacion: '07-10-2026',
-    estado: 'APTO',
-    docType: 'PDF Oficial FPF (21 Págs)',
-    synced21Pages: true
-  },
-  {
-    id: 'rodrigo-ceballos',
-    nombres: 'RODRIGO ALONSO',
-    apellidos: 'CEBALLOS HUAYTA',
-    nombreCompleto: 'CEBALLOS HUAYTA RODRIGO ALONSO',
-    dni: '70891234',
-    club: 'Alianza Lima',
-    categoria: 'Sub-20',
-    posicion: 'Defensa Central',
-    mes: 'ENE',
-    fechaEvaluacion: '22-01-2026',
-    estado: 'APTO',
-    docType: 'Expediente FPF',
-    synced21Pages: true
-  },
-  {
-    id: 'mateo-quispe',
-    nombres: 'MATEO SEBASTIAN',
-    apellidos: 'QUISPE RAMOS',
-    dni: '73948512',
-    nombreCompleto: 'QUISPE RAMOS MATEO SEBASTIAN',
-    club: 'Sporting Cristal',
-    categoria: 'Sub-18',
-    posicion: 'Lateral Izquierdo',
-    mes: 'FEB',
-    fechaEvaluacion: '14-02-2026',
-    estado: 'APTO',
-    docType: 'Expediente FPF',
-    synced21Pages: true
-  },
-  {
-    id: 'diego-valdivia',
-    nombres: 'DIEGO ARMANDO',
-    apellidos: 'VALDIVIA FLORES',
-    dni: '71549832',
-    nombreCompleto: 'VALDIVIA FLORES DIEGO ARMANDO',
-    club: 'FBC Melgar',
-    categoria: 'Primera División',
-    posicion: 'Arquero',
-    mes: 'FEB',
-    fechaEvaluacion: '14-02-2026',
-    estado: 'EN OBSERVACIÓN',
-    docType: 'Pendiente Ecocardiograma',
-    synced21Pages: true
-  },
-  {
-    id: 'bryan-paredes',
-    nombres: 'BRYAN JESUS',
-    apellidos: 'PAREDES SALAS',
-    dni: '75209384',
-    nombreCompleto: 'PAREDES SALAS BRYAN JESUS',
-    club: 'Cienciano del Cusco',
-    categoria: 'Reserva',
-    posicion: 'Delantero Centro',
-    mes: 'MAR',
-    fechaEvaluacion: '05-03-2026',
-    estado: 'APTO',
-    docType: 'Expediente FPF',
-    synced21Pages: true
-  },
-  {
-    id: 'joaquin-alvarez',
-    nombres: 'JOAQUIN DANIEL',
-    apellidos: 'ALVAREZ MONTIEL',
-    dni: '76894012',
-    nombreCompleto: 'ALVAREZ MONTIEL JOAQUIN DANIEL',
-    club: 'Cusco F.C.',
-    categoria: 'Primera División',
-    posicion: 'Lateral Derecho',
-    mes: 'ENE',
-    fechaEvaluacion: '22-01-2026',
-    estado: 'APTO',
-    docType: 'Expediente FPF',
-    synced21Pages: true
-  },
-  {
-    id: 'alexander-pantoja',
-    nombres: 'ALEXANDER',
-    apellidos: 'PANTOJA CASTILLO',
-    dni: '78291045',
-    nombreCompleto: 'PANTOJA CASTILLO ALEXANDER',
-    club: 'Carlos A. Mannucci',
-    categoria: 'Sub-20',
-    posicion: 'Mediocentro Defensivo',
-    mes: 'ABR',
-    fechaEvaluacion: '18-04-2026',
-    estado: 'APTO',
-    docType: 'Expediente FPF',
-    synced21Pages: true
-  }
-];
-
 export default function PoolManager({ 
   patientsList = [],
   setPatientsList,
@@ -366,51 +241,7 @@ export default function PoolManager({
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Generar lote masivo de prueba para simular el pool de miles de jugadores
-  const handleGenerateBatch = (count = 25) => {
-    const clubs = ['Universitario', 'Alianza Lima', 'Sporting Cristal', 'FBC Melgar', 'Cienciano', 'Sport Boys', 'C.D. Zúñiga', 'Cusco FC'];
-    const firstNames = ['RODRIGO', 'ALEXIS', 'SEBASTIAN', 'MATEO', 'DIEGO', 'JUAN', 'CHRISTIAN', 'LEONARDO', 'GONZALO', 'FABRICIO'];
-    const lastNames = ['ZEVALLOS', 'PONCE', 'GUZMAN', 'MENDOZA', 'FLORES', 'QUISPE', 'RODRIGUEZ', 'PAREDES', 'CASTILLO', 'VARGAS'];
-    const positions = ['Delantero', 'Volante', 'Defensa Central', 'Lateral', 'Arquero'];
-    const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SET', 'OCT', 'NOV', 'DIC'];
-
-    const newPlayers = [];
-    for (let i = 0; i < count; i++) {
-      const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
-      const ln1 = lastNames[Math.floor(Math.random() * lastNames.length)];
-      const ln2 = lastNames[Math.floor(Math.random() * lastNames.length)];
-      const ap = `${ln1} ${ln2}`;
-      const club = clubs[Math.floor(Math.random() * clubs.length)];
-      const pos = positions[Math.floor(Math.random() * positions.length)];
-      const mes = months[Math.floor(Math.random() * months.length)];
-      const dni = (70000000 + Math.floor(Math.random() * 9999999)).toString();
-
-      newPlayers.push({
-        id: `gen-${Date.now()}-${i}`,
-        nombres: fn,
-        apellidos: ap,
-        nombreCompleto: formatPlayerName(ap, fn, nameFormatOrder),
-        dni: dni,
-        club: club,
-        categoria: 'Primera División / Reserva',
-        posicion: pos,
-        mes: mes,
-        fechaEvaluacion: globalDate,
-        estado: Math.random() > 0.15 ? 'APTO' : 'EN OBSERVACIÓN',
-        docType: 'Expediente FPF (19 Págs)',
-        synced21Pages: true
-      });
-    }
-
-    setPool(prev => [...prev, ...newPlayers]);
-    setToastMessage({
-      type: 'success',
-      text: `Se agregaron ${count} nuevos futbolistas al Pool. Total actual en memoria: ${pool.length + count}.`
-    });
-    setTimeout(() => setToastMessage(null), 3500);
-  };
-
-  const handleSelectToView = (player) => {
+const handleSelectToView = (player) => {
     if (onSelectPatient) {
       onSelectPatient(player);
     } else if (setCurrentPatient) {
@@ -607,22 +438,10 @@ export default function PoolManager({
           </div>
 
           <div className="flex items-center space-x-2">
-            <button
-              type="button"
-              onClick={() => handleGenerateBatch(20)}
-              className="bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-xs font-medium px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1"
-            >
-              <Users className="w-3 h-3 text-[#0284C7]" />
-              <span>+ Cargar Lote (+20)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleGenerateBatch(100)}
-              className="bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-xs font-medium px-2.5 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1"
-            >
-              <Database className="w-3 h-3 text-slate-500" />
-              <span>Simular Pool (+100)</span>
-            </button>
+            <span className="bg-[#DCFCE7] text-[#166534] text-xs font-semibold px-2.5 py-1 rounded-md flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Rotación Anual Acreditada</span>
+            </span>
           </div>
         </div>
 
