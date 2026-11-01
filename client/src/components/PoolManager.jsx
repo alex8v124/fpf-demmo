@@ -342,7 +342,7 @@ export default function PoolManager({
       setIsApplyingCascade(false);
       setToastMessage({
         type: 'success',
-        text: `¡Fecha unificada "${globalDate}" aplicada a todos los expedientes del lote! Las 18 páginas quedaron sincronizadas.`
+        text: `¡Fecha unificada "${globalDate}" aplicada a todos los expedientes del lote! Las 19 páginas quedaron sincronizadas.`
       });
       setTimeout(() => setToastMessage(null), 4000);
     }, 400);
@@ -397,7 +397,7 @@ export default function PoolManager({
         mes: mes,
         fechaEvaluacion: globalDate,
         estado: Math.random() > 0.15 ? 'APTO' : 'EN OBSERVACIÓN',
-        docType: 'Expediente FPF (18 Págs)',
+        docType: 'Expediente FPF (19 Págs)',
         synced21Pages: true
       });
     }
@@ -459,7 +459,7 @@ export default function PoolManager({
             Gestor de Pool Masivo & Rotación por Meses
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5 max-w-2xl">
-            Estandariza el orden de nombres y apellidos, y sincroniza la fecha única en cascada en las 18 páginas para exportaciones masivas seguras.
+            Estandariza el orden de nombres y apellidos, y sincroniza la fecha única en cascada en las 19 páginas para exportaciones masivas seguras.
           </p>
         </div>
 
@@ -545,7 +545,7 @@ export default function PoolManager({
               <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider">Sincronizador de Fecha Única</h3>
             </div>
             <span className="text-[10px] font-bold text-[#0369A1] bg-sky-50 px-2 py-0.5 rounded">
-              18 Págs Sincronizadas
+              19 Págs Sincronizadas
             </span>
           </div>
 
@@ -819,9 +819,9 @@ export default function PoolManager({
                               if (onNavigateTab) onNavigateTab('documento');
                             }}
                             className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-semibold px-2.5 py-1 rounded-md transition cursor-pointer shadow-xs"
-                            title="Ver las 18 páginas del expediente"
+                            title="Ver las 19 páginas del expediente"
                           >
-                            <span>Ver 18P</span>
+                            <span>Ver 19P</span>
                           </button>
 
                           <button
@@ -937,7 +937,7 @@ export default function PoolManager({
                   <span className="font-bold text-[#0369A1]">{selectedIds.size} futbolistas</span>
                 </div>
                 <p className="text-[11px] text-[#64748B] pt-0.5">
-                  En cumplimiento del Art. 24 de la Ley General de Salud N° 26842 y el protocolo médico FPF 2026, la inserción de sellos y firmas digitales genera validez legal en cada una de las 18 páginas del expediente.
+                  En cumplimiento del Art. 24 de la Ley General de Salud N° 26842 y el protocolo médico FPF 2026, la inserción de sellos y firmas digitales genera validez legal en cada una de las 19 páginas del expediente.
                 </p>
               </div>
 

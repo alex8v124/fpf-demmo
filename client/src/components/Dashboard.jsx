@@ -538,7 +538,7 @@ export default function Dashboard({
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[11px] text-slate-600 font-medium whitespace-nowrap">
                             <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>18 Págs</span>
+                            <span>19 Págs</span>
                           </span>
                         )}
                       </td>
@@ -568,10 +568,10 @@ export default function Dashboard({
                               onNavigateTab('documento');
                             }}
                             className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-[#0369A1] hover:bg-[#075985] text-white text-[11px] font-semibold transition cursor-pointer shadow-xs shrink-0 whitespace-nowrap"
-                            title="Ver expediente oficial de 18 páginas"
+                            title="Ver expediente oficial de 19 páginas"
                           >
                             <FileCheck2 className="w-3.5 h-3.5 shrink-0" />
-                            <span>Ver 18P</span>
+                            <span>Ver 19P</span>
                           </button>
 
                           <button

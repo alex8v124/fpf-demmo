@@ -241,7 +241,7 @@ export default function FileExtractor({
             Carga de Archivos & Extracción de Nombres
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5">
-            Sube las imágenes o PDFs de los futbolistas y el sistema extrae automáticamente el nombre del archivo asociándolo a las 18 páginas.
+            Sube las imágenes o PDFs de los futbolistas y el sistema extrae automáticamente el nombre del archivo asociándolo a las 19 páginas.
           </p>
         </div>
 
@@ -392,7 +392,7 @@ export default function FileExtractor({
                 />
               </div>
               <div className="text-[10px] text-[#64748B]">
-                Se propaga automáticamente a las 18 páginas del expediente.
+                Se propaga automáticamente a las 19 páginas del expediente.
               </div>
             </div>
           </div>
@@ -421,7 +421,7 @@ export default function FileExtractor({
               Expedientes Extraídos desde Archivos
             </h2>
             <p className="text-xs text-[#64748B] mt-0.5">
-              Haz clic en cualquier jugador para abrir su expediente oficial de 18 páginas.
+              Haz clic en cualquier jugador para abrir su expediente oficial de 19 páginas.
             </p>
           </div>
 
@@ -570,7 +570,7 @@ export default function FileExtractor({
                         className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-xs"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>Ver 18 Págs</span>
+                        <span>Ver 19 Págs</span>
                       </button>
                     </td>
                   </tr>

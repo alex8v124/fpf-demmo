@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 batch_word_processor.py
-Herramienta de procesamiento masivo de expedientes Word (.docx) de 18 páginas para FPF / CONMEBOL.
+Herramienta de procesamiento masivo de expedientes Word (.docx) de 19 páginas para FPF / CONMEBOL.
 - Utiliza la plantilla oficial limpia parametrizada (PLANTILLA_OFICIAL_CON_SELLOS.docx).
 - Modifica la fecha en cascada a múltiples archivos Word simultáneamente.
 - Inserta Apellidos, Nombres, Club, País, Fecha de Nacimiento, Posición, Peso y Talla.
@@ -95,6 +95,11 @@ def process_word_document(
         "{{POSICION}}": safe_xml(position.strip().upper()),
         "{{PESO}}": safe_xml(weight.strip()),
         "{{TALLA}}": safe_xml(height.strip()),
+        "{{MEDICO_CERT}}": "DARIO HERNANDEZ",
+        "{{CMP_CERT}}": "27503",
+        "{{DOMICILIO_CLINICA}}": "AV CONQUISTADORES 1588 SAN ISIDRO",
+        "{{APTITUD_DETALLE}}": "SE ENCUENTRA APTO PARA REALIZAR ACTIVIDAD DEPORTIVA ( FUTBOL )",
+        "{{RECIBO}}": "",
     }
 
     with open(input_path, "rb") as f:
@@ -131,7 +136,7 @@ def process_word_document(
     with open(output_path, "wb") as f:
         f.write(out_buffer.getvalue())
 
-    print(f"[OK] Generado: {os.path.basename(output_path)} (18 págs, plantilla limpia con sellos preservados).")
+    print(f"[OK] Generado: {os.path.basename(output_path)} (19 págs, plantilla limpia con sellos preservados).")
 
 
 def main():
@@ -162,7 +167,7 @@ def main():
         names_to_process = ["TALEXSIO GUZMAN ADDU ELIAS", "RAMIREZ FLORES DIEGO"]
 
     print("==================================================")
-    print(" PROCESADOR MASIVO DE WORDS FPF - FAMIHEART (18P)")
+    print(" PROCESADOR MASIVO DE WORDS FPF - FAMIHEART (19P)")
     print("==================================================")
     print(f"Plantilla base:  {os.path.basename(TEMPLATE_PATH)}")
     print(f"Fecha unificada: {args.date}")

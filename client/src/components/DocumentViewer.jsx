@@ -20,6 +20,32 @@ import { downloadPatientDocx } from '../utils/docxGenerator';
 import { uploadPatientPdf } from '../lib/supabase';
 import AttachmentSlots from './AttachmentSlots';
 
+export const TOTAL_EXPEDIENTE_PAGES = 19;
+
+/**
+ * Contenedor dedicado de impresión A4 montado en la raíz de App.jsx (fuera de .no-print y transforms)
+ * para garantizar que el botón "Imprimir PDF" funcione desde CUALQUIER pestaña de la plataforma
+ * generando exactamente las 19 páginas limpias sin hojas grises ni desplazamientos verticales.
+ */
+export function PrintExpedienteDocument({ patient, isBlankMode }) {
+  return (
+    <div className="print-only m-0 p-0">
+      {Array.from({ length: TOTAL_EXPEDIENTE_PAGES }, (_, i) => i + 1).map((pNum) => (
+        <div
+          key={pNum}
+          className="print-page w-[210mm] h-[297mm] max-h-[297mm] bg-white text-black relative overflow-hidden"
+        >
+          <PageContentRenderer
+            pageNumber={pNum}
+            patient={patient}
+            viewFormat={isBlankMode ? 'blank' : 'facsimile'}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function DocumentViewer({
   patient,
   isBlankMode,
@@ -35,7 +61,7 @@ export default function DocumentViewer({
   const [pdfToast, setPdfToast] = useState(null);
   const pdfFileInputRef = React.useRef(null);
 
-  const totalPages = 18;
+  const totalPages = TOTAL_EXPEDIENTE_PAGES;
 
   useEffect(() => {
     setViewFormat(isBlankMode ? 'blank' : 'facsimile');
@@ -99,13 +125,13 @@ export default function DocumentViewer({
 
   const currentPageInfo = pagesCatalog.find((p) => p.number === currentPage) || pagesCatalog[0];
 
-  // 5 Fases Clínicas Oficiales del Expediente Limpio de 18 Páginas
+  // 5 Fases Clínicas Oficiales del Expediente Limpio de 19 Páginas
   const documentPhases = [
-    { title: 'Fase 1: Filiación PCMA', pages: [1], desc: 'Ficha oficial de evaluación pre-competencia FPF' },
-    { title: 'Fase 2: Anamnesis y Examen', pages: [2, 3, 4, 5, 6], desc: 'Historia cardiovascular, lesiones, somatometría y signos' },
-    { title: 'Fase 3: Cardiología CONMEBOL', pages: [7, 8, 9], desc: 'ECG reposo y Ecocardiograma M-2D / Doppler' },
-    { title: 'Fase 4: Dictamen y Aptitud', pages: [10, 11, 12], desc: 'Bioquímica FPF, resumen comisión y Certificado Famiheart' },
-    { title: 'Fase 5: Informes e Imágenes', pages: [13, 14, 15, 16, 17, 18], desc: 'Informe Eco, ultrasonidos, ECG, Hemograma y Rayos X' }
+    { title: 'Fase 1: Certificado y PCMA', pages: [1, 2], desc: 'Certificado Médico FPF y ficha pre-competencia' },
+    { title: 'Fase 2: Anamnesis y Examen', pages: [3, 4, 5, 6, 7], desc: 'Historia cardiovascular, lesiones, somatometría y signos' },
+    { title: 'Fase 3: Cardiología CONMEBOL', pages: [8, 9, 10], desc: 'ECG reposo y Ecocardiograma M-2D / Doppler' },
+    { title: 'Fase 4: Dictamen y Aptitud', pages: [11, 12, 13], desc: 'Bioquímica FPF, resumen comisión y Certificado Famiheart' },
+    { title: 'Fase 5: Informes e Imágenes', pages: [14, 15, 16, 17, 18, 19], desc: 'Informe Eco, ultrasonidos, ECG, Hemograma y Rayos X' }
   ];
 
   return (
@@ -206,7 +232,7 @@ export default function DocumentViewer({
                 ? 'bg-[#0369A1] text-white border-[#0369A1] shadow-xs'
                 : 'bg-white text-slate-700 border-[#CBD5E1] hover:bg-slate-50'
             }`}
-            title="Expediente oficial de 18 páginas con plantilla limpia original y datos superpuestos"
+            title="Expediente oficial de 19 páginas con plantilla limpia original y datos superpuestos"
           >
             <FileCheck2 className="w-3.5 h-3.5" />
             <span>Expediente Oficial (1:1)</span>
@@ -224,7 +250,7 @@ export default function DocumentViewer({
                 ? 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
                 : 'bg-white text-slate-700 border-[#CBD5E1] hover:bg-slate-50'
             }`}
-            title="Plantilla oficial limpia de 18 páginas sin datos personales"
+            title="Plantilla oficial limpia de 19 páginas sin datos personales"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>Plantilla Limpia</span>
@@ -252,7 +278,7 @@ export default function DocumentViewer({
                   : 'text-[#64748B] hover:text-[#1E293B]'
               }`}
             >
-              18 Págs
+              19 Págs
             </button>
           </div>
         </div>
@@ -301,7 +327,7 @@ export default function DocumentViewer({
               href="/PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.docx"
               download="PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.docx"
               className="flex items-center space-x-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs px-2.5 py-1.5 rounded-md transition border border-[#CBD5E1] cursor-pointer"
-              title="Descargar la plantilla Word (.docx) oficial 100% limpia con sellos intactos"
+              title="Descargar la plantilla Word (.docx) oficial de 19 páginas 100% limpia con sellos intactos"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
               <span className="hidden md:inline">Plantilla Word (.docx)</span>
@@ -312,7 +338,7 @@ export default function DocumentViewer({
               type="button"
               onClick={() => downloadPatientDocx(patient, { globalDate: patient?.fechaEvaluacion, globalClub: patient?.club })}
               className="flex items-center space-x-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs px-2.5 py-1.5 rounded-md transition border border-[#CBD5E1] cursor-pointer"
-              title="Descargar el documento Word (.docx) oficial con la plantilla limpia y todos los sellos médicos intactos"
+              title="Descargar el documento Word (.docx) oficial de 19 páginas con la plantilla limpia y todos los sellos médicos intactos"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
               <span className="hidden md:inline">Word Oficial (.docx)</span>
@@ -324,7 +350,7 @@ export default function DocumentViewer({
             type="button"
             onClick={onPrint}
             className="flex items-center space-x-1 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-1.5 rounded-md shadow-xs transition cursor-pointer"
-            title="Imprimir el expediente de 18 páginas o guardar como PDF"
+            title="Imprimir el expediente de 19 páginas o guardar como PDF"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Imprimir PDF</span>
@@ -344,7 +370,7 @@ export default function DocumentViewer({
         </div>
         <div className="text-[#64748B] hidden sm:block text-xs">
           {viewFormat === 'blank' ? (
-            <span className="text-[#B45309] font-medium">Plantilla oficial limpia (18 páginas, cero datos previos)</span>
+            <span className="text-[#B45309] font-medium">Plantilla oficial limpia (19 páginas, cero datos previos)</span>
           ) : (
             <span>
               Expediente: <strong className="text-[#1E293B]">{patient?.nombreCompleto || 'Futbolista'}</strong>
@@ -377,7 +403,7 @@ export default function DocumentViewer({
               </motion.div>
             </AnimatePresence>
           ) : (
-            /* Vista 18 Páginas Continuas */
+            /* Vista 19 Páginas Continuas */
             <div className="space-y-8">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
                 <div
@@ -400,28 +426,12 @@ export default function DocumentViewer({
         <AttachmentSlots patient={patient} onUpdatePatient={onUpdatePatient} />
       )}
 
-      {/* CONTENEDOR EXCLUSIVO DE IMPRESIÓN OFICIAL (18 PÁGINAS PURAS 1:1) */}
-      <div className="print-only">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
-          <div
-            key={pNum}
-            className="print-page w-[210mm] h-[297mm] max-h-[297mm] bg-white text-black relative overflow-hidden"
-          >
-            <PageContentRenderer
-              pageNumber={pNum}
-              patient={patient}
-              viewFormat={isBlankMode || viewFormat === 'blank' ? 'blank' : 'facsimile'}
-            />
-          </div>
-        ))}
-      </div>
-
       {/* ÍNDICE SECCIONADO EN 5 FASES CLÍNICAS */}
       <div className="no-print bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
         <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#1E293B] flex items-center gap-1.5">
             <Bookmark className="w-3.5 h-3.5 text-[#0369A1]" />
-            Índice de Secciones del Expediente de 18 Páginas
+            Índice de Secciones del Expediente de 19 Páginas
           </h3>
           <span className="text-[11px] text-[#64748B]">Haz clic en cualquier página para navegar</span>
         </div>
@@ -468,9 +478,9 @@ function PageContentRenderer({ pageNumber, patient, viewFormat }) {
   return <FacsimileOfficialPage pageNumber={pageNumber} patient={patient} />;
 }
 
-// Renderizador Facsímil 1:1 Oficial sobre la Plantilla Limpia de 18 Páginas (derivada de PONCE ECHEVARRIA CARLOS.docx)
+// Renderizador Facsímil 1:1 Oficial sobre la Plantilla Limpia de 19 Páginas
+// (Página 1: Certificado Médico FPF + Páginas 2..19: Protocolo PONCE limpio con sellos originales)
 function FacsimileOfficialPage({ pageNumber, patient }) {
-  const formattedPage = pageNumber.toString().padStart(2, '0');
   const rawFull =
     patient?.nombreCompleto ||
     `${patient?.apellidos || ''} ${patient?.nombres || ''}`.trim() ||
@@ -481,6 +491,23 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
   const cleanPaisClub = (patient?.paisClub || 'PERÚ').toUpperCase();
   const cleanBirthDate = patient?.fechaNacimiento || '18-09-2004';
   const cleanPosicion = (patient?.posicion || 'VOLANTE').toUpperCase();
+
+  const medicoCert = (patient?.medicoEvaluador || 'DARIO HERNANDEZ')
+    .replace(/^DR\.?\s*/i, '')
+    .trim()
+    .toUpperCase();
+  const cmpCert = String(patient?.medicoCmp || '27503').trim();
+  const domicilioClinica = (patient?.domicilioClinica || 'AV CONQUISTADORES 1588 SAN ISIDRO')
+    .trim()
+    .toUpperCase();
+  const numeroRecibo = String(patient?.numeroRecibo || patient?.receiptNum || '').trim();
+  const aptitudText = patient?.aptitudDetalle
+    ? patient.aptitudDetalle.trim().toUpperCase()
+    : patient?.estadoAptitud === 'NO APTO'
+      ? 'NO APTO PARA REALIZAR ACTIVIDAD DEPORTIVA COMPETITIVA ( FUTBOL )'
+      : patient?.estadoAptitud === 'EN OBSERVACIÓN'
+        ? 'EN OBSERVACION MEDICA PRE-COMPETENCIA ( FUTBOL )'
+        : 'SE ENCUENTRA APTO PARA REALIZAR ACTIVIDAD DEPORTIVA ( FUTBOL )';
 
   let apellidosBox = (patient?.apellidos || '').trim().toUpperCase();
   let nombresBox = (patient?.nombres || '').trim().toUpperCase();
@@ -503,13 +530,129 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
   const rawTalla = String(patient?.talla || '1.75').trim();
   const formattedTalla = /cm/i.test(rawTalla) ? rawTalla : `${rawTalla} Cm`;
 
-  // PÁGINA 1: FICHA DE EVALUACIÓN MÉDICA PRE-COMPETENCIA (PCMA)
+  const pesoNum = parseFloat(rawPeso.replace(/[^\d.]/g, ''));
+  const tallaNum = parseFloat(rawTalla.replace(/[^\d.]/g, ''));
+  const computedImc =
+    patient?.imc ||
+    (!isNaN(pesoNum) && !isNaN(tallaNum) && tallaNum > 0
+      ? (pesoNum / (tallaNum > 3 ? (tallaNum / 100) ** 2 : tallaNum ** 2)).toFixed(1)
+      : '23.2');
+
+  const eco = patient?.ecocardiograma || {};
+  const hemo = patient?.laboratorio?.hemograma || {};
+  const bioq = patient?.laboratorio?.bioquimica || {};
+
+  // PÁGINA 1: CARA INICIAL OFICIAL — CERTIFICADO MÉDICO FEDERACIÓN PERUANA DE FÚTBOL
   if (pageNumber === 1) {
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_01.png"
-          alt="Evaluación Médica Pre-Competencia Página 1"
+          src="/assets/pages_blank/page_01_base.png"
+          alt="Certificado Médico Federación Peruana de Fútbol Página 1"
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        {/* NOMBRE : */}
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[64%]"
+          style={{ top: '14.65%', left: '23.20%' }}
+        >
+          {cleanName}
+        </div>
+        {/* CLUB : */}
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[64%]"
+          style={{ top: '17.80%', left: '23.20%' }}
+        >
+          {cleanClub}
+        </div>
+        {/* MEDICO : */}
+        <div
+          className="absolute uppercase text-black truncate max-w-[42.5%]"
+          style={{
+            top: '20.85%',
+            left: '23.20%',
+            fontFamily: "'Times New Roman', Georgia, serif",
+            fontSize: '15.3px',
+            lineHeight: 1.15
+          }}
+        >
+          {medicoCert}
+        </div>
+        {/* CMP: */}
+        <div
+          className="absolute uppercase text-black"
+          style={{
+            top: '20.85%',
+            left: '74.20%',
+            fontFamily: "'Times New Roman', Georgia, serif",
+            fontSize: '15.3px',
+            lineHeight: 1.15
+          }}
+        >
+          {cmpCert}
+        </div>
+        {/* DOMICILIO: */}
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[64%]"
+          style={{ top: '24.22%', left: '23.20%' }}
+        >
+          {domicilioClinica}
+        </div>
+
+        {/* Bloque Clínico RTP */}
+        <div
+          className="absolute text-black uppercase"
+          style={{
+            top: '35.50%',
+            left: '15.50%',
+            width: '69.00%',
+            fontFamily: 'Calibri, Arial, sans-serif',
+            fontSize: '14.67px',
+            lineHeight: 1.72
+          }}
+        >
+          <div>QUIEN AL EXAMEN CLINICO PRESENTA:</div>
+          <div>ARER</div>
+          <div>AREN</div>
+          <div>NO SOPLOS</div>
+          <div>VIAS AEREAS LIBRES</div>
+          <div style={{ marginTop: '14px' }}>{aptitudText}</div>
+        </div>
+
+        {/* FECHA */}
+        <div
+          className="absolute fpf-doc-text text-center"
+          style={{ top: '83.20%', left: '53.68%', width: '31.00%' }}
+        >
+          {cleanDate}
+        </div>
+
+        {/* NUMERO DE RECIBO : */}
+        {numeroRecibo && (
+          <div
+            className="absolute uppercase text-black"
+            style={{
+              top: '91.15%',
+              left: '30.80%',
+              fontFamily: 'Calibri, Arial, sans-serif',
+              fontSize: '13px',
+              lineHeight: 1.15
+            }}
+          >
+            {numeroRecibo}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // PÁGINA 2: FICHA DE EVALUACIÓN MÉDICA PRE-COMPETENCIA (PCMA)
+  if (pageNumber === 2) {
+    return (
+      <div className="w-full h-full relative select-none">
+        <img
+          src="/assets/pages_blank/page_02.png"
+          alt="Evaluación Médica Pre-Competencia Página 2"
           className="w-full h-full object-contain pointer-events-none block"
         />
         <div
@@ -552,9 +695,9 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 2: HISTORIA CLÍNICA PRE-PARTICIPATIVA I (14 CHECKS EN COLUMNA "NO")
-  if (pageNumber === 2) {
-    const p2Tops = [
+  // PÁGINA 3: HISTORIA CLÍNICA PRE-PARTICIPATIVA I (14 CHECKS EN COLUMNA "NO")
+  if (pageNumber === 3) {
+    const p3Tops = [
       '32.55%', '35.30%', '38.15%', '41.10%', '44.12%', '46.97%',
       '59.36%', '62.02%', '65.06%',
       '76.99%', '80.03%', '82.97%', '86.00%', '88.85%'
@@ -562,12 +705,12 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_02.png"
-          alt="Historia Pre-Participativa I Página 2"
+          src="/assets/pages_blank/page_03.png"
+          alt="Historia Pre-Participativa I Página 3"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p2Tops.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text" style={{ top, left: '93.45%' }}>
+        {p3Tops.map((top, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top, left: '93.55%' }}>
             X
           </div>
         ))}
@@ -575,13 +718,13 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 3: HISTORIA CLÍNICA PRE-PARTICIPATIVA II (FÁRMACOS Y SUPLEMENTOS)
-  if (pageNumber === 3) {
+  // PÁGINA 4: HISTORIA CLÍNICA PRE-PARTICIPATIVA II (FÁRMACOS Y SUPLEMENTOS)
+  if (pageNumber === 4) {
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_03.png"
-          alt="Fármacos y Suplementos Página 3"
+          src="/assets/pages_blank/page_04.png"
+          alt="Fármacos y Suplementos Página 4"
           className="w-full h-full object-contain pointer-events-none block"
         />
         <div className="absolute fpf-doc-text uppercase" style={{ top: '31.02%', left: '12.84%' }}>
@@ -594,20 +737,20 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 4: SISTEMA MÚSCULO-ESQUELÉTICO I (20 "NIEGA")
-  if (pageNumber === 4) {
-    const p4Tops = [
+  // PÁGINA 5: SISTEMA MÚSCULO-ESQUELÉTICO I (20 "NIEGA")
+  if (pageNumber === 5) {
+    const p5Tops = [
       '29.15%', '32.09%', '35.11%', '37.96%', '40.91%', '43.85%', '46.40%', '49.36%', '52.32%', '55.07%', '57.80%', '60.68%', '63.45%',
       '78.23%', '81.27%', '83.85%', '86.78%', '89.55%', '92.23%', '95.31%'
     ];
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_04.png"
-          alt="Sistema Músculo-Esquelético I Página 4"
+          src="/assets/pages_blank/page_05.png"
+          alt="Sistema Músculo-Esquelético I Página 5"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p4Tops.map((top, idx) => (
+        {p5Tops.map((top, idx) => (
           <div key={idx} className="absolute fpf-doc-text uppercase" style={{ top, left: '83.50%' }}>
             NIEGA
           </div>
@@ -616,23 +759,23 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 5: SISTEMA MÚSCULO-ESQUELÉTICO II (6 "NIEGA" + 7 "NORMAL")
-  if (pageNumber === 5) {
-    const p5Niega = ['17.29%', '20.24%', '23.09%', '25.67%', '28.44%', '31.46%'];
-    const p5Normal = ['79.49%', '82.25%', '85.27%', '88.08%', '90.80%', '93.66%', '96.76%'];
+  // PÁGINA 6: SISTEMA MÚSCULO-ESQUELÉTICO II (6 "NIEGA" + 7 "NORMAL")
+  if (pageNumber === 6) {
+    const p6Niega = ['17.29%', '20.24%', '23.09%', '25.67%', '28.44%', '31.46%'];
+    const p6Normal = ['79.49%', '82.25%', '85.27%', '88.08%', '90.80%', '93.66%', '96.76%'];
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_05.png"
-          alt="Sistema Músculo-Esquelético II Página 5"
+          src="/assets/pages_blank/page_06.png"
+          alt="Sistema Músculo-Esquelético II Página 6"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p5Niega.map((top, idx) => (
+        {p6Niega.map((top, idx) => (
           <div key={`n-${idx}`} className="absolute fpf-doc-text uppercase" style={{ top, left: '84.05%' }}>
             NIEGA
           </div>
         ))}
-        {p5Normal.map((top, idx) => (
+        {p6Normal.map((top, idx) => (
           <div key={`ok-${idx}`} className="absolute fpf-doc-text uppercase" style={{ top, left: '84.05%' }}>
             NORMAL
           </div>
@@ -641,33 +784,36 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 6: EXAMEN FÍSICO PRE-PARTICIPATIVO (PESO, TALLA Y PULSOS)
-  if (pageNumber === 6) {
-    const p6Normal = ['17.29%', '20.14%', '23.18%', '26.20%', '29.02%', '31.73%'];
-    const p6Checks = [
+  // PÁGINA 7: EXAMEN FÍSICO PRE-PARTICIPATIVO (PESO, TALLA, IMC Y PULSOS)
+  if (pageNumber === 7) {
+    const p7Normal = ['17.29%', '20.14%', '23.18%', '26.20%', '29.02%', '31.73%'];
+    const p7Checks = [
       '53.39%', '56.32%', '58.99%', '61.84%', '64.79%', '67.45%', '70.30%',
       '78.50%', '81.44%', '84.21%', '87.33%', '90.09%', '92.67%', '95.44%'
     ];
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_06.png"
-          alt="Examen Físico Pre-Participativo Página 6"
+          src="/assets/pages_blank/page_07.png"
+          alt="Examen Físico Pre-Participativo Página 7"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p6Normal.map((top, idx) => (
+        {p7Normal.map((top, idx) => (
           <div key={`norm-${idx}`} className="absolute fpf-doc-text uppercase" style={{ top, left: '83.73%' }}>
             NORMAL
           </div>
         ))}
-        <div className="absolute fpf-doc-text" style={{ top: '41.71%', left: '12.72%' }}>
+        <div className="absolute fpf-doc-text" style={{ top: '41.75%', left: '13.20%' }}>
           {formattedPeso}
         </div>
-        <div className="absolute fpf-doc-text" style={{ top: '41.94%', left: '45.14%' }}>
+        <div className="absolute fpf-doc-text" style={{ top: '41.85%', left: '45.14%' }}>
           {formattedTalla}
         </div>
-        {p6Checks.map((top, idx) => (
-          <div key={`chk-${idx}`} className="absolute fpf-doc-text" style={{ top, left: '47.85%' }}>
+        <div className="absolute fpf-doc-text" style={{ top: '41.85%', left: '71.40%' }}>
+          {computedImc}
+        </div>
+        {p7Checks.map((top, idx) => (
+          <div key={`chk-${idx}`} className="absolute fpf-doc-text" style={{ top, left: '48.45%' }}>
             X
           </div>
         ))}
@@ -675,9 +821,9 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 7: ECG REPOSO - PROTOCOLO CONMEBOL (1 "SI" EN NORMAL + 19 "NO")
-  if (pageNumber === 7) {
-    const p7NoTops = [
+  // PÁGINA 8: ECG REPOSO - PROTOCOLO CONMEBOL (1 "SI" EN NORMAL + 19 "NO")
+  if (pageNumber === 8) {
+    const p8NoTops = [
       '34.23%', '37.25%', '40.29%', '43.05%', '45.90%', '48.85%', '51.60%', '54.46%', '57.39%',
       '65.86%', '68.79%', '71.56%', '74.50%', '77.16%',
       '86.07%', '89.11%', '91.87%', '94.73%', '97.58%'
@@ -685,15 +831,15 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_07.png"
-          alt="ECG Reposo CONMEBOL Página 7"
+          src="/assets/pages_blank/page_08.png"
+          alt="ECG Reposo CONMEBOL Página 8"
           className="w-full h-full object-contain pointer-events-none block"
         />
         <div className="absolute fpf-doc-text" style={{ top: '24.77%', left: '33.77%' }}>
           X
         </div>
-        {p7NoTops.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text" style={{ top, left: '93.00%' }}>
+        {p8NoTops.map((top, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top, left: '93.55%' }}>
             X
           </div>
         ))}
@@ -701,42 +847,45 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 8: ECOCARDIOGRAMA M-2D Y DOPPLER CONMEBOL (SELLO EN PLANTILLA BASE)
-  if (pageNumber === 8) {
-    const p8Checks = [
+  // PÁGINA 9: ECOCARDIOGRAMA M-2D Y DOPPLER CONMEBOL (SELLO EN PLANTILLA BASE)
+  if (pageNumber === 9) {
+    const p9Checks = [
       '20.24%', '23.18%', '26.03%', '28.88%', '31.82%',
       '34.67%', '37.43%', '40.29%', '43.22%', '46.07%'
     ];
-    const p8Values = [
-      { top: '59.80%', val: '26' },
-      { top: '62.38%', val: '31' },
-      { top: '65.50%', val: '32' },
-      { top: '68.35%', val: '29' },
-      { top: '71.10%', val: '32' },
-      { top: '73.87%', val: '27' },
-      { top: '76.72%', val: '44' },
-      { top: '79.49%', val: '10' },
-      { top: '82.34%', val: '10' },
-      { top: '85.27%', val: '64/32' },
+    const feviAcort = eco.fraccionEyeccion
+      ? `${eco.fraccionEyeccion}/${eco.fraccionAcortamiento || '33'}`
+      : '64/32';
+    const p9Values = [
+      { top: '59.80%', val: eco.aortaRaiz || '26' },
+      { top: '62.38%', val: eco.aortaAscendente || '31' },
+      { top: '65.50%', val: eco.auriculaIzquierda || '32' },
+      { top: '68.35%', val: eco.auriculaIzquierdaArea || '29' },
+      { top: '71.10%', val: eco.auriculaIzquierdaVol || '32' },
+      { top: '73.87%', val: eco.auriculaDerechaArea || '27' },
+      { top: '76.72%', val: eco.viDiastole || '44' },
+      { top: '79.49%', val: eco.septumInterventricular || '10' },
+      { top: '82.34%', val: eco.paredPosteriorVI || '10' },
+      { top: '85.27%', val: feviAcort },
       { top: '88.04%', val: 'N' },
-      { top: '90.89%', val: '25' },
+      { top: '90.89%', val: eco.ventriculoDerecho || '25' },
       { top: '93.66%', val: 'N' },
       { top: '96.24%', val: 'N' }
     ];
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_08.png"
-          alt="Ecocardiograma M-2D y Doppler Página 8"
+          src="/assets/pages_blank/page_09.png"
+          alt="Ecocardiograma M-2D y Doppler Página 9"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p8Checks.map((top, idx) => (
-          <div key={`c-${idx}`} className="absolute fpf-doc-text" style={{ top, left: '92.90%' }}>
+        {p9Checks.map((top, idx) => (
+          <div key={`c-${idx}`} className="absolute fpf-doc-text" style={{ top, left: '93.45%' }}>
             X
           </div>
         ))}
-        {p8Values.map((item, idx) => (
-          <div key={`v-${idx}`} className="absolute fpf-doc-text" style={{ top: item.top, left: '59.40%' }}>
+        {p9Values.map((item, idx) => (
+          <div key={`v-${idx}`} className="absolute fpf-doc-text" style={{ top: item.top, left: '60.10%' }}>
             {item.val}
           </div>
         ))}
@@ -744,24 +893,24 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 9: ECOCARDIOGRAMA CONCLUSIONES CONMEBOL (SELLO EN PLANTILLA BASE)
-  if (pageNumber === 9) {
-    const p9Findings = [
+  // PÁGINA 10: ECOCARDIOGRAMA CONCLUSIONES CONMEBOL (SELLO EN PLANTILLA BASE)
+  if (pageNumber === 10) {
+    const p10Findings = [
       { top: '17.29%', val: 'N' },
       { top: '20.33%', val: 'N' },
       { top: '23.26%', val: 'N' },
-      { top: '25.86%', val: '5/9' },
-      { top: '28.61%', val: '4/8' }
+      { top: '25.86%', val: eco.eeMedial || '5/9' },
+      { top: '28.61%', val: eco.eeLateral || '4/8' }
     ];
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_09.png"
-          alt="Ecocardiograma Conclusiones Página 9"
+          src="/assets/pages_blank/page_10.png"
+          alt="Ecocardiograma Conclusiones Página 10"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p9Findings.map((item, idx) => (
-          <div key={idx} className="absolute fpf-doc-text" style={{ top: item.top, left: '58.60%' }}>
+        {p10Findings.map((item, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top: item.top, left: '59.20%' }}>
             {item.val}
           </div>
         ))}
@@ -772,26 +921,26 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 10: RESULTADOS ANÁLISIS DE SANGRE FPF
-  if (pageNumber === 10) {
-    const p10Values = [
-      { top: '29.15%', val: '13.8' },
-      { top: '32.09%', val: '42' },
-      { top: '34.50%', val: '4.620' },
-      { top: '37.61%', val: '364' },
-      { top: '40.56%', val: '6.241' },
-      { top: '43.49%', val: '135' },
-      { top: '46.26%', val: '4.4' }
+  // PÁGINA 11: RESULTADOS ANÁLISIS DE SANGRE FPF
+  if (pageNumber === 11) {
+    const p11Values = [
+      { top: '29.15%', val: hemo.hemoglobina || '13.8' },
+      { top: '32.09%', val: hemo.hematocrito || '42' },
+      { top: '34.50%', val: hemo.globulosRojos || '4.620' },
+      { top: '37.61%', val: hemo.plaquetas || '364' },
+      { top: '40.56%', val: hemo.leucocitos || '6.241' },
+      { top: '43.49%', val: bioq.sodio || '135' },
+      { top: '46.26%', val: bioq.potasio || '4.4' }
     ];
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_10.png"
-          alt="Resultados Análisis de Sangre Página 10"
+          src="/assets/pages_blank/page_11.png"
+          alt="Resultados Análisis de Sangre Página 11"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p10Values.map((item, idx) => (
-          <div key={idx} className="absolute fpf-doc-text" style={{ top: item.top, left: '27.55%' }}>
+        {p11Values.map((item, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top: item.top, left: '28.10%' }}>
             {item.val}
           </div>
         ))}
@@ -799,17 +948,18 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 11: RESUMEN DE LA EVALUACIÓN PRE-PARTICIPATIVA (MÉDICO, FAMIHEART Y SELLO YA EN PLANTILLA BASE)
-  if (pageNumber === 11) {
-    const p11Checks = ['27.27%', '30.22%', '32.90%', '38.32%', '54.17%'];
+  // PÁGINA 12: RESUMEN DE LA EVALUACIÓN PRE-PARTICIPATIVA (MÉDICO, FAMIHEART Y SELLO EN PLANTILLA BASE)
+  if (pageNumber === 12) {
+    const p12Checks = ['27.27%', '30.22%', '32.90%', '38.32%', '54.17%'];
+    const elegibleText = patient?.estadoAptitud === 'NO APTO' ? 'NO' : 'SI';
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_11.png"
-          alt="Resumen Evaluación Pre-Participativa Página 11"
+          src="/assets/pages_blank/page_12.png"
+          alt="Resumen Evaluación Pre-Participativa Página 12"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p11Checks.map((top, idx) => (
+        {p12Checks.map((top, idx) => (
           <div key={idx} className="absolute fpf-doc-text" style={{ top, left: '73.10%' }}>
             X
           </div>
@@ -818,7 +968,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           className="absolute uppercase font-bold text-black"
           style={{ top: '67.51%', left: '49.85%', fontFamily: 'Calibri, Arial, sans-serif', fontSize: '15px' }}
         >
-          SI
+          {elegibleText}
         </div>
         <div className="absolute fpf-doc-text" style={{ top: '89.73%', left: '9.19%' }}>
           {cleanDate}
@@ -827,13 +977,13 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 12: CERTIFICADO MÉDICO FAMIHEART (SOBRE MEMBRETE + SELLO PURO page_12_base.png)
-  if (pageNumber === 12) {
+  // PÁGINA 13: CERTIFICADO MÉDICO FAMIHEART (SOBRE MEMBRETE + SELLO PURO page_13_base.png)
+  if (pageNumber === 13) {
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_12_base.png"
-          alt="Certificado Médico Famiheart Página 12"
+          src="/assets/pages_blank/page_13_base.png"
+          alt="Certificado Médico Famiheart Página 13"
           className="w-full h-full object-contain pointer-events-none block"
         />
         <div
@@ -843,8 +993,8 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
             left: '14.30%',
             width: '71.40%',
             fontFamily: "'Berlin Sans FB', Calibri, 'Segoe UI', Arial, sans-serif",
-            fontSize: '26px',
-            lineHeight: 1.32
+            fontSize: '23px',
+            lineHeight: 1.35
           }}
         >
           El médico que suscribe certifica que el paciente{' '}
@@ -856,7 +1006,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         <div
           className="absolute font-bold text-black"
           style={{
-            top: '68.24%',
+            top: '65.50%',
             left: '14.30%',
             fontFamily: 'Calibri, Arial, sans-serif',
             fontSize: '18px'
@@ -864,37 +1014,37 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         >
           Atte.
         </div>
-        <div className="absolute fpf-doc-date-16" style={{ top: '75.63%', left: '14.30%' }}>
+        <div className="absolute fpf-doc-date-16" style={{ top: '73.50%', left: '14.30%' }}>
           {cleanDate}
         </div>
       </div>
     );
   }
 
-  // PÁGINA 13: INFORME ECOCARDIOGRÁFICO FAMIHEART (SOBRE LÍNEAS LIMPIAS DE page_13.png)
-  if (pageNumber === 13) {
-    const p13Measurements = [
-      { top: '35.55%', left: '32.50%', val: '24' },
-      { top: '35.55%', left: '66.50%', val: '26' },
-      { top: '36.86%', left: '33.80%', val: '10' },
-      { top: '36.86%', left: '68.30%', val: '22' },
-      { top: '38.16%', left: '29.50%', val: '44' },
-      { top: '39.47%', left: '29.50%', val: '24' },
-      { top: '40.76%', left: '31.50%', val: '10' },
-      { top: '42.08%', left: '31.50%', val: '32' },
-      { top: '46.19%', left: '31.50%', val: '64' },
-      { top: '46.19%', left: '67.50%', val: '99' },
-      { top: '47.49%', left: '33.00%', val: '33' },
-      { top: '47.49%', left: '67.50%', val: '76' },
-      { top: '55.53%', left: '35.50%', val: '1.2' },
-      { top: '56.84%', left: '35.50%', val: '2.4' },
-      { top: '56.84%', left: '73.30%', val: '0.7' }
+  // PÁGINA 14: INFORME ECOCARDIOGRÁFICO FAMIHEART (SOBRE LÍNEAS LIMPIAS DE page_14.png)
+  if (pageNumber === 14) {
+    const p14Measurements = [
+      { top: '35.55%', left: '32.50%', val: eco.ventriculoDerecho || '24' },
+      { top: '35.55%', left: '66.50%', val: eco.aortaRaiz || '26' },
+      { top: '36.86%', left: '33.80%', val: eco.septumInterventricular || '10' },
+      { top: '36.86%', left: '68.30%', val: eco.aortaApertura || '22' },
+      { top: '38.16%', left: '29.50%', val: eco.viDiastole || '44' },
+      { top: '39.47%', left: '29.50%', val: eco.viSistole || '24' },
+      { top: '40.76%', left: '31.50%', val: eco.paredPosteriorVI || '10' },
+      { top: '42.08%', left: '31.50%', val: eco.auriculaIzquierda || '32' },
+      { top: '46.19%', left: '31.50%', val: eco.fraccionEyeccion || '64' },
+      { top: '46.19%', left: '67.50%', val: eco.ondaEMitral || '99' },
+      { top: '47.49%', left: '33.00%', val: eco.fraccionAcortamiento || '33' },
+      { top: '47.49%', left: '67.50%', val: eco.ondaAMitral || '76' },
+      { top: '55.53%', left: '35.50%', val: eco.mitralGradienteMax || '1.2' },
+      { top: '56.84%', left: '35.50%', val: eco.aorticaGradienteMax || '2.4' },
+      { top: '56.84%', left: '73.30%', val: eco.areaAortica || '0.7' }
     ];
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_13.png"
-          alt="Informe Ecocardiográfico Página 13"
+          src="/assets/pages_blank/page_14.png"
+          alt="Informe Ecocardiográfico Página 14"
           className="w-full h-full object-contain pointer-events-none block"
         />
         <div
@@ -922,7 +1072,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         >
           {cleanDate}
         </div>
-        {p13Measurements.map((m, idx) => (
+        {p14Measurements.map((m, idx) => (
           <div
             key={idx}
             className="absolute text-black"
@@ -941,13 +1091,13 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 14: ANEXO DE IMÁGENES ECOCARDIOGRAMA DOPPLER 2D Y MODO M
-  if (pageNumber === 14) {
+  // PÁGINA 15: ANEXO DE IMÁGENES ECOCARDIOGRAMA DOPPLER 2D Y MODO M
+  if (pageNumber === 15) {
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_14.png"
-          alt="Anexo Imágenes Ecocardiograma Página 14"
+          src="/assets/pages_blank/page_15.png"
+          alt="Anexo Imágenes Ecocardiograma Página 15"
           className="w-full h-full object-contain pointer-events-none block"
         />
         {/* Captura Superior: Eco 2D / Doppler */}
@@ -976,14 +1126,14 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 15: ELECTROCARDIOGRAMA DE REPOSO (12 DERIVACIONES) CON SELLO CARDIÓLOGO
-  if (pageNumber === 15) {
+  // PÁGINA 16: ELECTROCARDIOGRAMA DE REPOSO (12 DERIVACIONES) CON SELLO CARDIÓLOGO
+  if (pageNumber === 16) {
     const hasCustomEcg = Boolean(patient?.attachments?.ecg?.url);
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_15.png"
-          alt="Electrocardiograma 12 Derivaciones Página 15"
+          src="/assets/pages_blank/page_16.png"
+          alt="Electrocardiograma 12 Derivaciones Página 16"
           className="w-full h-full object-contain pointer-events-none block"
         />
         {/* Trazado ECG */}
@@ -1040,14 +1190,14 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 16: HEMOGRAMA COMPLETO (LABORATORIO CLÍNICO FAMIHEART)
-  if (pageNumber === 16) {
+  // PÁGINA 17: HEMOGRAMA COMPLETO (LABORATORIO CLÍNICO FAMIHEART)
+  if (pageNumber === 17) {
     if (patient?.attachments?.laboratorio?.url) {
       return (
         <div className="w-full h-full relative select-none">
           <img
-            src="/assets/pages_blank/page_16.png"
-            alt="Membrete Laboratorio Página 16"
+            src="/assets/pages_blank/page_17.png"
+            alt="Membrete Laboratorio Página 17"
             className="w-full h-full object-contain pointer-events-none block"
           />
           <div
@@ -1064,28 +1214,28 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
       );
     }
 
-    const p16Hemograma = [
-      { top: '38.80%', left: '54.32%', val: '4.620,000.00' },
-      { top: '40.58%', left: '60.85%', val: '13.8' },
-      { top: '44.15%', left: '62.26%', val: '42' },
-      { top: '47.71%', left: '57.58%', val: '6,241.00' },
-      { top: '52.69%', left: '58.04%', val: '199.000' },
-      { top: '56.25%', left: '62.26%', val: '97' },
-      { top: '58.03%', left: '62.26%', val: '30' },
-      { top: '59.81%', left: '62.26%', val: '31' },
-      { top: '65.16%', left: '62.26%', val: '35' },
-      { top: '66.94%', left: '63.20%', val: '1' },
-      { top: '68.72%', left: '63.20%', val: '3' },
-      { top: '70.50%', left: '63.20%', val: '0' },
-      { top: '72.29%', left: '62.26%', val: '61' },
-      { top: '74.07%', left: '63.20%', val: '0' }
+    const p17Hemograma = [
+      { top: '38.80%', left: '54.32%', val: hemo.globulosRojos || '4.620,000.00' },
+      { top: '40.58%', left: '60.85%', val: hemo.hemoglobina || '13.8' },
+      { top: '44.15%', left: '62.26%', val: hemo.hematocrito || '42' },
+      { top: '47.71%', left: '57.58%', val: hemo.leucocitos || '6,241.00' },
+      { top: '52.69%', left: '58.04%', val: hemo.plaquetas || '199.000' },
+      { top: '56.25%', left: '62.26%', val: hemo.vcm || '97' },
+      { top: '58.03%', left: '62.26%', val: hemo.hcm || '30' },
+      { top: '59.81%', left: '62.26%', val: hemo.chcm || '31' },
+      { top: '65.16%', left: '62.26%', val: hemo.linfocitos || '35' },
+      { top: '66.94%', left: '63.20%', val: hemo.monocitos || '1' },
+      { top: '68.72%', left: '63.20%', val: hemo.eosinofilos || '3' },
+      { top: '70.50%', left: '63.20%', val: hemo.basofilos || '0' },
+      { top: '72.29%', left: '62.26%', val: hemo.segmentados || '61' },
+      { top: '74.07%', left: '63.20%', val: hemo.abastonados || '0' }
     ];
 
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_16.png"
-          alt="Hemograma Completo Página 16"
+          src="/assets/pages_blank/page_17.png"
+          alt="Hemograma Completo Página 17"
           className="w-full h-full object-contain pointer-events-none block"
         />
         <div
@@ -1097,7 +1247,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         <div className="absolute fpf-doc-text" style={{ top: '31.68%', left: '79.70%' }}>
           {cleanDate}
         </div>
-        {p16Hemograma.map((row, idx) => (
+        {p17Hemograma.map((row, idx) => (
           <div key={idx} className="absolute fpf-doc-text" style={{ top: row.top, left: row.left }}>
             {row.val}
           </div>
@@ -1106,13 +1256,13 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 17: INFORME RADIOGRAFÍA DE TÓRAX
-  if (pageNumber === 17) {
+  // PÁGINA 18: INFORME RADIOGRAFÍA DE TÓRAX
+  if (pageNumber === 18) {
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_17.png"
-          alt="Informe Radiografía de Tórax Página 17"
+          src="/assets/pages_blank/page_18.png"
+          alt="Informe Radiografía de Tórax Página 18"
           className="w-full h-full object-contain pointer-events-none block"
         />
         <div
@@ -1128,13 +1278,13 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 18: ANEXO PLACA DIGITAL DE RAYOS X DE TÓRAX
-  if (pageNumber === 18) {
+  // PÁGINA 19: ANEXO PLACA DIGITAL DE RAYOS X DE TÓRAX
+  if (pageNumber === 19) {
     return (
       <div className="w-full h-full relative select-none">
         <img
-          src="/assets/pages_blank/page_18.png"
-          alt="Radiografía de Tórax Placa Página 18"
+          src="/assets/pages_blank/page_19.png"
+          alt="Radiografía de Tórax Placa Página 19"
           className="w-full h-full object-contain pointer-events-none block"
         />
         <div
@@ -1154,7 +1304,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
   return <CleanTemplatePage pageNumber={pageNumber} />;
 }
 
-// Plantilla limpia en blanco (Carga las 18 páginas oficiales limpias sin datos personales)
+// Plantilla limpia en blanco (Carga las 19 páginas oficiales limpias sin datos personales)
 function CleanTemplatePage({ pageNumber }) {
   const formattedPage = pageNumber.toString().padStart(2, '0');
 

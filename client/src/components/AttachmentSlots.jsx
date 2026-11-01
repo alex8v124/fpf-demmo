@@ -4,11 +4,11 @@ import { UploadCloud, RefreshCw, Trash2, ImageIcon } from 'lucide-react';
 // Los 5 espacios de adjuntos por jugador. Todos los archivos suelen llevar el mismo nombre,
 // por eso se elige explícitamente el espacio de destino dentro del expediente.
 export const ATTACHMENT_SLOTS = [
-  { id: 'eco2d', label: 'Eco 2D / Doppler', page: 'Pág. 14 (superior)' },
-  { id: 'ecoMmode', label: 'Eco M-Mode / Flujos', page: 'Pág. 14 (inferior)' },
-  { id: 'ecg', label: 'Electrocardiograma', page: 'Pág. 15' },
-  { id: 'rayosX', label: 'Rayos X de Tórax', page: 'Pág. 18' },
-  { id: 'laboratorio', label: 'Laboratorio', page: 'Pág. 16' }
+  { id: 'eco2d', label: 'Eco 2D / Doppler', page: 'Pág. 15 (superior)' },
+  { id: 'ecoMmode', label: 'Eco M-Mode / Flujos', page: 'Pág. 15 (inferior)' },
+  { id: 'ecg', label: 'Electrocardiograma', page: 'Pág. 16' },
+  { id: 'rayosX', label: 'Rayos X de Tórax', page: 'Pág. 19' },
+  { id: 'laboratorio', label: 'Laboratorio', page: 'Pág. 17' }
 ];
 
 // Reduce la imagen para no saturar la memoria del navegador.

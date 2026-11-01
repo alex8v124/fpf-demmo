@@ -48,8 +48,8 @@ async function convertAttachmentToBytes(srcUrl, mimeType = 'image/png') {
 }
 
 /**
- * Genera un archivo Word (.docx) oficial de 18 páginas para un paciente
- * sobre la plantilla maestra limpia (derivada de PONCE ECHEVARRIA CARLOS.docx),
+ * Genera un archivo Word (.docx) oficial de 19 páginas para un paciente
+ * sobre la plantilla maestra limpia (Certificado Médico FPF + Protocolo PONCE limpio),
  * inyectando datos del futbolista e imágenes diagnósticas adjuntas y
  * CONSERVANDO AL 100% todos los sellos médicos, firmas y membretes oficiales.
  */
@@ -100,6 +100,21 @@ export async function generatePatientDocx(patient, options = {}) {
   const rawTalla = String(patient?.talla || '1.75').trim();
   const targetTalla = rawTalla ? (/cm/i.test(rawTalla) ? rawTalla : `${rawTalla} Cm`) : '';
 
+  const targetMedicoCert = (patient?.medicoEvaluador || 'DARIO HERNANDEZ')
+    .replace(/^DR\.?\s*/i, '')
+    .trim()
+    .toUpperCase();
+  const targetCmpCert = String(patient?.medicoCmp || '27503').trim();
+  const targetDomicilio = (patient?.domicilioClinica || 'AV CONQUISTADORES 1588 SAN ISIDRO').trim().toUpperCase();
+  const targetRecibo = String(patient?.numeroRecibo || patient?.receiptNum || '').trim();
+  const targetAptitudDetalle = patient?.aptitudDetalle
+    ? patient.aptitudDetalle.trim().toUpperCase()
+    : patient?.estadoAptitud === 'NO APTO'
+      ? 'NO APTO PARA REALIZAR ACTIVIDAD DEPORTIVA COMPETITIVA ( FUTBOL )'
+      : patient?.estadoAptitud === 'EN OBSERVACIÓN'
+        ? 'EN OBSERVACION MEDICA PRE-COMPETENCIA ( FUTBOL )'
+        : 'SE ENCUENTRA APTO PARA REALIZAR ACTIVIDAD DEPORTIVA ( FUTBOL )';
+
   try {
     // 1. Obtener la plantilla oficial limpia (usar buffer precargado o descargarla)
     let templateBlob = options.templateBuffer;
@@ -132,7 +147,12 @@ export async function generatePatientDocx(patient, options = {}) {
       '{{PAIS_CLUB}}': escapeXml(targetPaisClub),
       '{{PESO}}': escapeXml(targetPeso),
       '{{TALLA}}': escapeXml(targetTalla),
-      '{{FECHA}}': escapeXml(targetDate)
+      '{{FECHA}}': escapeXml(targetDate),
+      '{{MEDICO_CERT}}': escapeXml(targetMedicoCert),
+      '{{CMP_CERT}}': escapeXml(targetCmpCert),
+      '{{DOMICILIO_CLINICA}}': escapeXml(targetDomicilio),
+      '{{APTITUD_DETALLE}}': escapeXml(targetAptitudDetalle),
+      '{{RECIBO}}': escapeXml(targetRecibo)
     };
 
     for (const [token, val] of Object.entries(replacements)) {
