@@ -1,48 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Printer, 
-  ChevronLeft, 
-  ChevronRight, 
-  ZoomIn, 
-  ZoomOut, 
-  FileSpreadsheet, 
-  Layers, 
-  CheckCircle2, 
-  ShieldCheck, 
-  FileText, 
+import {
+  Printer,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  FileSpreadsheet,
+  CheckCircle2,
   FileCheck2,
   Download,
-  Share2,
-  SlidersHorizontal,
-  Maximize2,
   Bookmark,
-  Building2,
-  Calendar,
   UploadCloud,
   RefreshCw,
-  ExternalLink,
-  Trash2
+  ExternalLink
 } from 'lucide-react';
 import { pagesCatalog } from '../data/initialData';
 import { downloadPatientDocx } from '../utils/docxGenerator';
-import { uploadPatientPdf, deletePatientPdf } from '../lib/supabase';
+import { uploadPatientPdf } from '../lib/supabase';
 import AttachmentSlots from './AttachmentSlots';
 
-export default function DocumentViewer({ 
-  patient, 
-  isBlankMode, 
-  setIsBlankMode, 
+export default function DocumentViewer({
+  patient,
+  isBlankMode,
+  setIsBlankMode,
   onUpdatePatient,
-  onPrint 
+  onPrint
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState('single'); // 'single' | 'all'
   const [zoomLevel, setZoomLevel] = useState(100);
-  const [viewFormat, setViewFormat] = useState(isBlankMode ? 'blank' : 'facsimile'); // 'facsimile' | 'blank' | 'digital'
+  const [viewFormat, setViewFormat] = useState(isBlankMode ? 'blank' : 'facsimile'); // 'facsimile' | 'blank'
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const [pdfToast, setPdfToast] = useState(null);
   const pdfFileInputRef = React.useRef(null);
+
+  const totalPages = 18;
+
+  useEffect(() => {
+    setViewFormat(isBlankMode ? 'blank' : 'facsimile');
+  }, [isBlankMode]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
 
   const handleUploadOfficialPdf = async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -72,14 +75,12 @@ export default function DocumentViewer({
     }
   };
 
-  const totalPages = 21;
-
   const handlePrevPage = () => {
-    setCurrentPage(prev => Math.max(1, prev - 1));
+    setCurrentPage((prev) => Math.max(1, prev - 1));
   };
 
   const handleNextPage = () => {
-    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
   };
 
   // Navegación con teclado (Flecha izquierda / Flecha derecha)
@@ -87,33 +88,32 @@ export default function DocumentViewer({
     const handleKeyDown = (e) => {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
       if (e.key === 'ArrowLeft') {
-        setCurrentPage(prev => Math.max(1, prev - 1));
+        setCurrentPage((prev) => Math.max(1, prev - 1));
       } else if (e.key === 'ArrowRight') {
-        setCurrentPage(prev => Math.min(totalPages, prev + 1));
+        setCurrentPage((prev) => Math.min(totalPages, prev + 1));
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [totalPages]);
 
-  const currentPageInfo = pagesCatalog.find(p => p.number === currentPage) || pagesCatalog[0];
+  const currentPageInfo = pagesCatalog.find((p) => p.number === currentPage) || pagesCatalog[0];
 
-  // 5 Fases Clínicas Oficiales del Documento
+  // 5 Fases Clínicas Oficiales del Expediente Limpio de 18 Páginas
   const documentPhases = [
-    { title: 'Fase 1: Certificación FPF', pages: [1, 2], desc: 'Certificado de aptitud y ficha del jugador' },
-    { title: 'Fase 2: Anamnesis y Examen', pages: [3, 4, 5, 6, 7], desc: 'Historia cardiovascular, cirugías e IMC' },
-    { title: 'Fase 3: Cardiología CONMEBOL', pages: [8, 9, 10], desc: 'ECG reposo y Ecocardiograma Doppler' },
-    { title: 'Fase 4: Dictamen Oficial', pages: [11, 12, 13], desc: 'Laboratorio FPF y Certificado Famiheart' },
-    { title: 'Fase 5: Diagnóstico e Imágenes', pages: [14, 15, 16, 17, 18, 19, 20, 21], desc: 'Trazado ECG, ultrasonidos y Rayos X' }
+    { title: 'Fase 1: Filiación PCMA', pages: [1], desc: 'Ficha oficial de evaluación pre-competencia FPF' },
+    { title: 'Fase 2: Anamnesis y Examen', pages: [2, 3, 4, 5, 6], desc: 'Historia cardiovascular, lesiones, somatometría y signos' },
+    { title: 'Fase 3: Cardiología CONMEBOL', pages: [7, 8, 9], desc: 'ECG reposo y Ecocardiograma M-2D / Doppler' },
+    { title: 'Fase 4: Dictamen y Aptitud', pages: [10, 11, 12], desc: 'Bioquímica FPF, resumen comisión y Certificado Famiheart' },
+    { title: 'Fase 5: Informes e Imágenes', pages: [13, 14, 15, 16, 17, 18], desc: 'Informe Eco, ultrasonidos, ECG, Hemograma y Rayos X' }
   ];
 
   return (
     <div className="space-y-4 select-none animate-in fade-in duration-200">
-      
       {/* Toast Alert Flotante para PDF */}
       <AnimatePresence>
         {pdfToast && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -127,7 +127,6 @@ export default function DocumentViewer({
 
       {/* BARRA SUPERIOR DE CONTROL MINIMALISTA */}
       <div className="no-print bg-white border border-[#E2E8F0] rounded-lg p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-        
         {/* Navegador de Páginas */}
         <div className="flex items-center space-x-1.5">
           <button
@@ -161,7 +160,7 @@ export default function DocumentViewer({
         <div className="flex items-center space-x-1 bg-slate-50 border border-[#CBD5E1] p-0.5 rounded-md">
           <button
             type="button"
-            onClick={() => setZoomLevel(prev => Math.max(60, prev - 10))}
+            onClick={() => setZoomLevel((prev) => Math.max(60, prev - 10))}
             className="p-1 rounded text-[#64748B] hover:text-[#1E293B] hover:bg-white transition cursor-pointer"
             title="Reducir Zoom"
           >
@@ -177,7 +176,7 @@ export default function DocumentViewer({
           </button>
           <button
             type="button"
-            onClick={() => setZoomLevel(prev => Math.min(140, prev + 10))}
+            onClick={() => setZoomLevel((prev) => Math.min(140, prev + 10))}
             className="p-1 rounded text-[#64748B] hover:text-[#1E293B] hover:bg-white transition cursor-pointer"
             title="Aumentar Zoom"
           >
@@ -185,7 +184,7 @@ export default function DocumentViewer({
           </button>
           <button
             type="button"
-            onClick={() => setZoomLevel(prev => prev === 85 ? 100 : 85)}
+            onClick={() => setZoomLevel((prev) => (prev === 85 ? 100 : 85))}
             className="px-1.5 py-0.5 rounded text-[10px] font-semibold text-[#64748B] hover:text-[#1E293B] hover:bg-white border-l border-[#CBD5E1] transition cursor-pointer"
             title="Ajustar a página completa (85%)"
           >
@@ -195,8 +194,7 @@ export default function DocumentViewer({
 
         {/* Selector de Formato Oficial */}
         <div className="flex items-center space-x-2">
-          
-          {/* Modo 1: Certificado y Expediente Oficial 1:1 */}
+          {/* Modo 1: Expediente Oficial 1:1 */}
           <button
             type="button"
             onClick={() => {
@@ -208,13 +206,13 @@ export default function DocumentViewer({
                 ? 'bg-[#0369A1] text-white border-[#0369A1] shadow-xs'
                 : 'bg-white text-slate-700 border-[#CBD5E1] hover:bg-slate-50'
             }`}
-            title="Expediente oficial de 21 páginas con plantilla original y datos superpuestos"
+            title="Expediente oficial de 18 páginas con plantilla limpia original y datos superpuestos"
           >
             <FileCheck2 className="w-3.5 h-3.5" />
             <span>Expediente Oficial (1:1)</span>
           </button>
 
-          {/* Modo 2: Plantilla en Blanco */}
+          {/* Modo 2: Plantilla Limpia */}
           <button
             type="button"
             onClick={() => {
@@ -226,7 +224,7 @@ export default function DocumentViewer({
                 ? 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
                 : 'bg-white text-slate-700 border-[#CBD5E1] hover:bg-slate-50'
             }`}
-            title="Plantilla oficial limpia sin datos personales"
+            title="Plantilla oficial limpia de 18 páginas sin datos personales"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>Plantilla Limpia</span>
@@ -254,10 +252,9 @@ export default function DocumentViewer({
                   : 'text-[#64748B] hover:text-[#1E293B]'
               }`}
             >
-              21 Págs
+              18 Págs
             </button>
           </div>
-
         </div>
 
         {/* Acciones de Descarga e Impresión */}
@@ -296,31 +293,43 @@ export default function DocumentViewer({
             ) : (
               <UploadCloud className="w-3.5 h-3.5 text-[#0369A1]" />
             )}
-            <span>{isUploadingPdf ? 'Archivando...' : (patient?.pdfUrl ? 'Reemplazar PDF' : 'Archivar PDF en Nube')}</span>
+            <span>{isUploadingPdf ? 'Archivando...' : patient?.pdfUrl ? 'Reemplazar PDF' : 'Archivar PDF en Nube'}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => downloadPatientDocx(patient, { globalDate: patient?.fechaEvaluacion, globalClub: patient?.club })}
-            className="flex items-center space-x-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs px-2.5 py-1.5 rounded-md transition border border-[#CBD5E1] cursor-pointer"
-            title="Descargar el documento Word (.docx) oficial con todos los sellos médicos y firmas intactas"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-500" />
-            <span className="hidden md:inline">Word Oficial (.docx)</span>
-            <span className="md:hidden">Word</span>
-          </button>
+          {viewFormat === 'blank' ? (
+            <a
+              href="/PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.docx"
+              download="PLANTILLA_EN_BLANCO_EXPEDIENTE_FPF.docx"
+              className="flex items-center space-x-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs px-2.5 py-1.5 rounded-md transition border border-[#CBD5E1] cursor-pointer"
+              title="Descargar la plantilla Word (.docx) oficial 100% limpia con sellos intactos"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden md:inline">Plantilla Word (.docx)</span>
+              <span className="md:hidden">Word</span>
+            </a>
+          ) : (
+            <button
+              type="button"
+              onClick={() => downloadPatientDocx(patient, { globalDate: patient?.fechaEvaluacion, globalClub: patient?.club })}
+              className="flex items-center space-x-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs px-2.5 py-1.5 rounded-md transition border border-[#CBD5E1] cursor-pointer"
+              title="Descargar el documento Word (.docx) oficial con la plantilla limpia y todos los sellos médicos intactos"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden md:inline">Word Oficial (.docx)</span>
+              <span className="md:hidden">Word</span>
+            </button>
+          )}
 
           <button
             type="button"
             onClick={onPrint}
             className="flex items-center space-x-1 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-1.5 rounded-md shadow-xs transition cursor-pointer"
-            title="Imprimir el certificado o guardar como PDF"
+            title="Imprimir el expediente de 18 páginas o guardar como PDF"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Imprimir PDF</span>
           </button>
         </div>
-
       </div>
 
       {/* TITULO Y DESCRIPCIÓN DE LA PÁGINA ACTUAL */}
@@ -334,53 +343,50 @@ export default function DocumentViewer({
           </span>
         </div>
         <div className="text-[#64748B] hidden sm:block text-xs">
-          {isBlankMode ? (
-            <span className="text-[#B45309] font-medium">Formato oficial limpio para firma manuscrita</span>
+          {viewFormat === 'blank' ? (
+            <span className="text-[#B45309] font-medium">Plantilla oficial limpia (18 páginas, cero datos previos)</span>
           ) : (
-            <span>Expediente: <strong className="text-[#1E293B]">{patient.nombreCompleto || 'Futbolista'}</strong></span>
+            <span>
+              Expediente: <strong className="text-[#1E293B]">{patient?.nombreCompleto || 'Futbolista'}</strong>
+            </span>
           )}
         </div>
       </div>
 
       {/* MESA DE TRABAJO NEUTRAL PARA VISUALIZACIÓN DE HOJA A4 */}
       <div className="no-print bg-slate-200/90 border border-[#CBD5E1] rounded-lg p-4 sm:p-8 flex justify-center overflow-x-auto shadow-inner">
-        <div 
-          style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }} 
+        <div
+          style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
           className="transition-transform duration-150"
         >
           {viewMode === 'single' ? (
-            /* Vista Hoja Individual con Animación de Página */
             <AnimatePresence mode="wait">
               <motion.div
-                key={currentPage}
+                key={`${viewFormat}-${currentPage}`}
                 initial={{ opacity: 0, scale: 0.99 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.99 }}
                 transition={{ duration: 0.12 }}
-                className={`w-[210mm] min-h-[297mm] bg-white text-black shadow-lg shadow-slate-400/50 rounded-xs border border-slate-300 ${
-                  viewFormat === 'digital' ? 'p-8' : 'p-0'
-                } flex flex-col justify-between relative overflow-hidden select-none`}
+                className="w-[210mm] h-[297mm] min-h-[297mm] bg-white text-black shadow-lg shadow-slate-400/50 rounded-xs border border-slate-300 p-0 flex flex-col justify-between relative overflow-hidden select-none"
               >
-                <PageContentRenderer 
-                  pageNumber={currentPage} 
-                  patient={patient} 
+                <PageContentRenderer
+                  pageNumber={currentPage}
+                  patient={patient}
                   viewFormat={viewFormat}
                 />
               </motion.div>
             </AnimatePresence>
           ) : (
-            /* Vista 21 Páginas Continuas */
+            /* Vista 18 Páginas Continuas */
             <div className="space-y-8">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(pNum => (
-                <div 
-                  key={pNum} 
-                  className={`w-[210mm] min-h-[297mm] bg-white text-black shadow-lg shadow-slate-400/50 rounded-xs border border-slate-300 ${
-                    viewFormat === 'digital' ? 'p-8' : 'p-0'
-                  } flex flex-col justify-between relative overflow-hidden print-page`}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
+                <div
+                  key={pNum}
+                  className="w-[210mm] h-[297mm] min-h-[297mm] bg-white text-black shadow-lg shadow-slate-400/50 rounded-xs border border-slate-300 p-0 flex flex-col justify-between relative overflow-hidden"
                 >
-                  <PageContentRenderer 
-                    pageNumber={pNum} 
-                    patient={patient} 
+                  <PageContentRenderer
+                    pageNumber={pNum}
+                    patient={patient}
                     viewFormat={viewFormat}
                   />
                 </div>
@@ -390,21 +396,21 @@ export default function DocumentViewer({
         </div>
       </div>
 
-      {!isBlankMode && onUpdatePatient && (
+      {viewFormat !== 'blank' && onUpdatePatient && (
         <AttachmentSlots patient={patient} onUpdatePatient={onUpdatePatient} />
       )}
 
-      {/* CONTENEDOR EXCLUSIVO DE IMPRESIÓN OFICIAL (21 PÁGINAS PURAS 1:1) */}
+      {/* CONTENEDOR EXCLUSIVO DE IMPRESIÓN OFICIAL (18 PÁGINAS PURAS 1:1) */}
       <div className="print-only">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(pNum => (
-          <div 
-            key={pNum} 
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
+          <div
+            key={pNum}
             className="print-page w-[210mm] h-[297mm] max-h-[297mm] bg-white text-black relative overflow-hidden"
           >
-            <PageContentRenderer 
-              pageNumber={pNum} 
-              patient={patient} 
-              viewFormat={viewFormat === 'digital' ? 'digital' : (isBlankMode ? 'blank' : 'facsimile')}
+            <PageContentRenderer
+              pageNumber={pNum}
+              patient={patient}
+              viewFormat={isBlankMode || viewFormat === 'blank' ? 'blank' : 'facsimile'}
             />
           </div>
         ))}
@@ -415,7 +421,7 @@ export default function DocumentViewer({
         <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#1E293B] flex items-center gap-1.5">
             <Bookmark className="w-3.5 h-3.5 text-[#0369A1]" />
-            Índice de Secciones del Expediente de 21 Páginas
+            Índice de Secciones del Expediente de 18 Páginas
           </h3>
           <span className="text-[11px] text-[#64748B]">Haz clic en cualquier página para navegar</span>
         </div>
@@ -425,9 +431,9 @@ export default function DocumentViewer({
             <div key={idx} className="bg-slate-50 p-3 rounded-md border border-[#E2E8F0] space-y-2">
               <div className="text-xs font-bold text-[#1E293B] leading-tight">{phase.title}</div>
               <p className="text-[10px] text-[#64748B] leading-tight">{phase.desc}</p>
-              
+
               <div className="flex flex-wrap gap-1 pt-1">
-                {phase.pages.map(num => (
+                {phase.pages.map((num) => (
                   <button
                     key={num}
                     type="button"
@@ -449,7 +455,6 @@ export default function DocumentViewer({
           ))}
         </div>
       </div>
-
     </div>
   );
 }
@@ -460,371 +465,109 @@ function PageContentRenderer({ pageNumber, patient, viewFormat }) {
     return <CleanTemplatePage pageNumber={pageNumber} />;
   }
 
-  if (viewFormat === 'digital') {
-    return <DigitalSynchronizedPage pageNumber={pageNumber} patient={patient} />;
-  }
-
-  // Por defecto: Facsímil Oficial 1:1 con formato exacto al PDF Original
   return <FacsimileOfficialPage pageNumber={pageNumber} patient={patient} />;
 }
 
-// PÁGINA 1: CERTIFICADO MÉDICO DEPORTIVO OFICIAL FPF (RECONSTRUCCIÓN VECTORIAL 1:1 DE ALTA PRECISIÓN)
-function ReconstructedOfficialPage1({ patient }) {
-  const doctorName = 'Dr. Darío Hernández Alarcón';
-  const doctorCmp = '27503';
-  const doctorRne = '15620';
-  const evaluationAddress = patient?.domicilioClinica || 'Av. Conquistadores 1588, San Isidro - Lima';
-  
-  // Formato inequívoco de fecha DD/MM/YYYY
-  const rawDate = patient?.fechaEvaluacion || '22-01-2026';
-  const cleanDate = rawDate === '06-05-2026' ? '22/01/2026' : rawDate.replace(/-/g, '/');
-  
-  const receiptNum = patient?.numeroRecibo || 'REC-2026-08942';
-  const securityToken = `FMH-2026-${patient?.dni || '74290500'}`;
-
-  return (
-    <div className="w-[210mm] min-h-[297mm] h-[297mm] p-[16mm] bg-white text-black font-sans flex flex-col justify-between relative box-border select-none border border-slate-300">
-      
-      {/* 1. CABECERA INSTITUCIONAL OFICIAL */}
-      <div>
-        <div className="flex items-center justify-between border-b-2 border-black pb-3">
-          {/* Escudo FPF Oficial */}
-          <div className="flex items-center space-x-3">
-            <img 
-              src="/assets/fpf-logo.png" 
-              alt="Federación Peruana de Fútbol" 
-              className="h-16 w-auto object-contain" 
-            />
-            <div className="leading-tight text-left">
-              <div className="font-extrabold text-[15px] tracking-wide text-black uppercase" style={{ fontFamily: 'Berlin Sans FB, Calibri, sans-serif' }}>
-                FEDERACIÓN PERUANA DE FÚTBOL
-              </div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
-                COMISIÓN MÉDICA & UNIDAD ANTIDOPAJE
-              </div>
-              <div className="text-[9px] font-semibold text-slate-500 uppercase">
-                PROTOCOLO DE CERTIFICACIÓN MÉDICA PRE-COMPETENCIA (PCMA)
-              </div>
-            </div>
-          </div>
-
-          {/* Logo Famiheart Acreditado */}
-          <div className="text-right flex flex-col items-end">
-            <img 
-              src="/assets/famiheart-logo-clean.png" 
-              alt="Famiheart S.A.C." 
-              className="h-10 w-auto object-contain" 
-            />
-            <div className="text-[9px] font-bold text-slate-600 mt-1">FAMIHEART S.A.C. • RUC 20554742905</div>
-            <div className="text-[8px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-300 mt-0.5">
-              CENTRO MÉDICO ACREDITADO FPF
-            </div>
-          </div>
-        </div>
-
-        {/* Título Oficial del Certificado */}
-        <div className="text-center my-3">
-          <h1 
-            className="text-lg font-black uppercase tracking-wider text-black underline decoration-red-700 decoration-2 underline-offset-4"
-            style={{ fontFamily: 'Berlin Sans FB, Calibri, sans-serif' }}
-          >
-            CERTIFICADO MÉDICO DEPORTIVO OFICIAL
-          </h1>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mt-1">
-            TEMPORADA COMPETITIVA ANUAL 2026
-          </div>
-        </div>
-      </div>
-
-      {/* 2. CAMPOS DE IDENTIFICACIÓN: FUENTE ÚNICA CALIBRI, ALINEADOS 2-3PX SOBRE SU LÍNEA */}
-      <div className="space-y-3.5 text-xs text-black" style={{ fontFamily: 'Calibri, "Segoe UI", Arial, sans-serif' }}>
-        
-        {/* Campo Nombre Completo */}
-        <div className="flex items-baseline relative border-b border-black pb-0.5">
-          <span className="font-bold text-[11px] uppercase w-48 shrink-0 text-slate-800">
-            NOMBRE DEL FUTBOLISTA:
-          </span>
-          <span className="font-bold text-[14px] uppercase text-black font-mono tracking-tight -mb-[2px]">
-            {patient?.nombreCompleto || 'APELLIDOS NOMBRES'}
-          </span>
-        </div>
-
-        {/* Campo Club y Categoría */}
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-8 flex items-baseline border-b border-black pb-0.5">
-            <span className="font-bold text-[11px] uppercase w-48 shrink-0 text-slate-800">
-              CLUB DEPORTIVO:
-            </span>
-            <span className="font-semibold text-[13px] uppercase text-black -mb-[2px] truncate">
-              {patient?.club || 'CLUB FPF / LIGA FORMATIVA'}
-            </span>
-          </div>
-          <div className="col-span-4 flex items-baseline border-b border-black pb-0.5">
-            <span className="font-bold text-[11px] uppercase w-16 shrink-0 text-slate-800">
-              CATEG.:
-            </span>
-            <span className="font-semibold text-[12px] uppercase text-black -mb-[2px] truncate">
-              {patient?.categoria || 'PRIMERA / RESERVA'}
-            </span>
-          </div>
-        </div>
-
-        {/* Campo DNI y Posición */}
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-6 flex items-baseline border-b border-black pb-0.5">
-            <span className="font-bold text-[11px] uppercase w-48 shrink-0 text-slate-800">
-              DOC. IDENTIDAD (DNI):
-            </span>
-            <span className="font-bold text-[13px] font-mono text-black -mb-[2px]">
-              {patient?.dni || '70000000'}
-            </span>
-          </div>
-          <div className="col-span-6 flex items-baseline border-b border-black pb-0.5">
-            <span className="font-bold text-[11px] uppercase w-28 shrink-0 text-slate-800">
-              POSICIÓN:
-            </span>
-            <span className="font-semibold text-[12px] uppercase text-black -mb-[2px]">
-              {patient?.posicion || 'CAMPO'}
-            </span>
-          </div>
-        </div>
-
-        {/* Campo Médico Evaluador */}
-        <div className="flex items-baseline border-b border-black pb-0.5">
-          <span className="font-bold text-[11px] uppercase w-48 shrink-0 text-slate-800">
-            MÉDICO EVALUADOR:
-          </span>
-          <span className="font-bold text-[13px] text-black -mb-[2px]">
-            {doctorName}
-          </span>
-          <span className="text-[11px] font-mono text-slate-700 ml-4">
-            (C.M.P. {doctorCmp} • R.N.E. {doctorRne})
-          </span>
-        </div>
-
-        {/* Campo Domicilio de Evaluación */}
-        <div className="flex items-baseline border-b border-black pb-0.5">
-          <span className="font-bold text-[11px] uppercase w-48 shrink-0 text-slate-800">
-            DOMICILIO EVALUACIÓN:
-          </span>
-          <span className="font-medium text-[12px] text-black -mb-[2px] uppercase">
-            {evaluationAddress}
-          </span>
-        </div>
-
-      </div>
-
-      {/* 3. RECUADRO DE EXAMEN CLÍNICO Y GLOSARIO */}
-      <div className="border-2 border-black rounded-lg p-4 bg-slate-50/60 space-y-3" style={{ fontFamily: 'Calibri, "Segoe UI", Arial, sans-serif' }}>
-        <div className="font-extrabold text-[11px] uppercase tracking-wider text-black border-b border-slate-300 pb-1">
-          QUIEN AL EXAMEN CLÍNICO INTEGRAL PRE-COMPETENCIA PRESENTA:
-        </div>
-        
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[11px] leading-tight">
-          <div className="flex items-start space-x-1.5">
-            <span className="font-bold text-black shrink-0">ARER:</span>
-            <span className="text-slate-800">Adecuado Rendimiento en Examen Respiratorio (sin ruidos agregados)</span>
-          </div>
-          <div className="flex items-start space-x-1.5">
-            <span className="font-bold text-black shrink-0">AREN:</span>
-            <span className="text-slate-800">Aparato Renal y Neurológico sin signos patológicos</span>
-          </div>
-          <div className="flex items-start space-x-1.5">
-            <span className="font-bold text-black shrink-0">RUIDOS CARDÍACOS:</span>
-            <span className="text-slate-800">R1 y R2 rítmicos normofonéticos, sin soplos ni galopes</span>
-          </div>
-          <div className="flex items-start space-x-1.5">
-            <span className="font-bold text-black shrink-0">VÍAS AÉREAS:</span>
-            <span className="text-slate-800">Permeables, libres de obstrucción y bien ventiladas</span>
-          </div>
-        </div>
-
-        {/* 4. DICTAMEN FINAL DESTACADO */}
-        <div className="mt-3 pt-3 border-t-2 border-black text-center bg-white p-2.5 rounded border border-slate-300">
-          <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-            DICTAMEN MÉDICO DEPORTIVO FINAL:
-          </div>
-          <div className="text-[15px] font-black text-black tracking-wide mt-0.5">
-            [ X ] SE ENCUENTRA APTO PARA REALIZAR ACTIVIDAD DEPORTIVA ( FÚTBOL COMPETITIVO )
-          </div>
-        </div>
-      </div>
-
-      {/* 5. FIRMA Y FECHA EN RECUADROS OFICIALES */}
-      <div className="grid grid-cols-2 gap-6 pt-2" style={{ fontFamily: 'Calibri, "Segoe UI", Arial, sans-serif' }}>
-        
-        {/* Recuadro Firma y Sello Oficial */}
-        <div className="border border-black rounded-lg p-3 text-center flex flex-col justify-between h-36 bg-white relative">
-          <div className="text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1">
-            FIRMA / SELLO DEL MÉDICO EVALUADOR
-          </div>
-          
-          <div className="flex-1 flex items-center justify-center py-1">
-            <img 
-              src="/assets/firma-cardiologo-transparent.png" 
-              alt="Firma y Sello Oficial" 
-              className="max-h-16 w-auto object-contain pointer-events-none" 
-            />
-          </div>
-
-          <div className="border-t border-slate-300 pt-1 text-[10px] font-bold leading-tight text-black">
-            <div>{doctorName}</div>
-            <div className="text-[9px] text-slate-600 font-normal">C.M.P. {doctorCmp} • R.N.E. {doctorRne} • Cardiólogo Famiheart</div>
-          </div>
-        </div>
-
-        {/* Recuadro Fecha Unificada y Certificación */}
-        <div className="border border-black rounded-lg p-3 text-center flex flex-col justify-between h-36 bg-white">
-          <div className="text-[10px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1">
-            FECHA OFICIAL DE EVALUACIÓN (FPF)
-          </div>
-
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="text-2xl font-black font-mono tracking-wider text-black">
-              {cleanDate}
-            </div>
-            <div className="text-[10px] font-bold text-emerald-800 mt-1 uppercase">
-              Cascada Sincronizada 21 Páginas
-            </div>
-          </div>
-
-          <div className="border-t border-slate-300 pt-1 text-[9px] text-slate-500 font-mono">
-            VIGENCIA ANUAL REGLAMENTARIA FPF 2026
-          </div>
-        </div>
-
-      </div>
-
-      {/* 6. PIE DE PÁGINA: RECIBO OFICIAL, CÓDIGO DE VALIDACIÓN Y SEGURIDAD */}
-      <div className="border-t border-black pt-2 flex items-center justify-between text-[9px] font-mono text-slate-600">
-        <div>
-          <span className="font-bold text-black">RECIBO:</span> {receiptNum}
-        </div>
-        <div className="font-semibold text-slate-700">
-          <span className="font-bold text-black">VALIDACIÓN FEDERATIVA:</span> {securityToken}
-        </div>
-        <div className="font-bold text-black">
-          PÁGINA 01 DE 21 • FPF & CONMEBOL
-        </div>
-      </div>
-
-    </div>
-  );
-}
-
-// Renderizador Facsímil 1:1 Oficial FPF / CONMEBOL (Exacto al PDF Original)
+// Renderizador Facsímil 1:1 Oficial sobre la Plantilla Limpia de 18 Páginas (derivada de PONCE ECHEVARRIA CARLOS.docx)
 function FacsimileOfficialPage({ pageNumber, patient }) {
   const formattedPage = pageNumber.toString().padStart(2, '0');
-  const cleanName = patient?.nombreCompleto || `${patient?.apellidos || ''} ${patient?.nombres || ''}`.trim() || 'FUTBOLISTA';
+  const rawFull =
+    patient?.nombreCompleto ||
+    `${patient?.apellidos || ''} ${patient?.nombres || ''}`.trim() ||
+    'FUTBOLISTA';
+  const cleanName = rawFull.toUpperCase();
   const cleanDate = patient?.fechaEvaluacion || '22-01-2026';
-  const cleanClub = patient?.club || 'Club FPF / Liga Formativa';
+  const cleanClub = (patient?.club || 'Club FPF / Liga Formativa').toUpperCase();
+  const cleanPaisClub = (patient?.paisClub || 'PERÚ').toUpperCase();
+  const cleanBirthDate = patient?.fechaNacimiento || '18-09-2004';
+  const cleanPosicion = (patient?.posicion || 'VOLANTE').toUpperCase();
 
-  // PÁGINA 1: CERTIFICADO MÉDICO OFICIAL FPF
+  let apellidosBox = (patient?.apellidos || '').trim().toUpperCase();
+  let nombresBox = (patient?.nombres || '').trim().toUpperCase();
+  if (!apellidosBox && cleanName) {
+    const tokens = cleanName.split(/\s+/);
+    if (tokens.length >= 3) {
+      apellidosBox = tokens.slice(0, 2).join(' ');
+      nombresBox = tokens.slice(2).join(' ');
+    } else if (tokens.length === 2) {
+      apellidosBox = tokens[0];
+      nombresBox = tokens[1];
+    } else {
+      apellidosBox = cleanName;
+      nombresBox = '-';
+    }
+  }
+
+  const rawPeso = String(patient?.peso || '71').trim();
+  const formattedPeso = /kg/i.test(rawPeso) ? rawPeso : `${rawPeso} Kg`;
+  const rawTalla = String(patient?.talla || '1.75').trim();
+  const formattedTalla = /cm/i.test(rawTalla) ? rawTalla : `${rawTalla} Cm`;
+
+  // PÁGINA 1: FICHA DE EVALUACIÓN MÉDICA PRE-COMPETENCIA (PCMA)
   if (pageNumber === 1) {
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_01.png" 
-          alt="Certificado Médico Página 1" 
+        <img
+          src="/assets/pages_blank/page_01.png"
+          alt="Evaluación Médica Pre-Competencia Página 1"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        <div 
-          className="absolute fpf-doc-text uppercase font-normal tracking-wide whitespace-nowrap"
-          style={{ top: '11.40%', left: '20.16%' }}
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[38%]"
+          style={{ top: '55.32%', left: '11.21%' }}
         >
-          {cleanName}
+          {apellidosBox}
         </div>
-        <div 
-          className="absolute fpf-doc-text uppercase font-normal tracking-wide whitespace-nowrap"
-          style={{ top: '14.07%', left: '18.06%' }}
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[34%]"
+          style={{ top: '55.14%', left: '57.08%' }}
+        >
+          {nombresBox || '-'}
+        </div>
+        <div
+          className="absolute fpf-doc-text uppercase"
+          style={{ top: '65.40%', left: '10.32%' }}
+        >
+          {cleanBirthDate}
+        </div>
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[34%]"
+          style={{ top: '65.40%', left: '57.08%' }}
+        >
+          {cleanPosicion}
+        </div>
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[38%]"
+          style={{ top: '77.14%', left: '10.32%' }}
         >
           {cleanClub}
         </div>
-        <div 
-          className="absolute fpf-doc-text font-normal font-mono"
-          style={{ top: '82.21%', left: '62.62%' }}
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[34%]"
+          style={{ top: '77.14%', left: '57.08%' }}
         >
-          {cleanDate}
-        </div>
-        <div 
-          className="absolute text-[10px] font-mono text-slate-800"
-          style={{ top: '94.50%', left: '12.00%' }}
-        >
-          {patient?.receiptNum || '004128'}
+          {cleanPaisClub}
         </div>
       </div>
     );
   }
 
-  // PÁGINA 2: FICHA DE EVALUACIÓN PRE-COMPETENCIA (PCMA)
+  // PÁGINA 2: HISTORIA CLÍNICA PRE-PARTICIPATIVA I (14 CHECKS EN COLUMNA "NO")
   if (pageNumber === 2) {
-    return (
-      <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_02.png" 
-          alt="Evaluación Médica Pre-Competencia Página 2" 
-          className="w-full h-full object-contain pointer-events-none block"
-        />
-        <div 
-          className="absolute fpf-doc-text uppercase font-medium"
-          style={{ top: '49.98%', left: '11.21%' }}
-        >
-          {patient?.apellidos || cleanName}
-        </div>
-        <div 
-          className="absolute fpf-doc-text uppercase font-medium"
-          style={{ top: '49.79%', left: '57.08%' }}
-        >
-          {patient?.nombres || '-'}
-        </div>
-        <div 
-          className="absolute fpf-doc-text font-mono"
-          style={{ top: '56.80%', left: '57.08%' }}
-        >
-          {patient?.dni || '70000000'}
-        </div>
-        <div 
-          className="absolute fpf-doc-text uppercase font-medium"
-          style={{ top: '71.79%', left: '10.32%' }}
-        >
-          {cleanClub}
-        </div>
-        <div 
-          className="absolute fpf-doc-text uppercase font-medium"
-          style={{ top: '71.60%', left: '56.57%' }}
-        >
-          PERU
-        </div>
-        <div 
-          className="absolute fpf-doc-text font-mono font-medium"
-          style={{ top: '92.60%', left: '78.50%' }}
-        >
-          {cleanDate}
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINA 3: ANAMNESIS CARDIOVASCULAR (14 CHECKS EN COLUMNA "NO" REGLAMENTARIA FPF)
-  if (pageNumber === 3) {
-    const p3Tops = [
-      '23.21%', '26.17%', '28.77%', '31.76%', '34.56%', '37.62%',
-      '49.44%', '52.80%', '55.30%',
-      '67.21%', '70.01%', '72.99%', '75.67%', '78.46%'
+    const p2Tops = [
+      '32.55%', '35.30%', '38.15%', '41.10%', '44.12%', '46.97%',
+      '59.36%', '62.02%', '65.06%',
+      '76.99%', '80.03%', '82.97%', '86.00%', '88.85%'
     ];
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_03.png" 
-          alt="Anamnesis Página 3" 
+        <img
+          src="/assets/pages_blank/page_02.png"
+          alt="Historia Pre-Participativa I Página 2"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p3Tops.map((top, idx) => (
-          <div 
-            key={idx} 
-            className="absolute fpf-doc-text font-bold text-black"
-            style={{ top, left: '88.90%' }}
-          >
+        {p2Tops.map((top, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top, left: '93.45%' }}>
             X
           </div>
         ))}
@@ -832,50 +575,40 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 4: ANTECEDENTES PERSONALES Y CIRUGÍAS
-  if (pageNumber === 4) {
+  // PÁGINA 3: HISTORIA CLÍNICA PRE-PARTICIPATIVA II (FÁRMACOS Y SUPLEMENTOS)
+  if (pageNumber === 3) {
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_04.png" 
-          alt="Antecedentes Página 4" 
+        <img
+          src="/assets/pages_blank/page_03.png"
+          alt="Fármacos y Suplementos Página 3"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        <div 
-          className="absolute fpf-doc-text font-bold text-black uppercase tracking-wider"
-          style={{ top: '22.71%', left: '15.55%' }}
-        >
+        <div className="absolute fpf-doc-text uppercase" style={{ top: '31.02%', left: '12.84%' }}>
           NINGUNO
         </div>
-        <div 
-          className="absolute fpf-doc-text font-bold text-black uppercase tracking-wider"
-          style={{ top: '61.85%', left: '15.53%' }}
-        >
+        <div className="absolute fpf-doc-text uppercase" style={{ top: '71.10%', left: '12.84%' }}>
           NINGUNO
         </div>
       </div>
     );
   }
 
-  // PÁGINA 5: SÍNTOMAS CARDIOVASCULARES (20 LÍNEAS "NIEGA")
-  if (pageNumber === 5) {
-    const p5Tops = [
-      '20.63%', '23.48%', '26.31%', '29.15%', '31.80%', '34.74%', '37.49%', '40.20%', '42.87%', '45.90%', '48.78%', '51.43%', '54.11%',
-      '68.67%', '71.69%', '74.37%', '76.98%', '79.72%', '82.57%', '85.42%'
+  // PÁGINA 4: SISTEMA MÚSCULO-ESQUELÉTICO I (20 "NIEGA")
+  if (pageNumber === 4) {
+    const p4Tops = [
+      '29.15%', '32.09%', '35.11%', '37.96%', '40.91%', '43.85%', '46.40%', '49.36%', '52.32%', '55.07%', '57.80%', '60.68%', '63.45%',
+      '78.23%', '81.27%', '83.85%', '86.78%', '89.55%', '92.23%', '95.31%'
     ];
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_05.png" 
-          alt="Síntomas Página 5" 
+        <img
+          src="/assets/pages_blank/page_04.png"
+          alt="Sistema Músculo-Esquelético I Página 4"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p5Tops.map((top, idx) => (
-          <div 
-            key={idx} 
-            className="absolute fpf-doc-text font-bold text-[11px] text-black uppercase tracking-wider"
-            style={{ top, left: '83.20%' }}
-          >
+        {p4Tops.map((top, idx) => (
+          <div key={idx} className="absolute fpf-doc-text uppercase" style={{ top, left: '83.50%' }}>
             NIEGA
           </div>
         ))}
@@ -883,24 +616,24 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 6: SÍNTOMAS (PARTE 2) Y EXAMEN FÍSICO GENERAL
-  if (pageNumber === 6) {
-    const p6Niega = ['8.74%', '11.31%', '14.34%', '16.75%', '19.46%', '22.45%'];
-    const p6Normal = ['70.32%', '72.73%', '75.31%', '78.22%', '80.78%', '83.58%', '86.71%'];
+  // PÁGINA 5: SISTEMA MÚSCULO-ESQUELÉTICO II (6 "NIEGA" + 7 "NORMAL")
+  if (pageNumber === 5) {
+    const p5Niega = ['17.29%', '20.24%', '23.09%', '25.67%', '28.44%', '31.46%'];
+    const p5Normal = ['79.49%', '82.25%', '85.27%', '88.08%', '90.80%', '93.66%', '96.76%'];
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_06.png" 
-          alt="Examen General Página 6" 
+        <img
+          src="/assets/pages_blank/page_05.png"
+          alt="Sistema Músculo-Esquelético II Página 5"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p6Niega.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-[11px] text-black uppercase tracking-wider" style={{ top, left: '83.00%' }}>
+        {p5Niega.map((top, idx) => (
+          <div key={`n-${idx}`} className="absolute fpf-doc-text uppercase" style={{ top, left: '84.05%' }}>
             NIEGA
           </div>
         ))}
-        {p6Normal.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-[11px] text-black uppercase tracking-wider" style={{ top, left: '83.20%' }}>
+        {p5Normal.map((top, idx) => (
+          <div key={`ok-${idx}`} className="absolute fpf-doc-text uppercase" style={{ top, left: '84.05%' }}>
             NORMAL
           </div>
         ))}
@@ -908,27 +641,33 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 7: EXAMEN CLÍNICO Y PULSOS PERIFÉRICOS
-  if (pageNumber === 7) {
-    const p7Normal = ['17.29%', '20.14%', '23.18%', '26.20%', '29.02%', '31.73%'];
-    const p7Pulses = [
+  // PÁGINA 6: EXAMEN FÍSICO PRE-PARTICIPATIVO (PESO, TALLA Y PULSOS)
+  if (pageNumber === 6) {
+    const p6Normal = ['17.29%', '20.14%', '23.18%', '26.20%', '29.02%', '31.73%'];
+    const p6Checks = [
       '53.39%', '56.32%', '58.99%', '61.84%', '64.79%', '67.45%', '70.30%',
       '78.50%', '81.44%', '84.21%', '87.33%', '90.09%', '92.67%', '95.44%'
     ];
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_07.png" 
-          alt="Examen Clínico Página 7" 
+        <img
+          src="/assets/pages_blank/page_06.png"
+          alt="Examen Físico Pre-Participativo Página 6"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p7Normal.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-[11px] text-black uppercase tracking-wider" style={{ top, left: '83.70%' }}>
+        {p6Normal.map((top, idx) => (
+          <div key={`norm-${idx}`} className="absolute fpf-doc-text uppercase" style={{ top, left: '83.73%' }}>
             NORMAL
           </div>
         ))}
-        {p7Pulses.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-black" style={{ top, left: '47.88%' }}>
+        <div className="absolute fpf-doc-text" style={{ top: '41.71%', left: '12.72%' }}>
+          {formattedPeso}
+        </div>
+        <div className="absolute fpf-doc-text" style={{ top: '41.94%', left: '45.14%' }}>
+          {formattedTalla}
+        </div>
+        {p6Checks.map((top, idx) => (
+          <div key={`chk-${idx}`} className="absolute fpf-doc-text" style={{ top, left: '47.85%' }}>
             X
           </div>
         ))}
@@ -936,119 +675,123 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 8: EXAMEN CARDIOVASCULAR CONMEBOL
+  // PÁGINA 7: ECG REPOSO - PROTOCOLO CONMEBOL (1 "SI" EN NORMAL + 19 "NO")
+  if (pageNumber === 7) {
+    const p7NoTops = [
+      '34.23%', '37.25%', '40.29%', '43.05%', '45.90%', '48.85%', '51.60%', '54.46%', '57.39%',
+      '65.86%', '68.79%', '71.56%', '74.50%', '77.16%',
+      '86.07%', '89.11%', '91.87%', '94.73%', '97.58%'
+    ];
+    return (
+      <div className="w-full h-full relative select-none">
+        <img
+          src="/assets/pages_blank/page_07.png"
+          alt="ECG Reposo CONMEBOL Página 7"
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        <div className="absolute fpf-doc-text" style={{ top: '24.77%', left: '33.77%' }}>
+          X
+        </div>
+        {p7NoTops.map((top, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top, left: '93.00%' }}>
+            X
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // PÁGINA 8: ECOCARDIOGRAMA M-2D Y DOPPLER CONMEBOL (SELLO EN PLANTILLA BASE)
   if (pageNumber === 8) {
-    const p8Tops = [
-      '15.74%', '25.03%', '27.95%', '30.69%', '33.64%', '36.72%', '39.02%', '42.00%', '44.38%', '47.37%',
-      '55.77%', '58.70%', '61.64%', '64.20%', '67.04%', '75.94%', '78.87%', '81.44%', '83.98%', '86.54%'
+    const p8Checks = [
+      '20.24%', '23.18%', '26.03%', '28.88%', '31.82%',
+      '34.67%', '37.43%', '40.29%', '43.22%', '46.07%'
+    ];
+    const p8Values = [
+      { top: '59.80%', val: '26' },
+      { top: '62.38%', val: '31' },
+      { top: '65.50%', val: '32' },
+      { top: '68.35%', val: '29' },
+      { top: '71.10%', val: '32' },
+      { top: '73.87%', val: '27' },
+      { top: '76.72%', val: '44' },
+      { top: '79.49%', val: '10' },
+      { top: '82.34%', val: '10' },
+      { top: '85.27%', val: '64/32' },
+      { top: '88.04%', val: 'N' },
+      { top: '90.89%', val: '25' },
+      { top: '93.66%', val: 'N' },
+      { top: '96.24%', val: 'N' }
     ];
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_08.png" 
-          alt="Examen Cardiovascular Página 8" 
+        <img
+          src="/assets/pages_blank/page_08.png"
+          alt="Ecocardiograma M-2D y Doppler Página 8"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p8Tops.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-black" style={{ top, left: '89.90%' }}>
+        {p8Checks.map((top, idx) => (
+          <div key={`c-${idx}`} className="absolute fpf-doc-text" style={{ top, left: '92.90%' }}>
             X
+          </div>
+        ))}
+        {p8Values.map((item, idx) => (
+          <div key={`v-${idx}`} className="absolute fpf-doc-text" style={{ top: item.top, left: '59.40%' }}>
+            {item.val}
           </div>
         ))}
       </div>
     );
   }
 
-  // PÁGINA 9: ECOCARDIOGRAMA CONMEBOL (MEDICIONES Y VALORES NORMALES)
+  // PÁGINA 9: ECOCARDIOGRAMA CONCLUSIONES CONMEBOL (SELLO EN PLANTILLA BASE)
   if (pageNumber === 9) {
-    const p9Checks = ['11.73%', '14.33%', '17.23%', '19.79%', '22.91%', '25.76%', '28.49%', '31.16%', '34.57%', '36.95%'];
-    const p9Values = [
-      { top: '50.75%', val: '24' },
-      { top: '53.44%', val: '25' },
-      { top: '56.25%', val: '28' },
-      { top: '58.60%', val: '31' },
-      { top: '61.47%', val: '34' },
-      { top: '64.35%', val: '26' },
-      { top: '67.00%', val: '50' },
-      { top: '69.55%', val: '10' },
-      { top: '72.24%', val: '10' },
-      { top: '75.74%', val: '57/39' },
-      { top: '78.19%', val: 'N' },
-      { top: '81.13%', val: '22' },
-      { top: '83.96%', val: 'N' },
-      { top: '86.77%', val: 'N' }
+    const p9Findings = [
+      { top: '17.29%', val: 'N' },
+      { top: '20.33%', val: 'N' },
+      { top: '23.26%', val: 'N' },
+      { top: '25.86%', val: '5/9' },
+      { top: '28.61%', val: '4/8' }
     ];
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_09.png" 
-          alt="Ecocardiograma CONMEBOL Página 9" 
+        <img
+          src="/assets/pages_blank/page_09.png"
+          alt="Ecocardiograma Conclusiones Página 9"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p9Checks.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-black" style={{ top, left: '90.10%' }}>
-            X
-          </div>
-        ))}
-        {p9Values.map((item, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-black font-mono" style={{ top: item.top, left: '59.60%' }}>
+        {p9Findings.map((item, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top: item.top, left: '58.60%' }}>
             {item.val}
           </div>
         ))}
-      </div>
-    );
-  }
-
-  // PÁGINA 10: ELECTROCARDIOGRAMA CONMEBOL (CRITERIOS Y DICTAMEN)
-  if (pageNumber === 10) {
-    const p10Findings = [
-      { top: '16.31%', val: 'N' },
-      { top: '18.45%', val: 'N' },
-      { top: '21.57%', val: 'N' },
-      { top: '23.55%', val: '3/7' },
-      { top: '26.14%', val: '6/11' }
-    ];
-    return (
-      <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_10.png" 
-          alt="Electrocardiograma CONMEBOL Página 10" 
-          className="w-full h-full object-contain pointer-events-none block"
-        />
-        {p10Findings.map((item, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-black font-mono" style={{ top: item.top, left: '57.24%' }}>
-            {item.val}
-          </div>
-        ))}
-        <div 
-          className="absolute fpf-doc-text font-bold text-black"
-          style={{ top: '43.86%', left: '15.55%' }}
-        >
+        <div className="absolute fpf-doc-text" style={{ top: '48.57%', left: '13.23%' }}>
           ECOCARDIOGRAMA DENTRO DE LIMITES NORMALES.
         </div>
       </div>
     );
   }
 
-  // PÁGINA 11: LABORATORIO FPF (PARÁMETROS ANALÍTICOS)
-  if (pageNumber === 11) {
-    const p11Values = [
-      { top: '26.20%', val: '14.7' },
-      { top: '28.84%', val: '43' },
-      { top: '31.25%', val: '4.630' },
-      { top: '33.87%', val: '370' },
-      { top: '36.68%', val: '5.730' },
-      { top: '38.96%', val: '139' },
-      { top: '41.24%', val: '3.5' }
+  // PÁGINA 10: RESULTADOS ANÁLISIS DE SANGRE FPF
+  if (pageNumber === 10) {
+    const p10Values = [
+      { top: '29.15%', val: '13.8' },
+      { top: '32.09%', val: '42' },
+      { top: '34.50%', val: '4.620' },
+      { top: '37.61%', val: '364' },
+      { top: '40.56%', val: '6.241' },
+      { top: '43.49%', val: '135' },
+      { top: '46.26%', val: '4.4' }
     ];
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_11.png" 
-          alt="Laboratorio FPF Página 11" 
+        <img
+          src="/assets/pages_blank/page_10.png"
+          alt="Resultados Análisis de Sangre Página 10"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p11Values.map((item, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-black font-mono" style={{ top: item.top, left: '29.70%' }}>
+        {p10Values.map((item, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top: item.top, left: '27.55%' }}>
             {item.val}
           </div>
         ))}
@@ -1056,93 +799,141 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 12: DECLARACIÓN MÉDICA FINAL DE LA COMISIÓN (FACSÍMIL 1:1)
+  // PÁGINA 11: RESUMEN DE LA EVALUACIÓN PRE-PARTICIPATIVA (MÉDICO, FAMIHEART Y SELLO YA EN PLANTILLA BASE)
+  if (pageNumber === 11) {
+    const p11Checks = ['27.27%', '30.22%', '32.90%', '38.32%', '54.17%'];
+    return (
+      <div className="w-full h-full relative select-none">
+        <img
+          src="/assets/pages_blank/page_11.png"
+          alt="Resumen Evaluación Pre-Participativa Página 11"
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        {p11Checks.map((top, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top, left: '73.10%' }}>
+            X
+          </div>
+        ))}
+        <div
+          className="absolute uppercase font-bold text-black"
+          style={{ top: '67.51%', left: '49.85%', fontFamily: 'Calibri, Arial, sans-serif', fontSize: '15px' }}
+        >
+          SI
+        </div>
+        <div className="absolute fpf-doc-text" style={{ top: '89.73%', left: '9.19%' }}>
+          {cleanDate}
+        </div>
+      </div>
+    );
+  }
+
+  // PÁGINA 12: CERTIFICADO MÉDICO FAMIHEART (SOBRE MEMBRETE + SELLO PURO page_12_base.png)
   if (pageNumber === 12) {
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_12.png" 
-          alt="Declaración Médica Página 12" 
+        <img
+          src="/assets/pages_blank/page_12_base.png"
+          alt="Certificado Médico Famiheart Página 12"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        <div className="absolute fpf-doc-text font-bold text-black" style={{ top: '30.41%', left: '73.20%' }}>X</div>
-        <div className="absolute fpf-doc-text font-bold text-black" style={{ top: '35.90%', left: '73.20%' }}>X</div>
-        <div className="absolute fpf-doc-text font-bold text-black" style={{ top: '51.32%', left: '73.20%' }}>X</div>
-        <div className="absolute fpf-doc-text font-bold text-black" style={{ top: '64.92%', left: '14.30%' }}>SI</div>
-        <div className="absolute fpf-doc-text font-bold text-black" style={{ top: '77.61%', left: '8.30%' }}>DR. DARIO HERNANDEZ</div>
-        <div className="absolute fpf-doc-text font-bold text-black" style={{ top: '81.57%', left: '8.93%' }}>FAMIHEART S.A.C.</div>
-        <div className="absolute fpf-doc-text font-bold text-black font-mono" style={{ top: '86.51%', left: '8.57%' }}>
-          {cleanDate}
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINA 13: CERTIFICADO DE APTITUD MÉDICA FAMIHEART (FACSÍMIL 1:1 CON PÁRRAFO COMPLETO)
-  if (pageNumber === 13) {
-    return (
-      <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_13.png" 
-          alt="Certificado Famiheart Página 13" 
-          className="w-full h-full object-contain pointer-events-none block"
-        />
-        <div 
-          className="absolute text-[13.5px] text-justify leading-relaxed text-black max-w-[530px]"
-          style={{ top: '23.46%', left: '14.30%', fontFamily: 'Calibri, sans-serif' }}
+        <div
+          className="absolute text-justify text-black"
+          style={{
+            top: '28.28%',
+            left: '14.30%',
+            width: '71.40%',
+            fontFamily: "'Berlin Sans FB', Calibri, 'Segoe UI', Arial, sans-serif",
+            fontSize: '26px',
+            lineHeight: 1.32
+          }}
         >
-          El médico que suscribe certifica que el paciente <strong className="uppercase font-bold">{cleanName}</strong> ha sido evaluado con exámenes de Rx de Tórax, hematología, electrocardiograma y ecocardiografía, los cuales se encuentran dentro de los límites normales y siendo asintomático cardiovascular, sin antecedentes, se encuentra apto para realizar actividad física sin restricciones.
+          El médico que suscribe certifica que el paciente{' '}
+          <strong className="uppercase font-bold">{cleanName}</strong> ha sido evaluado con exámenes de Rx de Tórax,
+          hematología, electrocardiograma y ecocardiografía, los cuales se encuentran dentro de los límites normales y
+          siendo asintomático cardiovascular, sin antecedentes, se encuentra apto para realizar actividad física sin
+          restricciones.
         </div>
-        <div className="absolute text-[12px] font-bold text-black" style={{ top: '65.91%', left: '14.30%' }}>
+        <div
+          className="absolute font-bold text-black"
+          style={{
+            top: '68.24%',
+            left: '14.30%',
+            fontFamily: 'Calibri, Arial, sans-serif',
+            fontSize: '18px'
+          }}
+        >
           Atte.
         </div>
-        <div className="absolute fpf-doc-text font-bold text-black font-mono" style={{ top: '73.31%', left: '14.30%' }}>
+        <div className="absolute fpf-doc-date-16" style={{ top: '75.63%', left: '14.30%' }}>
           {cleanDate}
         </div>
       </div>
     );
   }
 
-  // PÁGINA 14: INFORME ECOCARDIOGRÁFICO DOPPLER (FACSÍMIL 1:1 CON MEDICIONES)
-  if (pageNumber === 14) {
-    const p14Measurements = [
-      { top: '24.90%', left: '33.00%', val: '22' },
-      { top: '24.90%', left: '77.00%', val: '24' },
-      { top: '26.80%', left: '33.00%', val: '10' },
-      { top: '26.80%', left: '77.00%', val: '16' },
-      { top: '28.80%', left: '33.00%', val: '50' },
-      { top: '30.80%', left: '33.00%', val: '23' },
-      { top: '32.80%', left: '33.00%', val: '10' },
-      { top: '34.80%', left: '33.00%', val: '28' },
-      { top: '40.60%', left: '33.00%', val: '57' },
-      { top: '40.60%', left: '77.00%', val: '74' },
-      { top: '42.60%', left: '33.00%', val: '39' },
-      { top: '42.60%', left: '77.00%', val: '66' },
-      { top: '48.50%', left: '37.00%', val: '1.7' },
-      { top: '50.50%', left: '37.00%', val: '2.8' },
-      { top: '50.50%', left: '87.00%', val: '0.7' }
+  // PÁGINA 13: INFORME ECOCARDIOGRÁFICO FAMIHEART (SOBRE LÍNEAS LIMPIAS DE page_13.png)
+  if (pageNumber === 13) {
+    const p13Measurements = [
+      { top: '35.55%', left: '32.50%', val: '24' },
+      { top: '35.55%', left: '66.50%', val: '26' },
+      { top: '36.86%', left: '33.80%', val: '10' },
+      { top: '36.86%', left: '68.30%', val: '22' },
+      { top: '38.16%', left: '29.50%', val: '44' },
+      { top: '39.47%', left: '29.50%', val: '24' },
+      { top: '40.76%', left: '31.50%', val: '10' },
+      { top: '42.08%', left: '31.50%', val: '32' },
+      { top: '46.19%', left: '31.50%', val: '64' },
+      { top: '46.19%', left: '67.50%', val: '99' },
+      { top: '47.49%', left: '33.00%', val: '33' },
+      { top: '47.49%', left: '67.50%', val: '76' },
+      { top: '55.53%', left: '35.50%', val: '1.2' },
+      { top: '56.84%', left: '35.50%', val: '2.4' },
+      { top: '56.84%', left: '73.30%', val: '0.7' }
     ];
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_14.png" 
-          alt="Informe Ecocardiográfico Página 14" 
+        <img
+          src="/assets/pages_blank/page_13.png"
+          alt="Informe Ecocardiográfico Página 13"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        <div 
-          className="absolute fpf-doc-text uppercase font-semibold"
-          style={{ top: '21.38%', left: '20.08%' }}
+        <div
+          className="absolute uppercase text-black truncate"
+          style={{
+            top: '28.58%',
+            left: '20.08%',
+            maxWidth: '23.2%',
+            fontFamily: 'Calibri, Arial, sans-serif',
+            fontSize: cleanName.length > 26 ? '11.5px' : '13px',
+            lineHeight: 1.15
+          }}
         >
           {cleanName}
         </div>
-        <div 
-          className="absolute fpf-doc-text font-mono font-semibold"
-          style={{ top: '23.07%', left: '20.08%' }}
+        <div
+          className="absolute text-black"
+          style={{
+            top: '30.18%',
+            left: '20.08%',
+            fontFamily: 'Calibri, Arial, sans-serif',
+            fontSize: '12px',
+            lineHeight: 1.15
+          }}
         >
           {cleanDate}
         </div>
-        {p14Measurements.map((m, idx) => (
-          <div key={idx} className="absolute fpf-doc-text font-bold text-black font-mono" style={{ top: m.top, left: m.left }}>
+        {p13Measurements.map((m, idx) => (
+          <div
+            key={idx}
+            className="absolute text-black"
+            style={{
+              top: m.top,
+              left: m.left,
+              fontFamily: 'Calibri, Arial, sans-serif',
+              fontSize: '12px',
+              lineHeight: 1.1
+            }}
+          >
             {m.val}
           </div>
         ))}
@@ -1150,789 +941,228 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 15: ANEXO DE IMÁGENES DE ECOCARDIOGRAMA DOPPLER 2D Y M-MODE
+  // PÁGINA 14: ANEXO DE IMÁGENES ECOCARDIOGRAMA DOPPLER 2D Y MODO M
+  if (pageNumber === 14) {
+    return (
+      <div className="w-full h-full relative select-none">
+        <img
+          src="/assets/pages_blank/page_14.png"
+          alt="Anexo Imágenes Ecocardiograma Página 14"
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        {/* Captura Superior: Eco 2D / Doppler */}
+        <div
+          className="absolute overflow-hidden"
+          style={{ top: '22.49%', left: '14.29%', width: '71.42%', height: '30.83%' }}
+        >
+          <img
+            src={patient?.attachments?.eco2d?.url || '/assets/echo_sample_2d.png'}
+            alt="Ecocardiograma 2D Doppler"
+            className="w-full h-full object-contain bg-black/95 rounded-2xs"
+          />
+        </div>
+        {/* Captura Inferior: Eco M-Mode / Flujos */}
+        <div
+          className="absolute overflow-hidden"
+          style={{ top: '62.44%', left: '14.94%', width: '71.42%', height: '31.73%' }}
+        >
+          <img
+            src={patient?.attachments?.ecoMmode?.url || '/assets/echo_sample_mmode.png'}
+            alt="Ecocardiograma M-Mode"
+            className="w-full h-full object-contain bg-black/95 rounded-2xs"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // PÁGINA 15: ELECTROCARDIOGRAMA DE REPOSO (12 DERIVACIONES) CON SELLO CARDIÓLOGO
   if (pageNumber === 15) {
+    const hasCustomEcg = Boolean(patient?.attachments?.ecg?.url);
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_15.png" 
-          alt="Anexo Ecocardiograma Página 15" 
+        <img
+          src="/assets/pages_blank/page_15.png"
+          alt="Electrocardiograma 12 Derivaciones Página 15"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {/* Captura Doppler 2D Color */}
-        <div className="absolute" style={{ top: '16.50%', left: '11.50%', width: '77.00%', height: '33.00%' }}>
-          <img 
-            src={patient?.attachments?.eco2d?.url || "/assets/echo_sample_2d.png"} 
-            alt="Ecocardiograma 2D Doppler" 
-            className="w-full h-full object-cover rounded-xs border border-slate-300"
+        {/* Trazado ECG */}
+        <div
+          className="absolute overflow-hidden"
+          style={{ top: '24.35%', left: '14.28%', width: '71.42%', height: '72.10%' }}
+        >
+          <img
+            src={patient?.attachments?.ecg?.url || '/assets/ecg_sample_strip.png'}
+            alt="Trazado ECG 12 Derivaciones"
+            className="w-full h-full object-contain"
           />
         </div>
-        {/* Captura Doppler M-Mode / Espectral */}
-        <div className="absolute" style={{ top: '53.50%', left: '11.50%', width: '77.00%', height: '33.00%' }}>
-          <img 
-            src={patient?.attachments?.ecoMmode?.url || "/assets/echo_sample_mmode.png"} 
-            alt="Ecocardiograma M-Mode" 
-            className="w-full h-full object-cover rounded-xs border border-slate-300"
-          />
-        </div>
+        {/* Cuando se usa la tira limpia base, superponer Nombre, Fecha y Dictamen NORMAL */}
+        {!hasCustomEcg && (
+          <>
+            <div
+              className="absolute uppercase text-black font-semibold truncate max-w-[46%]"
+              style={{
+                top: '25.58%',
+                left: '18.14%',
+                fontFamily: 'Calibri, Arial, sans-serif',
+                fontSize: '9.5px',
+                lineHeight: 1.1
+              }}
+            >
+              NAME: {cleanName}
+            </div>
+            <div
+              className="absolute text-black font-semibold"
+              style={{
+                top: '28.49%',
+                left: '67.54%',
+                fontFamily: 'Calibri, Arial, sans-serif',
+                fontSize: '9.5px',
+                lineHeight: 1.1
+              }}
+            >
+              DATE: {cleanDate}
+            </div>
+            <div className="absolute fpf-doc-text" style={{ top: '84.29%', left: '44.09%' }}>
+              NORMAL
+            </div>
+          </>
+        )}
+        {/* Sello transparente del Cardiólogo sobre la esquina inferior derecha */}
+        <img
+          src="/assets/sello-alfredo-vega-transparent.png"
+          alt="Sello Cardiólogo"
+          className="absolute object-contain pointer-events-none"
+          style={{ top: '85.60%', left: '72.15%', width: '8.82%', height: '7.93%' }}
+        />
       </div>
     );
   }
 
-  // PÁGINA 16: TRAZADO ELECTROCARDIOGRÁFICO DE REPOSO (12 DERIVACIONES)
+  // PÁGINA 16: HEMOGRAMA COMPLETO (LABORATORIO CLÍNICO FAMIHEART)
   if (pageNumber === 16) {
-    return (
-      <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_16.png" 
-          alt="Electrocardiograma Página 16" 
-          className="w-full h-full object-contain pointer-events-none block"
-        />
-        {/* Nombre en la tira de ECG */}
-        <div 
-          className="absolute fpf-doc-text uppercase font-bold tracking-wider"
-          style={{ top: '16.77%', left: '18.61%' }}
-        >
-          {cleanName}
-        </div>
-        {/* Fecha en la tira de ECG */}
-        <div 
-          className="absolute fpf-doc-text font-mono font-bold"
-          style={{ top: '19.38%', left: '67.72%' }}
-        >
-          {cleanDate}
-        </div>
-        {/* Tira térmica oficial de 12 derivaciones */}
-        <div className="absolute" style={{ top: '23.00%', left: '11.00%', width: '78.00%', height: '62.00%' }}>
-          <img 
-            src={patient?.attachments?.ecg?.url || "/assets/ecg_sample_strip.png"} 
-            alt="Trazado ECG 12 Derivaciones" 
-            className="w-full h-full object-contain mix-blend-multiply"
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINAS 17, 18, 19: LABORATORIO CLÍNICO FAMIHEART (FACSÍMIL 1:1)
-  if (pageNumber === 17 || pageNumber === 18 || pageNumber === 19) {
-    const coords = {
-      17: { nameTop: '22.24%', nameLeft: '30.80%', dateTop: '27.40%', dateLeft: '78.27%' },
-      18: { nameTop: '21.00%', nameLeft: '28.95%', dateTop: '26.16%', dateLeft: '80.38%' },
-      19: { nameTop: '22.82%', nameLeft: '26.77%', dateTop: '29.76%', dateLeft: '86.81%' }
-    }[pageNumber];
-
-    if (pageNumber === 17 && patient?.attachments?.laboratorio) {
+    if (patient?.attachments?.laboratorio?.url) {
       return (
         <div className="w-full h-full relative select-none">
-          <img src={patient.attachments.laboratorio.url} alt="Laboratorio Clínico" className="w-full h-full object-contain block" />
+          <img
+            src="/assets/pages_blank/page_16.png"
+            alt="Membrete Laboratorio Página 16"
+            className="w-full h-full object-contain pointer-events-none block"
+          />
+          <div
+            className="absolute bg-white flex items-center justify-center overflow-hidden"
+            style={{ top: '22.00%', left: '10.00%', width: '80.00%', height: '73.00%' }}
+          >
+            <img
+              src={patient.attachments.laboratorio.url}
+              alt="Laboratorio Clínico Adjunto"
+              className="w-full h-full object-contain"
+            />
+          </div>
         </div>
       );
     }
 
+    const p16Hemograma = [
+      { top: '38.80%', left: '54.32%', val: '4.620,000.00' },
+      { top: '40.58%', left: '60.85%', val: '13.8' },
+      { top: '44.15%', left: '62.26%', val: '42' },
+      { top: '47.71%', left: '57.58%', val: '6,241.00' },
+      { top: '52.69%', left: '58.04%', val: '199.000' },
+      { top: '56.25%', left: '62.26%', val: '97' },
+      { top: '58.03%', left: '62.26%', val: '30' },
+      { top: '59.81%', left: '62.26%', val: '31' },
+      { top: '65.16%', left: '62.26%', val: '35' },
+      { top: '66.94%', left: '63.20%', val: '1' },
+      { top: '68.72%', left: '63.20%', val: '3' },
+      { top: '70.50%', left: '63.20%', val: '0' },
+      { top: '72.29%', left: '62.26%', val: '61' },
+      { top: '74.07%', left: '63.20%', val: '0' }
+    ];
+
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src={`/assets/pages_blank/page_${formattedPage}.png`} 
-          alt={`Laboratorio Clínico Página ${pageNumber}`} 
+        <img
+          src="/assets/pages_blank/page_16.png"
+          alt="Hemograma Completo Página 16"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        <div 
-          className="absolute fpf-doc-text uppercase font-semibold"
-          style={{ top: coords.nameTop, left: coords.nameLeft }}
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[39%]"
+          style={{ top: '24.73%', left: '30.80%' }}
         >
           {cleanName}
         </div>
-        <div 
-          className="absolute fpf-doc-text font-mono font-semibold"
-          style={{ top: coords.dateTop, left: coords.dateLeft }}
+        <div className="absolute fpf-doc-text" style={{ top: '31.68%', left: '79.70%' }}>
+          {cleanDate}
+        </div>
+        {p16Hemograma.map((row, idx) => (
+          <div key={idx} className="absolute fpf-doc-text" style={{ top: row.top, left: row.left }}>
+            {row.val}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // PÁGINA 17: INFORME RADIOGRAFÍA DE TÓRAX
+  if (pageNumber === 17) {
+    return (
+      <div className="w-full h-full relative select-none">
+        <img
+          src="/assets/pages_blank/page_17.png"
+          alt="Informe Radiografía de Tórax Página 17"
+          className="w-full h-full object-contain pointer-events-none block"
+        />
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[50%]"
+          style={{ top: '29.08%', left: '35.55%' }}
         >
+          {cleanName}
+        </div>
+        <div className="absolute fpf-doc-text" style={{ top: '32.39%', left: '35.49%' }}>
           {cleanDate}
         </div>
       </div>
     );
   }
 
-  // PÁGINA 20: INFORME RADIOLÓGICO Y RAYOS X (FACSÍMIL OFICIAL 1:1)
-  if (pageNumber === 20) {
+  // PÁGINA 18: ANEXO PLACA DIGITAL DE RAYOS X DE TÓRAX
+  if (pageNumber === 18) {
     return (
       <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_20.png" 
-          alt="Informe Radiológico Rayos X Página 20" 
+        <img
+          src="/assets/pages_blank/page_18.png"
+          alt="Radiografía de Tórax Placa Página 18"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        <div 
-          className="absolute fpf-doc-text uppercase font-semibold"
-          style={{ top: '21.54%', left: '35.55%' }}
+        <div
+          className="absolute overflow-hidden"
+          style={{ top: '30.17%', left: '14.29%', width: '71.42%', height: '37.59%' }}
         >
-          {cleanName}
+          <img
+            src={patient?.attachments?.rayosX?.url || '/assets/rx_sample_clean.jpeg'}
+            alt="Placa Radiográfica de Tórax"
+            className="w-full h-full object-contain bg-black rounded-2xs"
+          />
         </div>
-        <div 
-          className="absolute fpf-doc-text font-mono font-semibold"
-          style={{ top: '24.83%', left: '35.49%' }}
-        >
-          {cleanDate}
-        </div>
-        {patient?.attachments?.rayosX && (
-          <div className="absolute" style={{ top: '62%', left: '14%', width: '72%', height: '30%' }}>
-            <img src={patient.attachments.rayosX.url} alt="Radiografía de tórax" className="w-full h-full object-contain" />
-          </div>
-        )}
       </div>
     );
   }
 
-  // PÁGINA 21: DICTAMEN FINAL DE APTITUD FPF (FACSÍMIL OFICIAL 1:1)
-  if (pageNumber === 21) {
-    return (
-      <div className="w-full h-full relative select-none">
-        <img 
-          src="/assets/pages_blank/page_21.png" 
-          alt="Dictamen Final FPF Página 21" 
-          className="w-full h-full object-contain pointer-events-none block"
-        />
-      </div>
-    );
-  }
-
-  // RESTO DE PÁGINAS (FALLBACK SEGURO)
-  return (
-    <div className="w-full h-full relative select-none">
-      <img 
-        src={`/assets/pages_blank/page_${formattedPage}.png`} 
-        alt={`Expediente Oficial FPF Página ${pageNumber}`}
-        className="w-full h-full object-contain pointer-events-none block"
-        onError={(e) => {
-          e.target.src = `/assets/pages/page_${formattedPage}.png`;
-        }}
-      />
-    </div>
-  );
+  return <CleanTemplatePage pageNumber={pageNumber} />;
 }
 
-function DigitalSynchronizedPage({ pageNumber, patient }) {
-  const doctorName = patient.medicoEvaluador === 'ALFREDO VEGA CISNEROS' 
-    ? 'Dr. Alfredo Vega Cisneros (C.M.P. 1821 / R.N.E. 4480)' 
-    : 'Dr. Darío Hernández Alarcón (C.M.P. 27503 / R.N.E. 15620)';
-
-  // PÁGINA 1: CERTIFICADO MÉDICO DEPORTIVO FPF
-  if (pageNumber === 1) {
-    return (
-      <div className="h-full flex flex-col justify-between border-2 border-slate-900 p-8 font-sans bg-white text-slate-900">
-        <div className="text-center space-y-2 border-b-2 border-slate-900 pb-4">
-          <div className="flex items-center justify-between">
-            <img src="/assets/fpf-logo.png" alt="FPF" className="h-12 w-auto object-contain" />
-            <div className="text-right text-[11px] font-bold text-slate-600">
-              <div>FAMIHEART S.A.C.</div>
-              <div>RUC: 20554742905</div>
-            </div>
-          </div>
-          <h2 className="text-xl font-black uppercase tracking-wider text-blue-950">Federación Peruana de Fútbol</h2>
-          <h3 className="text-base font-bold uppercase underline text-red-700">Certificado Médico Oficial de Aptitud</h3>
-        </div>
-
-        <div className="space-y-4 my-6 text-sm">
-          <div className="flex items-center gap-2 border-b border-slate-300 pb-1">
-            <span className="font-black text-slate-700 w-28">NOMBRE:</span>
-            <span className="font-black text-blue-900 text-base font-mono">{patient.nombreCompleto}</span>
-          </div>
-          <div className="flex items-center gap-2 border-b border-slate-300 pb-1">
-            <span className="font-black text-slate-700 w-28">CLUB:</span>
-            <span className="font-bold text-slate-800">{patient.club}</span>
-            <span className="font-bold text-slate-500 ml-4">CAT:</span>
-            <span className="font-medium text-slate-700">{patient.categoria}</span>
-          </div>
-          <div className="flex items-center gap-2 border-b border-slate-300 pb-1">
-            <span className="font-black text-slate-700 w-28">MÉDICO:</span>
-            <span className="font-bold text-slate-800">{doctorName}</span>
-          </div>
-          <div className="flex items-center gap-2 border-b border-slate-300 pb-1">
-            <span className="font-black text-slate-700 w-28">DOMICILIO:</span>
-            <span className="font-medium text-slate-700">{patient.domicilioClinica}</span>
-          </div>
-        </div>
-
-        <div className="border border-slate-800 rounded-xl p-6 space-y-4 bg-slate-50">
-          <div className="font-black text-slate-900 text-xs tracking-wider uppercase">
-            QUIEN AL EXAMEN CLÍNICO INTEGRAL PRESENTA:
-          </div>
-          <div className="grid grid-cols-2 gap-3 text-xs pl-2">
-            <div><strong>ARER:</strong> Adecuado Rendimiento Físico</div>
-            <div><strong>AREN:</strong> Sin Signos Patológicos</div>
-            <div><strong>RUIDOS CARDIACOS:</strong> R1 y R2 Rítmicos, Sin Soplos</div>
-            <div><strong>VÍAS AÉREAS:</strong> Libres y Despejadas</div>
-          </div>
-          <div className="pt-4 text-center border-t border-slate-200">
-            <div className="text-xs text-slate-600 uppercase font-semibold">Dictamen Final de Aptitud Deportiva:</div>
-            <div className="text-lg font-black text-emerald-700 mt-1">
-              [ X ] APTO PARA REALIZAR ACTIVIDAD DEPORTIVA ( FÚTBOL COMPETITIVO )
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-8 pt-8">
-          <div className="text-center border-t-2 border-slate-900 pt-2 text-xs font-bold">
-            <div className="h-14 flex items-center justify-center">
-              <img 
-                src="/assets/firma-cardiologo.jpeg" 
-                alt="Firma y Sello Oficial" 
-                className="h-12 w-auto object-contain mix-blend-multiply" 
-              />
-            </div>
-            <div>{doctorName}</div>
-            <div className="text-[10px] text-slate-500 font-normal">Comisión Médica Famiheart S.A.C.</div>
-          </div>
-          <div className="text-center border-t-2 border-slate-900 pt-2 text-xs font-bold">
-            <div className="text-slate-500 font-medium">FECHA UNIFICADA DE EVALUACIÓN:</div>
-            <div className="text-lg font-black text-blue-900 font-mono mt-1">
-              {patient.fechaEvaluacion}
-            </div>
-            <div className="text-[10px] text-emerald-600 font-semibold">Cascada Sincronizada 21 Páginas</div>
-          </div>
-        </div>
-
-        <div className="text-[10px] text-slate-400 pt-4 flex justify-between border-t border-slate-200">
-          <span>RECIBO OFICIAL: {patient.numeroRecibo || 'REC-2026-08942'}</span>
-          <span>Página 01 de 21 • FPF Pre-Competencia</span>
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINA 2: FICHA DE EVALUACIÓN PRE-COMPETENCIA (PCMA) - DATOS DEL FUTBOLISTA
-  if (pageNumber === 2) {
-    return (
-      <div className="h-full flex flex-col justify-between border-2 border-slate-900 p-8 font-sans bg-white text-slate-900">
-        <div className="border-b-2 border-slate-900 pb-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/assets/fpf-logo.png" alt="FPF" className="h-11 w-auto object-contain" />
-            <div>
-              <h2 className="text-base font-black text-blue-950">FEDERACIÓN PERUANA DE FÚTBOL</h2>
-              <div className="text-[10px] text-slate-600 font-bold">FICHA DE EVALUACIÓN PRE-COMPETENCIA (PCMA)</div>
-            </div>
-          </div>
-          <div className="text-right text-xs font-mono">
-            <div className="font-black text-blue-900">FECHA: {patient.fechaEvaluacion}</div>
-            <div className="text-[10px] text-slate-500">Pág. 02 / 21</div>
-          </div>
-        </div>
-
-        <div className="space-y-4 my-auto text-xs">
-          <div className="bg-blue-950 text-white font-bold px-3 py-1.5 rounded uppercase tracking-wider text-[11px]">
-            1. Identificación del Jugador (Extracción Automática de Archivo)
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 bg-slate-50 border border-slate-200 p-4 rounded-xl">
-            <div>
-              <span className="font-semibold text-slate-600 block text-[10px] uppercase">Apellidos:</span>
-              <span className="font-bold text-slate-900 text-sm font-mono">{patient.apellidos || patient.nombreCompleto}</span>
-            </div>
-            <div>
-              <span className="font-semibold text-slate-600 block text-[10px] uppercase">Nombres:</span>
-              <span className="font-bold text-slate-900 text-sm font-mono">{patient.nombres || '-'}</span>
-            </div>
-            <div>
-              <span className="font-semibold text-slate-600 block text-[10px] uppercase">Documento de Identidad (DNI):</span>
-              <span className="font-mono font-bold text-blue-950">{patient.dni || '70000000'}</span>
-            </div>
-            <div>
-              <span className="font-semibold text-slate-600 block text-[10px] uppercase">Sexo / Género:</span>
-              <span className="font-bold text-slate-800">MASCULINO</span>
-            </div>
-            <div>
-              <span className="font-semibold text-slate-600 block text-[10px] uppercase">Club Deportivo / Liga:</span>
-              <span className="font-bold text-slate-800">{patient.club || 'Club FPF / Liga Formativa'}</span>
-            </div>
-            <div>
-              <span className="font-semibold text-slate-600 block text-[10px] uppercase">Categoría / Posición:</span>
-              <span className="font-bold text-slate-800">{patient.categoria || 'Competitiva 2026'} / {patient.posicion || 'Futbolista'}</span>
-            </div>
-            <div>
-              <span className="font-semibold text-slate-600 block text-[10px] uppercase">Archivo Fuente Asociado:</span>
-              <span className="font-mono text-[11px] text-blue-800">{patient.fileName || `${patient.nombreCompleto}.pdf`}</span>
-            </div>
-            <div>
-              <span className="font-semibold text-slate-600 block text-[10px] uppercase">Estado de Evaluación:</span>
-              <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded text-[11px]">
-                APTO COMPETENCIA
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-blue-950 text-white font-bold px-3 py-1.5 rounded uppercase tracking-wider text-[11px]">
-            2. Declaración Médica de Sincronización
-          </div>
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 leading-relaxed text-[11px]">
-            Se certifica que los datos de filiación del jugador han sido contrastados con el documento fuente original y vinculados uniformemente a las 21 páginas del presente expediente bajo la fecha oficial <strong className="text-blue-900">{patient.fechaEvaluacion}</strong>.
-          </div>
-        </div>
-
-        <div className="pt-4 border-t-2 border-slate-900 flex justify-between items-center text-xs">
-          <div>FECHA UNIFICADA: <strong className="font-mono text-blue-900">{patient.fechaEvaluacion}</strong></div>
-          <div className="text-right">
-            <div className="font-bold">{doctorName}</div>
-            <div className="text-[10px] text-slate-500">Médico Evaluador Acreditado FPF</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINA 9: PROTOCOLO CARDÍACO CONMEBOL
-  if (pageNumber === 9) {
-    return (
-      <div className="h-full flex flex-col justify-between border-2 border-slate-900 p-8 font-sans bg-white text-slate-900">
-        <div className="border-b-2 border-slate-900 pb-3 flex items-center justify-between">
-          <div>
-            <div className="text-[10px] font-black uppercase text-blue-900">CONFEDERACIÓN SUDAMERICANA DE FÚTBOL</div>
-            <h2 className="text-lg font-black text-slate-900">COMISIÓN MÉDICA - PROTOCOLO CONMEBOL</h2>
-          </div>
-          <div className="text-right text-xs font-mono font-bold text-slate-600">
-            <div>FECHA: {patient.fechaEvaluacion}</div>
-            <div className="text-[10px] text-blue-700">ID: {patient.dni}</div>
-          </div>
-        </div>
-
-        <div className="my-4 bg-slate-100 p-3 rounded-lg text-xs flex justify-between">
-          <span><strong>JUGADOR:</strong> {patient.nombreCompleto}</span>
-          <span><strong>CLUB:</strong> {patient.club}</span>
-          <span><strong>POSICIÓN:</strong> {patient.posicion}</span>
-        </div>
-
-        <div className="space-y-4 text-xs flex-1">
-          <div className="font-bold uppercase tracking-wider text-slate-800 border-b pb-1">
-            Mediciones Ecocardiográficas Oficiales (Valores en Reposo)
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2 border p-3 rounded-lg bg-slate-50">
-              <div className="flex justify-between border-b pb-1"><span>Aorta Ascendente:</span><strong className="font-mono">25 mm</strong></div>
-              <div className="flex justify-between border-b pb-1"><span>Aurícula Izquierda (eje largo):</span><strong className="font-mono">28 mm</strong></div>
-              <div className="flex justify-between border-b pb-1"><span>Aurícula Izquierda área:</span><strong className="font-mono">31 cm2</strong></div>
-              <div className="flex justify-between border-b pb-1"><span>Aurícula Izq. volumen:</span><strong className="font-mono">34 ml/m2</strong></div>
-              <div className="flex justify-between"><span>Aurícula Derecha área:</span><strong className="font-mono">26 mm</strong></div>
-            </div>
-
-            <div className="space-y-2 border p-3 rounded-lg bg-slate-50">
-              <div className="flex justify-between border-b pb-1"><span>Ventrículo Izq. diámetro diástole:</span><strong className="font-mono">50 mm</strong></div>
-              <div className="flex justify-between border-b pb-1"><span>Septum Interventricular diástole:</span><strong className="font-mono">10 mm</strong></div>
-              <div className="flex justify-between border-b pb-1"><span>Pared Posterior diástole:</span><strong className="font-mono">10 mm</strong></div>
-              <div className="flex justify-between border-b pb-1"><span>Fracción Eyección / Acortamiento:</span><strong className="font-mono text-emerald-700">57% / 38%</strong></div>
-              <div className="flex justify-between"><span>Motilidad Segmentaria:</span><strong className="font-mono text-emerald-700">NORMAL (N)</strong></div>
-            </div>
-          </div>
-
-          <div className="border p-3 rounded-lg text-xs space-y-1">
-            <div className="font-bold">EVALUACIÓN VALVULAR:</div>
-            <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div>Válvula Mitral: <span className="font-bold text-emerald-700">NORMAL (N)</span></div>
-              <div>Válvula Aórtica: <span className="font-bold text-emerald-700">NORMAL (N)</span></div>
-              <div>Válvula Tricúspide: <span className="font-bold text-emerald-700">NORMAL (N)</span></div>
-              <div>Válvula Pulmonar: <span className="font-bold text-emerald-700">NORMAL (N)</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6 pt-4 border-t-2 border-slate-900 text-xs font-bold text-center">
-          <div>
-            <div>{doctorName}</div>
-            <div className="text-[10px] text-slate-500 font-normal">Médico Cardiólogo Evaluador</div>
-          </div>
-          <div>
-            <div>FECHA: {patient.fechaEvaluacion}</div>
-            <div className="text-[10px] text-emerald-700 font-semibold">Comisión Médica CONMEBOL</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINA 13: CERTIFICADO DE APTITUD FAMIHEART (Texto literal visto en video)
-  if (pageNumber === 13) {
-    return (
-      <div className="h-full flex flex-col justify-between border-2 border-slate-900 p-10 font-sans bg-white text-slate-900">
-        <div className="text-center space-y-2 border-b pb-6">
-          <div className="flex justify-center items-center space-x-3">
-            <img src="/assets/famiheart-logo.png" alt="Famiheart" className="h-14 w-auto object-contain" />
-          </div>
-          <h2 className="text-xl font-black text-blue-950">FAMIHEART S.A.C.</h2>
-          <div className="text-xs font-bold text-slate-600">SERVICIOS MÉDICOS GENERALES ESPECIALIZADOS</div>
-          <div className="text-xs font-mono text-slate-500">RUC: 20554742905</div>
-        </div>
-
-        <div className="my-auto space-y-8 px-4">
-          <div className="text-sm font-bold uppercase tracking-wider text-center text-slate-700">
-            CERTIFICACIÓN MÉDICA CARDIOLÓGICA DEPORTIVA
-          </div>
-
-          <p className="text-sm sm:text-base leading-relaxed text-justify indent-8 text-slate-800">
-            El médico que suscribe certifica que el paciente <strong className="text-blue-950 font-black font-mono">{patient.nombreCompleto}</strong> ha sido evaluado con exámenes de <strong>Rx de Tórax, hematología, electrocardiograma y ecocardiografía</strong>, los cuales se encuentran dentro de los límites normales y siendo asintomático cardiovascular, sin antecedentes, se encuentra <strong className="text-emerald-700 uppercase">apto para realizar actividad física sin restricciones</strong>.
-          </p>
-
-          <div className="pt-6 text-sm">
-            <div className="font-bold">Atte.</div>
-            <div className="font-mono text-base font-black text-blue-900 mt-1">
-              FECHA: {patient.fechaEvaluacion}
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-8 border-t-2 border-slate-900 flex justify-between items-end">
-          <div className="text-[10px] text-slate-500">
-            <div>Documento validado para Comisión Médica FPF / CONMEBOL</div>
-            <div>Sincronización digital automática de fecha</div>
-          </div>
-          <div className="text-center border-t border-slate-800 pt-2 w-64">
-            <div className="h-14 flex items-center justify-center">
-              <img 
-                src="/assets/firma-cardiologo.jpeg" 
-                alt="Firma Dr. Darío Hernández" 
-                className="h-12 w-auto object-contain mix-blend-multiply" 
-              />
-            </div>
-            <div className="font-black text-xs">{doctorName}</div>
-            <div className="text-[10px] text-slate-500">Cardiólogo - Famiheart S.A.C.</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINA 14: INFORME ECOCARDIOGRÁFICO FAMIHEART
-  if (pageNumber === 14) {
-    return (
-      <div className="h-full flex flex-col justify-between border-2 border-slate-900 p-8 font-sans bg-white text-slate-900">
-        <div className="border-b-2 border-slate-900 pb-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/assets/famiheart-logo.png" alt="Famiheart" className="h-10 w-auto object-contain" />
-            <div>
-              <h2 className="text-base font-black text-blue-950">FAMIHEART S.A.C.</h2>
-              <div className="text-[10px] text-slate-500">INFORME ECOCARDIOGRÁFICO Y DOPPLER CARDIACO</div>
-            </div>
-          </div>
-          <div className="text-right text-xs font-mono">
-            <div className="font-black text-blue-900">FECHA: {patient.fechaEvaluacion}</div>
-            <div className="text-[10px] text-slate-500">RUC: 20554742905</div>
-          </div>
-        </div>
-
-        <div className="my-3 bg-slate-100 p-3 rounded-lg text-xs grid grid-cols-2 gap-2">
-          <div><strong>Nombre:</strong> {patient.nombreCompleto}</div>
-          <div><strong>Sexo:</strong> MASCULINO</div>
-          <div><strong>Club:</strong> {patient.club}</div>
-          <div><strong>Edad:</strong> {patient.edad || 21} años</div>
-        </div>
-
-        <div className="space-y-3 text-xs flex-1">
-          <div className="font-bold border-b pb-1">1. MEDICIONES ECOCARDIOGRÁFICAS (2D / M-MODE):</div>
-          <div className="grid grid-cols-2 gap-3 text-[11px]">
-            <div className="space-y-1">
-              <div>Ventrículo derecho: <span className="font-bold">24 mm</span> (0.8 - 2.7)</div>
-              <div>Septum interventricular: <span className="font-bold">10 mm</span> (8 - 11)</div>
-              <div>V.I. Diástole: <span className="font-bold">44 mm</span> (35 - 57)</div>
-              <div>V.I. Sístole: <span className="font-bold">24 mm</span></div>
-              <div>Pared Posterior V.I.: <span className="font-bold">10 mm</span> (6 - 11)</div>
-            </div>
-            <div className="space-y-1">
-              <div>Aorta Raíz: <span className="font-bold">26 mm</span> (2.2 - 3.6)</div>
-              <div>Aorta apertura: <span className="font-bold">22 mm</span> (15 - 26)</div>
-              <div>Aurícula Izquierda: <span className="font-bold">32 mm</span> (22 - 40)</div>
-              <div>Fracción de Eyección: <span className="font-bold text-emerald-700">64 %</span> (55 - 80)</div>
-              <div>Fracción Acortamiento: <span className="font-bold text-emerald-700">33 %</span> (30 - 48)</div>
-            </div>
-          </div>
-
-          <div className="font-bold border-b pb-1 pt-2">2. CONCLUSIONES CLÍNICAS:</div>
-          <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-lg space-y-1 text-xs">
-            <div>• Cavidades cardíacas de dimensiones y espesores parietales normales.</div>
-            <div>• Función sistólica y diastólica del Ventrículo Izquierdo conservada.</div>
-            <div>• Estudio Doppler sin gradientes patológicos ni reflujos significativos.</div>
-            <div className="font-bold text-emerald-800 pt-1">DICTAMEN: APTO CARDIOLÓGICO PARA FÚTBOL COMPETITIVO</div>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t-2 border-slate-900 flex justify-between items-center text-xs">
-          <div>FECHA: <strong className="font-mono text-blue-900">{patient.fechaEvaluacion}</strong></div>
-          <div className="text-right">
-            <div className="font-black">{doctorName}</div>
-            <div className="text-[10px] text-slate-500">Médico Cardiólogo Famiheart</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINA 15: PARASITOLÓGICO SERIADO (Famiheart Lab)
-  if (pageNumber === 15) {
-    return (
-      <div className="h-full flex flex-col justify-between border-2 border-slate-900 p-8 font-sans bg-white text-slate-900">
-        <div className="border-b-2 border-slate-900 pb-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/assets/famiheart-logo.png" alt="Famiheart" className="h-10 w-auto object-contain" />
-            <div>
-              <h2 className="text-base font-black text-blue-950">FAMIHEART S.A.C.</h2>
-              <div className="text-[10px] text-slate-500">LABORATORIO CLÍNICO Y MICROBIOLOGÍA</div>
-            </div>
-          </div>
-          <div className="text-right text-xs font-mono">
-            <div className="font-black text-blue-900">FECHA: {patient.fechaEvaluacion}</div>
-            <div className="text-[10px] text-slate-500">RUC: 20554742905</div>
-          </div>
-        </div>
-
-        <div className="my-4 bg-slate-100 p-4 rounded-xl text-xs grid grid-cols-2 gap-3">
-          <div><strong>PACIENTE:</strong> <span className="font-mono font-bold text-blue-950">{patient.nombreCompleto}</span></div>
-          <div><strong>FECHA:</strong> <span className="font-mono font-bold">{patient.fechaEvaluacion}</span></div>
-          <div><strong>MÉDICO:</strong> {doctorName}</div>
-          <div><strong>SEXO:</strong> MASCULINO</div>
-        </div>
-
-        <div className="space-y-6 text-xs flex-1 my-4">
-          <h3 className="text-center font-black text-base uppercase tracking-wider text-slate-800 underline">
-            INFORME DE EXAMEN PARASITOLÓGICO SERIADO
-          </h3>
-
-          <div className="border border-slate-300 rounded-xl overflow-hidden">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-200 font-bold">
-                <tr>
-                  <th className="p-3">PARÁMETRO</th>
-                  <th className="p-3">RESULTADO OBSERVADO</th>
-                  <th className="p-3">VALOR DE REFERENCIA</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                <tr>
-                  <td className="p-3 font-semibold">COLOR</td>
-                  <td className="p-3 font-mono font-bold">AMARILLO</td>
-                  <td className="p-3 text-slate-500">Pardo / Amarillo</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold">CONSISTENCIA</td>
-                  <td className="p-3 font-mono font-bold">SÓLIDO / FORMADO</td>
-                  <td className="p-3 text-slate-500">Formado</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold">PARÁSITOS</td>
-                  <td className="p-3 font-mono font-bold text-emerald-700">No se observa quistes, larvas ni huevos</td>
-                  <td className="p-3 text-slate-500">Negativo</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold">MUCOSIDAD</td>
-                  <td className="p-3 font-mono font-bold">AUSENTE</td>
-                  <td className="p-3 text-slate-500">Ausente</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold">OTROS ELEMENTOS</td>
-                  <td className="p-3 font-mono font-bold text-emerald-700">NEGATIVO</td>
-                  <td className="p-3 text-slate-500">Negativo</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-xl text-center">
-            <div className="font-bold text-emerald-800 text-sm">CONCLUSIÓN: EXAMEN DENTRO DE LÍMITES NORMALES (NEGATIVO)</div>
-            <div className="text-[11px] text-emerald-700 mt-0.5">Apto para registro de competencia deportiva FPF</div>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t-2 border-slate-900 flex justify-between items-center text-xs">
-          <div>FECHA UNIFICADA: <strong className="font-mono text-blue-900">{patient.fechaEvaluacion}</strong></div>
-          <div className="text-right">
-            <div className="font-bold">Lic. Lisbett Susan Hilares Moscoso</div>
-            <div className="text-[10px] text-slate-500">Tecnóloga Médica • C.T.M.P 8355</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINA 16: ELECTROCARDIOGRAMA DE REPOSO (12 DERIVACIONES) - TRAZADO OFICIAL
-  if (pageNumber === 16) {
-    const ekgSrc = patient.ekgImage || patient.fileUrl || '/assets/electrocardiograma.jpeg';
-    return (
-      <div className="h-full flex flex-col justify-between border-2 border-slate-900 p-8 font-sans bg-white text-slate-900">
-        <div className="border-b-2 border-slate-900 pb-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/assets/famiheart-logo.png" alt="Famiheart" className="h-10 w-auto object-contain" />
-            <div>
-              <h2 className="text-base font-black text-blue-950">FAMIHEART S.A.C.</h2>
-              <div className="text-[10px] text-slate-500">ELECTROCARDIOGRAMA DIGITAL DE 12 DERIVACIONES</div>
-            </div>
-          </div>
-          <div className="text-right text-xs font-mono">
-            <div className="font-black text-blue-900">FECHA: {patient.fechaEvaluacion}</div>
-            <div className="text-[10px] text-slate-500">Pág. 16 / 21</div>
-          </div>
-        </div>
-
-        <div className="my-2 bg-slate-100 p-3 rounded-lg text-xs flex justify-between items-center">
-          <div>
-            <strong>PACIENTE:</strong> <span className="font-mono font-bold text-blue-950 text-sm ml-1">{patient.nombreCompleto}</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span><strong>DNI:</strong> {patient.dni || 'Verificado'}</span>
-            <span><strong>FC:</strong> {patient.frecuenciaCardiaca || '65 bpm'}</span>
-            <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded text-[11px]">
-              RITMO SINUSAL NORMAL
-            </span>
-          </div>
-        </div>
-
-        <div className="my-auto flex flex-col items-center justify-center p-3 bg-slate-950 rounded-2xl border border-slate-800">
-          <img 
-            src={ekgSrc} 
-            alt={`Trazado ECG - ${patient.nombreCompleto}`} 
-            className="max-h-[145mm] w-full object-contain rounded-lg bg-white p-1 shadow"
-            onError={(e) => {
-              e.target.src = '/assets/electrocardiograma.jpeg';
-            }}
-          />
-          <div className="text-[10px] text-slate-400 mt-2 font-mono flex items-center justify-between w-full px-2">
-            <span>ARCHIVO: {patient.fileName || `${patient.nombreCompleto}.pdf`}</span>
-            <span>•</span>
-            <span>ESTÁNDAR: 25 mm/s, 10 mm/mV</span>
-            <span>•</span>
-            <span className="text-emerald-400 font-bold">EKG NORMAL / APTO</span>
-          </div>
-        </div>
-
-        <div className="pt-3 border-t-2 border-slate-900 flex justify-between items-center text-xs">
-          <div>
-            <div className="font-bold text-emerald-800">CONCLUSIÓN: Ritmo sinusal normal, sin alteraciones de conducción ni repolarización.</div>
-            <div className="text-[10px] text-slate-500">Apto cardiológico para fútbol competitivo según criterios internacionales de Seattle / Corrado</div>
-          </div>
-          <div className="text-right flex items-center space-x-2">
-            <img 
-              src="/assets/firma-cardiologo.jpeg" 
-              alt="Sello Cardiólogo" 
-              className="h-12 w-auto object-contain mix-blend-multiply" 
-            />
-            <div className="text-left">
-              <div className="font-bold">{doctorName}</div>
-              <div className="text-[10px] text-slate-500">Médico Cardiólogo Evaluador</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINA 20: RADIOGRAFÍA DE TÓRAX CON ENCABEZADO FAMIHEART Y QR
-  if (pageNumber === 20) {
-    return (
-      <div className="h-full flex flex-col justify-between border-2 border-slate-900 p-8 font-sans bg-white text-slate-900">
-        <div className="border-b-2 border-slate-900 pb-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src="/assets/famiheart-logo.png" alt="Famiheart" className="h-10 w-auto object-contain" />
-            <div>
-              <h2 className="text-base font-black text-blue-950">FAMIHEART S.A.C.</h2>
-              <div className="text-[10px] text-slate-500">SERVICIO DE DIAGNÓSTICO POR IMÁGENES - RAYOS X</div>
-            </div>
-          </div>
-          <div className="text-right text-xs font-mono">
-            <div className="font-black text-blue-900">FECHA: {patient.fechaEvaluacion}</div>
-            <div className="text-[10px] text-slate-500">INSTITUCIONAL</div>
-          </div>
-        </div>
-
-        <div className="my-2 bg-slate-100 p-3 rounded-lg text-xs flex justify-between">
-          <span><strong>PACIENTE:</strong> {patient.nombreCompleto}</span>
-          <span><strong>DNI:</strong> {patient.dni}</span>
-          <span><strong>INCIDENCIA:</strong> Póstero-Anterior (PA)</span>
-        </div>
-
-        <div className="my-auto flex flex-col items-center justify-center p-4 bg-slate-950 rounded-2xl border border-slate-800">
-          <img 
-            src="/assets/radiografia-torax.jpeg" 
-            alt="Radiografía de Tórax" 
-            className="max-h-[140mm] object-contain rounded-lg border border-slate-700"
-          />
-          <div className="text-[10px] text-slate-400 mt-2 font-mono flex items-center space-x-3">
-            <span>PACIENTE: {patient.nombreCompleto}</span>
-            <span>•</span>
-            <span>FECHA: {patient.fechaEvaluacion}</span>
-            <span>•</span>
-            <span className="text-emerald-400">NORMAL</span>
-          </div>
-        </div>
-
-        <div className="pt-3 border-t-2 border-slate-900 flex justify-between items-center text-xs">
-          <div>
-            <div className="font-bold text-emerald-800">CONCLUSIÓN: Silueta cardiovascular y campos pulmonares normales.</div>
-            <div className="text-[10px] text-slate-500">Sin lesiones pleuropulmonares activas</div>
-          </div>
-          <div className="text-right flex items-center space-x-2">
-            <img 
-              src="/assets/firma-radiologo.jpeg" 
-              alt="Sello Radiólogo" 
-              className="h-12 w-auto object-contain mix-blend-multiply" 
-            />
-            <div className="text-left">
-              <div className="font-bold">Dr. Alfredo Vega Cisneros</div>
-              <div className="text-[10px] text-slate-500">CMP 1821 - RNE 4480 • Radiólogo</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // PÁGINAS GENERALES RESTANTES (Formato dinámico estructurado con fecha unificada)
-  return (
-    <div className="h-full flex flex-col justify-between border-2 border-slate-900 p-8 font-sans bg-white text-slate-900">
-      <div className="border-b pb-3 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <img src="/assets/fpf-logo.png" alt="FPF" className="h-9 w-auto object-contain" />
-          <div>
-            <div className="text-xs font-black text-blue-900">HISTORIA CLÍNICA PRE-COMPETENCIA FPF 2026</div>
-            <div className="text-[10px] text-slate-500">Famiheart S.A.C. • Comisión Médica Oficial</div>
-          </div>
-        </div>
-        <div className="text-right text-xs font-mono">
-          <div className="font-bold text-blue-900">Pág. {pageNumber} / 21</div>
-          <div className="text-[10px] text-slate-500">{patient.fechaEvaluacion}</div>
-        </div>
-      </div>
-
-      <div className="bg-slate-100 p-3 rounded-lg text-xs flex justify-between my-2">
-        <span><strong>FUTBOLISTA:</strong> {patient.nombreCompleto}</span>
-        <span><strong>CLUB:</strong> {patient.club}</span>
-        <span><strong>FECHA:</strong> {patient.fechaEvaluacion}</span>
-      </div>
-
-      <div className="my-auto text-center py-16 space-y-4">
-        <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-          Expediente Clínico Digital Sincronizado
-        </div>
-        <div className="w-32 h-0.5 bg-blue-600 mx-auto"></div>
-        <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-          Esta sección del expediente médico de <strong className="text-blue-900">{patient.nombreCompleto}</strong> se encuentra vinculada al registro oficial con fecha uniforme <strong className="text-blue-900">{patient.fechaEvaluacion}</strong>.
-        </p>
-        <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
-          <span>Dictamen Clínico: {patient.estadoAptitud || 'APTO'}</span>
-        </div>
-      </div>
-
-      <div className="border-t pt-3 flex items-center justify-between text-[11px] text-slate-500">
-        <span>Famiheart S.A.C. - Sistema Médico Deportivo</span>
-        <span>Fecha Cascada: {patient.fechaEvaluacion}</span>
-      </div>
-    </div>
-  );
-}
-
-// Plantilla limpia en blanco (Carga las 21 páginas oficiales sin datos personales)
+// Plantilla limpia en blanco (Carga las 18 páginas oficiales limpias sin datos personales)
 function CleanTemplatePage({ pageNumber }) {
   const formattedPage = pageNumber.toString().padStart(2, '0');
 
   return (
     <div className="w-full h-full relative select-none">
-      <img 
-        src={`/assets/pages_blank/page_${formattedPage}.png`} 
-        alt={`Plantilla Oficial en Blanco Página ${pageNumber}`}
+      <img
+        src={`/assets/pages_blank/page_${formattedPage}.png`}
+        alt={`Plantilla Oficial Limpia Página ${pageNumber}`}
         className="w-full h-full object-contain pointer-events-none block"
         onError={(e) => {
           e.target.style.display = 'none';

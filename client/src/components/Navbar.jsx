@@ -224,7 +224,7 @@ export default function Navbar({
                                 <Check className="w-4 h-4 text-[#0369A1] shrink-0 ml-1" />
                               ) : (
                                 <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono shrink-0 ml-1">
-                                  21P
+                                  18P
                                 </span>
                               )}
                             </button>
@@ -266,7 +266,7 @@ export default function Navbar({
                           </div>
                           <div>
                             <div className="text-xs font-bold text-amber-900">Plantilla Oficial Limpia</div>
-                            <div className="text-[10px] text-slate-500">21 páginas sin datos personales</div>
+                            <div className="text-[10px] text-slate-500">18 páginas sin datos personales</div>
                           </div>
                         </button>
                       </div>

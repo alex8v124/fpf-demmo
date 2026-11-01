@@ -74,7 +74,7 @@ export default function BatchConfigBar({
       }
 
       setIsApplyingDate(false);
-      showToast('success', `¡Fecha "${localDate}" aplicada a los ${updatedList.length} expedientes! Hojas 1, 2, 16, 20 y 21 actualizadas.`);
+      showToast('success', `¡Fecha "${localDate}" aplicada a los ${updatedList.length} expedientes! Las 18 páginas quedaron actualizadas.`);
     }, 300);
   };
 

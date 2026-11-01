@@ -129,7 +129,7 @@ export default function ClinicalEditor({
             className="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-blue-300 hover:text-white border border-[#CBD5E1] px-3.5 py-2.5 rounded-lg text-xs font-semibold transition cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>Ver 21 Págs</span>
+            <span>Ver 18 Págs</span>
           </button>
 
           <motion.button
@@ -836,7 +836,7 @@ export default function ClinicalEditor({
             onClick={() => onNavigateTab('documento')}
             className="flex items-center space-x-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 text-[#1E293B] font-bold text-xs px-6 py-3 rounded-lg shadow-xl shadow-red-950/40 transition cursor-pointer"
           >
-            <span>Generar Expediente (21 Págs)</span>
+            <span>Generar Expediente (18 Págs)</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         )}

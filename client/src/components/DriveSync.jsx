@@ -171,7 +171,7 @@ export default function DriveSync({
                     className="flex items-center space-x-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow transition cursor-pointer"
                   >
                     <FileCheck2 className="w-3.5 h-3.5" />
-                    <span>Cargar en Visor (21 Págs)</span>
+                    <span>Cargar en Visor (18 Págs)</span>
                   </button>
                 )}
 

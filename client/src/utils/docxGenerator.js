@@ -1,9 +1,57 @@
 import JSZip from 'jszip';
 
+function escapeXml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 /**
- * Genera un archivo Word (.docx) oficial de 21 páginas para un paciente,
- * reemplazando el nombre, fecha y club pero CONSERVANDO AL 100% todos los
- * sellos médicos, firmas (Cardiólogo, Radiólogo, Tecnólogo) y formularios.
+ * Convierte un Data URL o URL de imagen al formato binario exacto (PNG o JPEG)
+ * requerido por el contenedor OpenXML word/media/ para compatibilidad 100% con Microsoft Word.
+ */
+async function convertAttachmentToBytes(srcUrl, mimeType = 'image/png') {
+  if (!srcUrl || typeof document === 'undefined') return null;
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        if (mimeType === 'image/jpeg') {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          async (blob) => {
+            if (!blob) return resolve(null);
+            const buf = await blob.arrayBuffer();
+            resolve(new Uint8Array(buf));
+          },
+          mimeType,
+          0.92
+        );
+      } catch {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = srcUrl;
+  });
+}
+
+/**
+ * Genera un archivo Word (.docx) oficial de 18 páginas para un paciente
+ * sobre la plantilla maestra limpia (derivada de PONCE ECHEVARRIA CARLOS.docx),
+ * inyectando datos del futbolista e imágenes diagnósticas adjuntas y
+ * CONSERVANDO AL 100% todos los sellos médicos, firmas y membretes oficiales.
  */
 export async function generatePatientDocx(patient, options = {}) {
   const {
@@ -33,8 +81,8 @@ export async function generatePatientDocx(patient, options = {}) {
 
   // Determinar orden según configuración en lote (Apellidos Nombres vs Nombres Apellidos)
   const isFirstLast = nameOrder === 'FIRST_LAST';
-  const targetFullName = isFirstLast 
-    ? `${nombres} ${apellidos}`.trim().toUpperCase() 
+  const targetFullName = isFirstLast
+    ? `${nombres} ${apellidos}`.trim().toUpperCase()
     : `${apellidos} ${nombres}`.trim().toUpperCase();
 
   const firstBox = isFirstLast ? (nombres || targetFullName).toUpperCase() : (apellidos || targetFullName).toUpperCase();
@@ -42,15 +90,23 @@ export async function generatePatientDocx(patient, options = {}) {
 
   const targetDate = patient?.fechaEvaluacion || globalDate || '22-01-2026';
   const targetClub = (patient?.club || globalClub || 'Club FPF / Liga Formativa').toUpperCase();
-  const targetDni = patient?.dni || '70000000';
+  const targetPaisClub = (patient?.paisClub || 'PERÚ').toUpperCase();
+  const targetFechaNac = patient?.fechaNacimiento || '';
+  const targetPosicion = (patient?.posicion || '').toUpperCase();
+
+  const rawPeso = String(patient?.peso || '71').trim();
+  const targetPeso = rawPeso ? (/kg/i.test(rawPeso) ? rawPeso : `${rawPeso} Kg`) : '';
+
+  const rawTalla = String(patient?.talla || '1.75').trim();
+  const targetTalla = rawTalla ? (/cm/i.test(rawTalla) ? rawTalla : `${rawTalla} Cm`) : '';
 
   try {
-    // 1. Obtener la plantilla oficial (usar buffer precargado o descargarla)
+    // 1. Obtener la plantilla oficial limpia (usar buffer precargado o descargarla)
     let templateBlob = options.templateBuffer;
     if (!templateBlob) {
       const res = await fetch(templateUrl);
       if (!res.ok) {
-        throw new Error(`No se pudo cargar la plantilla Word desde ${templateUrl}`);
+        throw new Error(`No se pudo cargar la plantilla Word limpia desde ${templateUrl}`);
       }
       templateBlob = await res.arrayBuffer();
     }
@@ -58,7 +114,7 @@ export async function generatePatientDocx(patient, options = {}) {
     // 2. Abrir el archivo .docx (contenedor ZIP)
     const zip = await JSZip.loadAsync(templateBlob);
 
-    // 3. Modificar únicamente word/document.xml (sin tocar word/media/ donde viven los sellos)
+    // 3. Modificar word/document.xml con placeholders determinísticos limpios
     const docXmlFile = zip.file('word/document.xml');
     if (!docXmlFile) {
       throw new Error('El documento no contiene word/document.xml válido');
@@ -66,33 +122,50 @@ export async function generatePatientDocx(patient, options = {}) {
 
     let xmlText = await docXmlFile.async('string');
 
-    // 4. Reemplazos quirúrgicos en el XML
-    // A) Nombre completo en todo el expediente (Certificado de Aptitud, Ecocardiograma, Rayos X, etc.)
-    xmlText = xmlText.replace(/PONCE ECHEVARRIA CARLOS/g, targetFullName);
+    const replacements = {
+      '{{NOMBRE_COMPLETO}}': escapeXml(targetFullName || 'FUTBOLISTA'),
+      '{{APELLIDOS}}': escapeXml(firstBox || ''),
+      '{{NOMBRES}}': escapeXml(secondBox || ''),
+      '{{FECHA_NAC}}': escapeXml(targetFechaNac),
+      '{{POSICION}}': escapeXml(targetPosicion),
+      '{{CLUB}}': escapeXml(targetClub),
+      '{{PAIS_CLUB}}': escapeXml(targetPaisClub),
+      '{{PESO}}': escapeXml(targetPeso),
+      '{{TALLA}}': escapeXml(targetTalla),
+      '{{FECHA}}': escapeXml(targetDate)
+    };
 
-    // B) Ficha PCMA: Casillas separadas de APELLIDOS y NOMBRES
-    xmlText = xmlText.replace(/PONCE ECHEVARRIA\s*/g, firstBox + ' ');
-    xmlText = xmlText.replace(/CARLOS/g, secondBox || '-');
-
-    // C) Ficha PCMA: Nombre del Club Deportivo en Hoja 1 y 2
-    xmlText = xmlText.replace(/ZU[\u00D1\xc3\x91N]IGA/gi, targetClub);
-
-    // D) Fechas en cascada en todas las hojas
-    xmlText = xmlText.replace(/22-01-2026/g, targetDate);
-    xmlText = xmlText.replace(/____-____-2026/g, targetDate);
-    xmlText = xmlText.replace(/06-05-2026/g, targetDate);
-    xmlText = xmlText.replace(/07-10-2026/g, targetDate);
-
-    // E) Estandarización de nombre del médico evaluador al oficial del directorio
-    xmlText = xmlText.replace(/DARIO HERNANDEZ(?! ALARCON)/g, 'DR. DARÍO HERNÁNDEZ ALARCÓN');
-
-    // E) DNI si aplica
-    if (patient?.dni) {
-      xmlText = xmlText.replace(/74290500/g, targetDni);
+    for (const [token, val] of Object.entries(replacements)) {
+      xmlText = xmlText.split(token).join(val);
     }
 
-    // Guardar el XML modificado de vuelta en el zip
+    // Respaldo de seguridad por si se pasa una plantilla externa sin tokens
+    xmlText = xmlText.replace(/PONCE ECHEVARRIA CARLOS/g, escapeXml(targetFullName));
+    xmlText = xmlText.replace(/PONCE ECHEVARRIA\s*/g, escapeXml(firstBox) + ' ');
+    xmlText = xmlText.replace(/ZU[\u00D1\xc3\x91N]IGA/gi, escapeXml(targetClub));
+    xmlText = xmlText.replace(/22-01-2026/g, escapeXml(targetDate));
+
     zip.file('word/document.xml', xmlText);
+
+    // 4. Si el jugador tiene imágenes diagnósticas subidas en los espacios de adjuntos,
+    // reemplazarlas directamente en word/media/ preservando sellos y membretes intactos
+    const attachments = patient?.attachments || {};
+    const mediaMappings = [
+      { slot: 'eco2d', zipPath: 'word/media/image17.png', mime: 'image/png' },
+      { slot: 'ecoMmode', zipPath: 'word/media/image18.png', mime: 'image/png' },
+      { slot: 'ecg', zipPath: 'word/media/image19.png', mime: 'image/png' },
+      { slot: 'rayosX', zipPath: 'word/media/image26.jpeg', mime: 'image/jpeg' }
+    ];
+
+    for (const m of mediaMappings) {
+      const slotUrl = attachments?.[m.slot]?.url;
+      if (slotUrl) {
+        const imgBytes = await convertAttachmentToBytes(slotUrl, m.mime);
+        if (imgBytes) {
+          zip.file(m.zipPath, imgBytes);
+        }
+      }
+    }
 
     // 5. Compilar el archivo .docx final manteniendo todos los sellos binarios intactos
     const outputBlob = await zip.generateAsync({
@@ -104,7 +177,7 @@ export async function generatePatientDocx(patient, options = {}) {
     return {
       success: true,
       blob: outputBlob,
-      fileName: `${targetFullName.replace(/[^A-Z0-9\s]/gi, '').trim()}.docx`
+      fileName: `${(targetFullName || 'EXPEDIENTE').replace(/[^A-Z0-9\u00C0-\u017F\s_-]/gi, '').trim()}.docx`
     };
   } catch (error) {
     console.error('Error al generar el documento Word:', error);
@@ -147,7 +220,7 @@ export async function downloadBatchDocxZip(patientsList, options = {}, onProgres
   const zip = new JSZip();
   const folder = zip.folder('Expedientes_FPF_Word_Oficiales');
 
-  // Pre-cargar la plantilla Word una sola vez para todo el lote
+  // Pre-cargar la plantilla Word limpia una sola vez para todo el lote
   const templateUrl = options.templateUrl || '/PLANTILLA_OFICIAL_CON_SELLOS.docx';
   const res = await fetch(templateUrl);
   if (!res.ok) {
@@ -158,9 +231,9 @@ export async function downloadBatchDocxZip(patientsList, options = {}, onProgres
 
   let completed = 0;
   for (const patient of patientsList) {
-    const res = await generatePatientDocx(patient, batchOptions);
-    if (res.success) {
-      folder.file(res.fileName, res.blob);
+    const docRes = await generatePatientDocx(patient, batchOptions);
+    if (docRes.success) {
+      folder.file(docRes.fileName, docRes.blob);
     }
     completed++;
     if (onProgress) {

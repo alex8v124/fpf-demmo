@@ -97,10 +97,14 @@ export default function App() {
   const handlePrint = async () => {
     // Precarga síncrona de las 21 páginas oficiales para evitar hojas en blanco al imprimir
     const allUrls = [
-      ...Array.from({ length: 21 }, (_, i) => '/assets/pages_blank/page_' + (i + 1).toString().padStart(2, '0') + '.png'),
+      ...Array.from({ length: 18 }, (_, i) => '/assets/pages_blank/page_' + (i + 1).toString().padStart(2, '0') + '.png'),
+      '/assets/pages_blank/page_12_base.png',
       '/assets/echo_sample_2d.png',
       '/assets/echo_sample_mmode.png',
-      '/assets/ecg_sample_strip.png'
+      '/assets/ecg_sample_strip.png',
+      '/assets/rx_sample_clean.jpeg',
+      '/assets/sello-alfredo-vega-transparent.png',
+      ...Object.values(currentPatient?.attachments || {}).map((a) => a?.url).filter(Boolean)
     ];
     const loadPromises = allUrls.map((url) => {
       return new Promise((resolve) => {
