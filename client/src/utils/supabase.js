@@ -1,7 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || 'https://yqajcjzkgcmauazcvwtd.supabase.co';
-const supabaseKey = (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY)) || 'sb_publishable__TonarQ5mpLl1jjc_tE3tg_uE8pA-Qh';
+const supabaseUrl =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
+  'https://yqajcjzkgcmauazcvwtd.supabase.co';
+const supabaseKey =
+  (typeof import.meta !== 'undefined' &&
+    (import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY)) ||
+  'sb_publishable__TonarQ5mpLl1jjc_tE3tg_uE8pA-Qh';
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -10,8 +15,9 @@ export const SUPABASE_SCHEMA_SQL = `-- SCHEMA PARA FAMIHEART / CERTIFICACIONES M
 -- Ejecuta este script en el SQL Editor de tu Dashboard de Supabase:
 -- https://supabase.com/dashboard/project/yqajcjzkgcmauazcvwtd/sql
 
-CREATE TABLE IF NOT EXISTS public.pacientes (
+CREATE TABLE IF NOT EXISTS public.expedientes_medicos (
     id TEXT PRIMARY KEY,
+    codigo_expediente TEXT,
     nombres TEXT NOT NULL,
     apellidos TEXT NOT NULL,
     nombre_completo TEXT NOT NULL,
@@ -32,14 +38,14 @@ CREATE TABLE IF NOT EXISTS public.pacientes (
     medico_evaluador TEXT,
     medico_cmp TEXT,
     medico_rne TEXT,
-    
+
     -- Somatometría
     peso TEXT,
     talla TEXT,
     imc TEXT,
     pulso TEXT,
     presion_arterial TEXT,
-    
+
     -- Objetos JSON estructurados
     examen_clinico JSONB DEFAULT '{}'::jsonb,
     cardio_personal JSONB DEFAULT '{}'::jsonb,
@@ -49,23 +55,28 @@ CREATE TABLE IF NOT EXISTS public.pacientes (
     suplementos JSONB DEFAULT '[]'::jsonb,
     operaciones JSONB DEFAULT '[]'::jsonb,
     lesiones_graves JSONB DEFAULT '[]'::jsonb,
+    salud_femenina JSONB DEFAULT '{}'::jsonb,
     ekg JSONB DEFAULT '{}'::jsonb,
     ecocardiograma JSONB DEFAULT '{}'::jsonb,
     laboratorio JSONB DEFAULT '{}'::jsonb,
     radiografia JSONB DEFAULT '{}'::jsonb,
-    
+
+    -- Archivo PDF Oficial en Supabase Storage
+    pdf_url TEXT,
+    pdf_size_bytes BIGINT,
+    pdf_updated_at TIMESTAMP WITH TIME ZONE,
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Habilitar Row Level Security (RLS) con políticas públicas de lectura/escritura para la app
-ALTER TABLE public.pacientes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.expedientes_medicos ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Permitir lectura publica de expedientes" 
-ON public.pacientes FOR SELECT USING (true);
+CREATE POLICY "Permitir lectura publica de expedientes"
+ON public.expedientes_medicos FOR SELECT USING (true);
 
-CREATE POLICY "Permitir insercion y actualizacion de expedientes" 
-ON public.pacientes FOR ALL USING (true);
+CREATE POLICY "Permitir insercion y actualizacion de expedientes"
+ON public.expedientes_medicos FOR ALL USING (true);
 `;
 
 /**
@@ -74,7 +85,6 @@ ON public.pacientes FOR ALL USING (true);
 export async function testSupabaseConnection() {
   try {
     const start = performance.now();
-    // Test basic connectivity via rest call
     const res = await fetch(`${supabaseUrl}/rest/v1/`, {
       headers: {
         apikey: supabaseKey,
@@ -112,38 +122,64 @@ export async function testSupabaseConnection() {
 }
 
 /**
- * Saves a patient evaluation to Supabase
+ * Genera un ID limpio determinístico cuando se crea un nuevo jugador desde Formato en Blanco
+ */
+export function buildPatientId(patient) {
+  if (patient?.id && patient.id !== 'plantilla-en-blanco') {
+    return patient.id;
+  }
+  const base = `${patient?.apellidos || ''} ${patient?.nombres || ''} ${patient?.dni || ''}`
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return base || `expediente-${Date.now()}`;
+}
+
+/**
+ * Saves a patient evaluation (including all 5 steps of ClinicalEditor) to Supabase
  */
 export async function savePatientToSupabase(patient) {
   try {
+    const resolvedId = buildPatientId(patient);
+    const fullName =
+      patient.nombreCompleto ||
+      `${patient.apellidos || ''} ${patient.nombres || ''}`.trim() ||
+      'FUTBOLISTA';
+
     const payload = {
-      id: patient.id,
-      nombres: patient.nombres || '',
-      apellidos: patient.apellidos || '',
-      nombre_completo: patient.nombreCompleto || `${patient.apellidos} ${patient.nombres}`.trim(),
-      dni: patient.dni || '',
-      fecha_nacimiento: patient.fechaNacimiento || '',
+      id: resolvedId,
+      codigo_expediente: resolvedId,
+      nombres: patient.nombres ?? '',
+      apellidos: patient.apellidos ?? '',
+      nombre_completo: fullName,
+      dni: patient.dni ?? '',
+      fecha_nacimiento: patient.fechaNacimiento ?? '',
       edad: Number(patient.edad) || 20,
       sexo: patient.sexo || 'M',
       nacionalidad: patient.nacionalidad || 'PERUANA',
-      club: patient.club || '',
-      pais_club: patient.paisClub || 'PERU',
-      categoria: patient.categoria || '',
-      posicion: patient.posicion || '',
-      fecha_evaluacion: patient.fechaEvaluacion || '',
-      numero_recibo: patient.numeroRecibo || '',
-      domicilio_clinica: patient.domicilioClinica || '',
+      club: patient.club ?? '',
+      pais_club: patient.paisClub ?? 'PERÚ',
+      categoria: patient.categoria ?? '',
+      posicion: patient.posicion ?? '',
+      fecha_evaluacion: patient.fechaEvaluacion ?? '',
+      numero_recibo: patient.numeroRecibo ?? '',
+      domicilio_clinica: patient.domicilioClinica ?? '',
       estado_aptitud: patient.estadoAptitud || 'APTO',
-      aptitud_detalle: patient.aptitudDetalle || '',
-      medico_evaluador: patient.medicoEvaluador || '',
-      medico_cmp: patient.medicoCmp || '',
-      medico_rne: patient.medicoRne || '',
-      peso: String(patient.peso || ''),
-      talla: String(patient.talla || ''),
-      imc: String(patient.imc || ''),
-      pulso: String(patient.pulso || ''),
-      presion_arterial: String(patient.presionArterial || ''),
-      examen_clinico: patient.examenClinicoGeneral || {},
+      aptitud_detalle: patient.aptitudDetalle ?? '',
+      medico_evaluador: patient.medicoEvaluador ?? '',
+      medico_cmp: patient.medicoCmp ?? '',
+      medico_rne: patient.medicoRne ?? '',
+      peso: patient.peso != null ? String(patient.peso) : null,
+      talla: patient.talla != null ? String(patient.talla) : null,
+      imc: patient.imc != null ? String(patient.imc) : null,
+      pulso: patient.pulso != null ? String(patient.pulso) : null,
+      presion_arterial: patient.presionArterial != null ? String(patient.presionArterial) : null,
+      examen_clinico: {
+        ...(patient.examenClinicoGeneral || {}),
+        musculoEsqueletico: patient.examenMusculoEsqueletico || {}
+      },
       cardio_personal: patient.cardioPersonal || {},
       cardio_familiar: patient.cardioFamiliar || {},
       cardio_general: patient.cardioGeneral || {},
@@ -151,7 +187,10 @@ export async function savePatientToSupabase(patient) {
       suplementos: patient.suplementos || [],
       operaciones: patient.operaciones || [],
       lesiones_graves: patient.lesionesGraves || [],
-      ekg: patient.ekg || {},
+      ekg: {
+        ...(patient.ekg || {}),
+        fileName: patient.fileName || patient.ekg?.fileName || `${fullName}.pdf`
+      },
       ecocardiograma: patient.ecocardiograma || {},
       laboratorio: patient.laboratorio || {},
       radiografia: patient.radiografia || {},
@@ -161,22 +200,22 @@ export async function savePatientToSupabase(patient) {
       updated_at: new Date().toISOString()
     };
 
-    // Guarda en la tabla expedientes_medicos
     const { data, error } = await supabase
       .from('expedientes_medicos')
-      .upsert(payload, { onConflict: 'id' });
+      .upsert(payload, { onConflict: 'id' })
+      .select();
 
     if (error) {
-      // Fallback a pacientes
       const { data: d2, error: e2 } = await supabase
         .from('pacientes')
-        .upsert(payload, { onConflict: 'id' });
+        .upsert(payload, { onConflict: 'id' })
+        .select();
       if (e2) {
         return { success: false, error: e2.message };
       }
-      return { success: true, data: d2 };
+      return { success: true, id: resolvedId, data: d2 };
     }
-    return { success: true, data };
+    return { success: true, id: resolvedId, data };
   } catch (err) {
     console.error('Error saving patient to Supabase:', err);
     return { success: false, error: err.message };
@@ -188,7 +227,6 @@ export async function savePatientToSupabase(patient) {
  */
 export async function loadPatientsFromSupabase() {
   try {
-    // 1. Consulta la tabla expedientes_medicos
     const { data: expData, error: expError } = await supabase
       .from('expedientes_medicos')
       .select('*')
@@ -198,7 +236,6 @@ export async function loadPatientsFromSupabase() {
       return { success: true, data: expData };
     }
 
-    // 2. Fallback a la vista vw_expediente_completo_fpf
     const { data: viewData, error: viewError } = await supabase
       .from('vw_expediente_completo_fpf')
       .select('*');
@@ -207,7 +244,6 @@ export async function loadPatientsFromSupabase() {
       return { success: true, data: viewData };
     }
 
-    // 3. Fallback a tabla pacientes
     const { data, error } = await supabase
       .from('pacientes')
       .select('*');
@@ -222,9 +258,18 @@ export async function loadPatientsFromSupabase() {
 }
 
 /**
- * Maps a row from Supabase to frontend patient model
+ * Maps a row from Supabase to the complete frontend patient model (preserving all ClinicalEditor fields)
  */
 export function mapDbToPatient(row) {
+  const rawExamen = row.examen_clinico || {};
+  const { musculoEsqueletico, ...examenClinicoGeneral } = rawExamen;
+
+  // Ignorar el texto genérico antiguo de lotes previos para usar la fórmula oficial FPF salvo edición explícita
+  const normalizedAptitudDetalle =
+    row.aptitud_detalle && row.aptitud_detalle !== 'APTO PARA COMPETENCIA DEPORTIVA FPF'
+      ? row.aptitud_detalle
+      : undefined;
+
   return {
     id: row.id,
     fileName: row.ekg?.fileName || (row.nombre_completo ? `${row.nombre_completo}.pdf` : `${row.id}.pdf`),
@@ -232,13 +277,50 @@ export function mapDbToPatient(row) {
     nombres: row.nombres || '',
     nombreCompleto: row.nombre_completo || `${row.apellidos || ''} ${row.nombres || ''}`.trim(),
     dni: row.dni || '70000000',
+    fechaNacimiento: row.fecha_nacimiento || undefined,
+    edad: row.edad || undefined,
+    sexo: row.sexo || 'M',
+    nacionalidad: row.nacionalidad || 'PERUANA',
     club: row.club || 'Club FPF / Liga Formativa',
+    paisClub: row.pais_club || 'PERÚ',
     categoria: row.categoria || 'Categoría Competitiva 2026',
     posicion: row.posicion || 'Futbolista',
     fechaEvaluacion: row.fecha_evaluacion || '22-01-2026',
-    frecuenciaCardiaca: row.pulso || '65 bpm',
+    numeroRecibo: row.numero_recibo || undefined,
+    domicilioClinica: row.domicilio_clinica || undefined,
     estadoAptitud: row.estado_aptitud || 'APTO',
-    resultadoEkg: row.ekg?.resultado || 'APTO (EKG NORMAL)',
+    aptitudDetalle: normalizedAptitudDetalle,
+    medicoEvaluador: row.medico_evaluador || undefined,
+    medicoCmp: row.medico_cmp || undefined,
+    medicoRne: row.medico_rne || undefined,
+    peso: row.peso || undefined,
+    talla: row.talla || undefined,
+    imc: row.imc || undefined,
+    pulso: row.pulso || undefined,
+    presionArterial: row.presion_arterial || undefined,
+    frecuenciaCardiaca: row.ekg?.frecuenciaCardiaca || row.pulso || '60 bpm',
+    examenClinicoGeneral: Object.keys(examenClinicoGeneral).length > 0 ? examenClinicoGeneral : undefined,
+    examenMusculoEsqueletico:
+      musculoEsqueletico && Object.keys(musculoEsqueletico).length > 0 ? musculoEsqueletico : undefined,
+    cardioPersonal:
+      row.cardio_personal && Object.keys(row.cardio_personal).length > 0 ? row.cardio_personal : undefined,
+    cardioFamiliar:
+      row.cardio_familiar && Object.keys(row.cardio_familiar).length > 0 ? row.cardio_familiar : undefined,
+    cardioGeneral:
+      row.cardio_general && Object.keys(row.cardio_general).length > 0 ? row.cardio_general : undefined,
+    farmacos: Array.isArray(row.farmacos) && row.farmacos.length > 0 ? row.farmacos : undefined,
+    suplementos: Array.isArray(row.suplementos) && row.suplementos.length > 0 ? row.suplementos : undefined,
+    operaciones: Array.isArray(row.operaciones) && row.operaciones.length > 0 ? row.operaciones : undefined,
+    lesionesGraves:
+      Array.isArray(row.lesiones_graves) && row.lesiones_graves.length > 0 ? row.lesiones_graves : undefined,
+    ekg: row.ekg && Object.keys(row.ekg).length > 0 ? row.ekg : undefined,
+    ecocardiograma:
+      row.ecocardiograma && Object.keys(row.ecocardiograma).length > 0 ? row.ecocardiograma : undefined,
+    laboratorio:
+      row.laboratorio && Object.keys(row.laboratorio).length > 0 ? row.laboratorio : undefined,
+    radiografia:
+      row.radiografia && Object.keys(row.radiografia).length > 0 ? row.radiografia : undefined,
+    resultadoEkg: row.ekg?.resultadoGeneral || row.ekg?.resultado || 'APTO (EKG NORMAL)',
     ekgImage: row.ekg?.imagen || `/assets/ekg/${row.nombre_completo}.jpg`,
     pdfUrl: row.pdf_url || null,
     pdfSizeBytes: row.pdf_size_bytes || null,
@@ -254,40 +336,45 @@ export function mapDbToPatient(row) {
 export async function saveBatchPatientsToSupabase(patients = []) {
   if (!patients || patients.length === 0) return { success: true, count: 0 };
   try {
-    const payload = patients.map(p => ({
-      id: p.id,
-      codigo_expediente: p.id,
-      dni: p.dni || '70000000',
-      nombres: p.nombres || '',
-      apellidos: p.apellidos || '',
-      nombre_completo: p.nombreCompleto || `${p.apellidos || ''} ${p.nombres || ''}`.trim(),
-      club: p.club || 'Club FPF / Liga Formativa',
-      categoria: p.categoria || 'Competitiva 2026',
-      posicion: p.posicion || 'Futbolista',
-      fecha_evaluacion: p.fechaEvaluacion || '22-01-2026',
-      estado_aptitud: p.estadoAptitud || 'APTO',
-      aptitud_detalle: 'APTO PARA COMPETENCIA DEPORTIVA FPF',
-      medico_evaluador: p.medicoEvaluador || 'DR. DARIO HERNANDEZ ALARCON',
-      medico_cmp: p.medicoCmp || '27503',
-      medico_rne: p.medicoRne || '15620',
-      ekg: {
-        imagen: p.ekgImage || p.fileUrl || '',
-        resultado: p.resultadoEkg || 'APTO (EKG NORMAL)',
-        fileName: p.fileName || ''
-      },
-      pdf_url: p.pdfUrl || null,
-      pdf_size_bytes: p.pdfSizeBytes || null,
-      pdf_updated_at: p.pdfUpdatedAt || null,
-      updated_at: new Date().toISOString()
-    }));
+    const payload = patients.map((p) => {
+      const pid = buildPatientId(p);
+      return {
+        id: pid,
+        codigo_expediente: pid,
+        dni: p.dni || '70000000',
+        nombres: p.nombres || '',
+        apellidos: p.apellidos || '',
+        nombre_completo: p.nombreCompleto || `${p.apellidos || ''} ${p.nombres || ''}`.trim(),
+        club: p.club || 'Club FPF / Liga Formativa',
+        categoria: p.categoria || 'Competitiva 2026',
+        posicion: p.posicion || 'Futbolista',
+        fecha_evaluacion: p.fechaEvaluacion || '22-01-2026',
+        estado_aptitud: p.estadoAptitud || 'APTO',
+        aptitud_detalle:
+          p.aptitudDetalle || 'SE ENCUENTRA APTO PARA REALIZAR ACTIVIDAD DEPORTIVA ( FUTBOL )',
+        medico_evaluador: p.medicoEvaluador || 'DR. DARIO HERNANDEZ ALARCON',
+        medico_cmp: p.medicoCmp || '27503',
+        medico_rne: p.medicoRne || '15620',
+        ekg: {
+          ...(p.ekg || {}),
+          imagen: p.ekgImage || p.fileUrl || p.ekg?.imagen || '',
+          resultado: p.resultadoEkg || 'APTO (EKG NORMAL)',
+          fileName: p.fileName || ''
+        },
+        pdf_url: p.pdfUrl || null,
+        pdf_size_bytes: p.pdfSizeBytes || null,
+        pdf_updated_at: p.pdfUpdatedAt || null,
+        updated_at: new Date().toISOString()
+      };
+    });
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('expedientes_medicos')
       .upsert(payload, { onConflict: 'id' });
 
     if (error) {
       console.warn('Upsert error on expedientes_medicos, trying pacientes:', error);
-      const { data: d2, error: e2 } = await supabase
+      const { error: e2 } = await supabase
         .from('pacientes')
         .upsert(payload, { onConflict: 'id' });
       if (e2) return { success: false, error: e2.message };
@@ -300,15 +387,14 @@ export async function saveBatchPatientsToSupabase(patients = []) {
   }
 }
 
-
-
 /**
  * Sube el archivo PDF oficial resultante a Supabase Storage y actualiza la BD
  */
 export async function uploadPatientPdf(patient, file) {
   if (!file || !patient) return { success: false, error: 'Archivo o paciente no especificado' };
   try {
-    const rawName = patient.nombreCompleto || `${patient.apellidos || ''} ${patient.nombres || ''}`.trim() || patient.id;
+    const rawName =
+      patient.nombreCompleto || `${patient.apellidos || ''} ${patient.nombres || ''}`.trim() || patient.id;
     const cleanName = rawName
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -317,7 +403,7 @@ export async function uploadPatientPdf(patient, file) {
     const dni = (patient.dni || 'sin_dni').toString().trim();
     const storagePath = `${dni}/${cleanName}_FPF_2026.pdf`;
 
-    const { data: uploadData, error: upError } = await supabase.storage
+    const { error: upError } = await supabase.storage
       .from('expedientes-pdf')
       .upload(storagePath, file, {
         contentType: 'application/pdf',
@@ -329,9 +415,9 @@ export async function uploadPatientPdf(patient, file) {
       return { success: false, error: upError.message };
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('expedientes-pdf')
-      .getPublicUrl(storagePath);
+    const {
+      data: { publicUrl }
+    } = supabase.storage.from('expedientes-pdf').getPublicUrl(storagePath);
 
     const now = new Date().toISOString();
     const updatePayload = {
@@ -340,7 +426,6 @@ export async function uploadPatientPdf(patient, file) {
       pdf_updated_at: now
     };
 
-    // Actualiza en la tabla de expedientes
     await supabase
       .from('expedientes_medicos')
       .update(updatePayload)

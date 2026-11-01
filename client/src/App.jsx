@@ -21,6 +21,12 @@ export default function App() {
     drivePatients && drivePatients.length > 0 ? drivePatients[0] : blankPatientTemplate
   );
   const [isBlankMode, setIsBlankMode] = useState(false);
+  const [editorInitialStep, setEditorInitialStep] = useState(1);
+
+  const handleOpenEditor = (step = 1) => {
+    setEditorInitialStep(step);
+    setCurrentTab('editor');
+  };
 
   // Rol activo del usuario: 'MEDICO' | 'CLUB' | 'FPF'
   const [userRole, setUserRole] = useState('MEDICO');
@@ -84,9 +90,11 @@ export default function App() {
     }
   };
 
-  // Actualiza un jugador (lista + jugador activo) con cambios parciales, ej. adjuntos
+  // Actualiza un jugador (lista + jugador activo) con cambios parciales, ej. adjuntos o PDF en nube
   const handleUpdatePatient = (target, changes) => {
-    const same = (p) => p.id === target.id && p.fileName === target.fileName;
+    const same = (p) =>
+      (target?.id && p?.id === target.id) ||
+      (target?.fileName && p?.fileName === target.fileName);
     setPatientsList((prev) => (prev || []).map((p) => (same(p) ? { ...p, ...changes } : p)));
     setCurrentPatient((prev) => (prev && same(prev) ? { ...prev, ...changes } : prev));
   };
@@ -95,7 +103,7 @@ export default function App() {
   const handleSetCurrentPatientAndSync = (updater) => {
     setCurrentPatient((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
-      if (next && next.id) {
+      if (next && next.id && next.id !== 'plantilla-en-blanco') {
         setPatientsList((list) =>
           (list || []).map((p) => (p.id === next.id ? { ...p, ...next } : p))
         );
@@ -103,6 +111,21 @@ export default function App() {
       return next;
     });
     setIsBlankMode(false);
+  };
+
+  // Promueve un nuevo expediente creado desde Formato en Blanco a la bandeja principal al guardar
+  const handlePromoteSavedPatient = (savedPatient) => {
+    if (!savedPatient || !savedPatient.id) return;
+    setCurrentPatient(savedPatient);
+    setIsBlankMode(false);
+    setPatientsList((prev) => {
+      const list = prev || [];
+      const exists = list.some((p) => p.id === savedPatient.id);
+      if (exists) {
+        return list.map((p) => (p.id === savedPatient.id ? { ...p, ...savedPatient } : p));
+      }
+      return [savedPatient, ...list];
+    });
   };
 
   const handleResetBlank = () => {
@@ -200,6 +223,7 @@ export default function App() {
                     onSelectPatient={handleSelectPatient}
                     onSelectPatientId={handleSelectPatientId}
                     onNavigateTab={setCurrentTab}
+                    onOpenEditor={handleOpenEditor}
                     onResetBlank={handleResetBlank}
                     onPrint={handlePrint}
                     globalDate={globalDate}
@@ -236,11 +260,15 @@ export default function App() {
 
                 {currentTab === 'editor' && (
                   <ClinicalEditor
+                    key={editorInitialStep}
                     patient={currentPatient}
                     setPatient={handleSetCurrentPatientAndSync}
                     onUpdatePatient={handleUpdatePatient}
+                    onPromoteSavedPatient={handlePromoteSavedPatient}
                     onNavigateTab={setCurrentTab}
                     onResetBlank={handleResetBlank}
+                    onPrint={handlePrint}
+                    initialStep={editorInitialStep}
                   />
                 )}
 
@@ -250,6 +278,7 @@ export default function App() {
                     isBlankMode={isBlankMode}
                     setIsBlankMode={setIsBlankMode}
                     onUpdatePatient={handleUpdatePatient}
+                    onNavigateTab={(tab) => (tab === 'editor' ? handleOpenEditor(1) : setCurrentTab(tab))}
                     onPrint={handlePrint}
                   />
                 )}
@@ -271,7 +300,7 @@ export default function App() {
               <div className="flex items-center gap-2 text-[11px] text-[#475569]">
                 <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span>
-                  Conexión Segura TLS 256-bit • Cumplimiento Ley N° 29733 (Datos de Salud) • v1.2.7
+                  Conexión Segura TLS 256-bit • Cumplimiento Ley N° 29733 (Datos de Salud) • v1.2.8
                 </span>
               </div>
             </div>

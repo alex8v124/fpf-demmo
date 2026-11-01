@@ -13,7 +13,8 @@ import {
   Bookmark,
   UploadCloud,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  FileText
 } from 'lucide-react';
 import { pagesCatalog } from '../data/initialData';
 import { downloadPatientDocx } from '../utils/docxGenerator';
@@ -51,6 +52,7 @@ export default function DocumentViewer({
   isBlankMode,
   setIsBlankMode,
   onUpdatePatient,
+  onNavigateTab,
   onPrint
 }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -285,6 +287,18 @@ export default function DocumentViewer({
 
         {/* Acciones de Descarga e Impresión */}
         <div className="flex items-center space-x-1.5 sm:space-x-2">
+          {onNavigateTab && (
+            <button
+              type="button"
+              onClick={() => onNavigateTab('editor')}
+              className="flex items-center space-x-1 bg-white hover:bg-slate-50 text-[#0369A1] font-semibold text-xs px-2.5 py-1.5 rounded-md transition border border-[#CBD5E1] cursor-pointer"
+              title="Editar datos clínicos del jugador en el Editor Pre-Competencia FPF"
+            >
+              <FileText className="w-3.5 h-3.5 text-[#0369A1]" />
+              <span>Editar Ficha</span>
+            </button>
+          )}
+
           {patient?.pdfUrl && (
             <a
               href={patient.pdfUrl}
@@ -695,12 +709,23 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 3: HISTORIA CLÍNICA PRE-PARTICIPATIVA I (14 CHECKS EN COLUMNA "NO")
+  // PÁGINA 3: HISTORIA CLÍNICA PRE-PARTICIPATIVA I (14 CRITERIOS REACTIVOS SI / NO)
   if (pageNumber === 3) {
-    const p3Tops = [
-      '32.55%', '35.30%', '38.15%', '41.10%', '44.12%', '46.97%',
-      '59.36%', '62.02%', '65.06%',
-      '76.99%', '80.03%', '82.97%', '86.00%', '88.85%'
+    const p3Rows = [
+      { top: '32.55%', yes: Boolean(patient?.cardioPersonal?.dolorToracico) },
+      { top: '35.30%', yes: Boolean(patient?.cardioPersonal?.lipotimiaSincope) },
+      { top: '38.15%', yes: Boolean(patient?.cardioPersonal?.disneaFatiga) },
+      { top: '41.10%', yes: Boolean(patient?.cardioPersonal?.soploCardiaco) },
+      { top: '44.12%', yes: Boolean(patient?.cardioPersonal?.hipertensionArterial) },
+      { top: '46.97%', yes: Boolean(patient?.cardioPersonal?.restriccionPrevia) },
+      { top: '59.36%', yes: Boolean(patient?.cardioFamiliar?.muerteSubita50) },
+      { top: '62.02%', yes: Boolean(patient?.cardioFamiliar?.enfermedadCoronaria50) },
+      { top: '65.06%', yes: Boolean(patient?.cardioFamiliar?.cardiopatiaRiesgo) },
+      { top: '76.99%', yes: Boolean(patient?.cardioGeneral?.cirugiasNoTrauma) },
+      { top: '80.03%', yes: Boolean(patient?.cardioGeneral?.hospitalizacionesNoQuirurgicas) },
+      { top: '82.97%', yes: Boolean(patient?.cardioGeneral?.tec) },
+      { top: '86.00%', yes: Boolean(patient?.cardioGeneral?.asmaBronquial) },
+      { top: '88.85%', yes: Boolean(patient?.cardioGeneral?.otraPatologia) }
     ];
     return (
       <div className="w-full h-full relative select-none">
@@ -709,8 +734,12 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           alt="Historia Pre-Participativa I Página 3"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p3Tops.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text" style={{ top, left: '93.55%' }}>
+        {p3Rows.map((row, idx) => (
+          <div
+            key={idx}
+            className="absolute fpf-doc-text"
+            style={{ top: row.top, left: row.yes ? '81.85%' : '93.55%' }}
+          >
             X
           </div>
         ))}
@@ -718,8 +747,10 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 4: HISTORIA CLÍNICA PRE-PARTICIPATIVA II (FÁRMACOS Y SUPLEMENTOS)
+  // PÁGINA 4: HISTORIA CLÍNICA PRE-PARTICIPATIVA II (FÁRMACOS Y SUPLEMENTOS REACTIVOS)
   if (pageNumber === 4) {
+    const farmacoTxt = (patient?.farmacos?.[0]?.nombre || '').trim() || 'NINGUNO';
+    const suplementoTxt = (patient?.suplementos?.[0]?.nombre || '').trim() || 'NINGUNO';
     return (
       <div className="w-full h-full relative select-none">
         <img
@@ -727,21 +758,47 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           alt="Fármacos y Suplementos Página 4"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        <div className="absolute fpf-doc-text uppercase" style={{ top: '31.02%', left: '12.84%' }}>
-          NINGUNO
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[75%]"
+          style={{ top: '31.02%', left: '12.84%' }}
+        >
+          {farmacoTxt}
         </div>
-        <div className="absolute fpf-doc-text uppercase" style={{ top: '71.10%', left: '12.84%' }}>
-          NINGUNO
+        <div
+          className="absolute fpf-doc-text uppercase truncate max-w-[75%]"
+          style={{ top: '71.10%', left: '12.84%' }}
+        >
+          {suplementoTxt}
         </div>
       </div>
     );
   }
 
-  // PÁGINA 5: SISTEMA MÚSCULO-ESQUELÉTICO I (20 "NIEGA")
+  // PÁGINA 5: SISTEMA MÚSCULO-ESQUELÉTICO I (13 OPERACIONES + 7 LESIONES GRAVES REACTIVAS)
   if (pageNumber === 5) {
-    const p5Tops = [
-      '29.15%', '32.09%', '35.11%', '37.96%', '40.91%', '43.85%', '46.40%', '49.36%', '52.32%', '55.07%', '57.80%', '60.68%', '63.45%',
-      '78.23%', '81.27%', '83.85%', '86.78%', '89.55%', '92.23%', '95.31%'
+    const opZonas = [
+      { zona: 'Hombro', top: '29.15%' },
+      { zona: 'Codo', top: '32.09%' },
+      { zona: 'Mano', top: '35.11%' },
+      { zona: 'Columna', top: '37.96%' },
+      { zona: 'Cadera', top: '40.91%' },
+      { zona: 'Pubis', top: '43.85%' },
+      { zona: 'Rodilla - Ligamento', top: '46.40%' },
+      { zona: 'Rodilla - Meniscos', top: '49.36%' },
+      { zona: 'Muslo', top: '52.32%' },
+      { zona: 'Tobillo', top: '55.07%' },
+      { zona: 'Pie', top: '57.80%' },
+      { zona: 'Tendón Aquiles', top: '60.68%' },
+      { zona: 'Otra', top: '63.45%' }
+    ];
+    const lesZonas = [
+      { zona: 'Hombro', top: '78.23%' },
+      { zona: 'Codo', top: '81.27%' },
+      { zona: 'Mano', top: '83.85%' },
+      { zona: 'Columna', top: '86.78%' },
+      { zona: 'Cadera', top: '89.55%' },
+      { zona: 'Pubis', top: '92.23%' },
+      { zona: 'Rodilla - Ligamento', top: '95.31%' }
     ];
     return (
       <div className="w-full h-full relative select-none">
@@ -750,11 +807,57 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           alt="Sistema Músculo-Esquelético I Página 5"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        {p5Tops.map((top, idx) => (
-          <div key={idx} className="absolute fpf-doc-text uppercase" style={{ top, left: '83.50%' }}>
-            NIEGA
-          </div>
-        ))}
+        {opZonas.map((row, idx) => {
+          const op =
+            patient?.operaciones?.find((o) => o.zona === row.zona) || patient?.operaciones?.[idx];
+          const fechaVal = (op?.fecha || '').trim() || 'NIEGA';
+          return (
+            <React.Fragment key={`op-${idx}`}>
+              {op?.der && (
+                <div className="absolute fpf-doc-text" style={{ top: row.top, left: '57.80%' }}>
+                  X
+                </div>
+              )}
+              {op?.izq && (
+                <div className="absolute fpf-doc-text" style={{ top: row.top, left: '73.90%' }}>
+                  X
+                </div>
+              )}
+              <div
+                className="absolute fpf-doc-text uppercase truncate max-w-[14%]"
+                style={{ top: row.top, left: '83.50%' }}
+              >
+                {fechaVal}
+              </div>
+            </React.Fragment>
+          );
+        })}
+        {lesZonas.map((row, idx) => {
+          const les =
+            patient?.lesionesGraves?.find((l) => l.zona === row.zona) ||
+            patient?.lesionesGraves?.[idx];
+          const fechaVal = (les?.fecha || '').trim() || 'NIEGA';
+          return (
+            <React.Fragment key={`les-${idx}`}>
+              {les?.der && (
+                <div className="absolute fpf-doc-text" style={{ top: row.top, left: '57.80%' }}>
+                  X
+                </div>
+              )}
+              {les?.izq && (
+                <div className="absolute fpf-doc-text" style={{ top: row.top, left: '73.90%' }}>
+                  X
+                </div>
+              )}
+              <div
+                className="absolute fpf-doc-text uppercase truncate max-w-[14%]"
+                style={{ top: row.top, left: '83.50%' }}
+              >
+                {fechaVal}
+              </div>
+            </React.Fragment>
+          );
+        })}
       </div>
     );
   }
@@ -784,12 +887,26 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 7: EXAMEN FÍSICO PRE-PARTICIPATIVO (PESO, TALLA, IMC Y PULSOS)
+  // PÁGINA 7: EXAMEN FÍSICO PRE-PARTICIPATIVO (PESO, TALLA, IMC, PULSO, PA Y EXAMEN SEGMENTARIO)
   if (pageNumber === 7) {
     const p7Normal = ['17.29%', '20.14%', '23.18%', '26.20%', '29.02%', '31.73%'];
-    const p7Checks = [
-      '53.39%', '56.32%', '58.99%', '61.84%', '64.79%', '67.45%', '70.30%',
-      '78.50%', '81.44%', '84.21%', '87.33%', '90.09%', '92.67%', '95.44%'
+    const gen = patient?.examenClinicoGeneral || {};
+    const msk = patient?.examenMusculoEsqueletico || {};
+    const p7Segmental = [
+      { top: '53.39%', abnormal: gen.pulsoEstado === 'ANORMAL', desc: (patient?.pulso || '').trim() },
+      { top: '56.32%', abnormal: gen.paEstado === 'ANORMAL', desc: (patient?.presionArterial || '').trim() },
+      { top: '58.99%', abnormal: gen.cabeza === 'ANORMAL', desc: gen.cabeza === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '61.84%', abnormal: gen.cuello === 'ANORMAL', desc: gen.cuello === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '64.79%', abnormal: gen.toraxCorazon === 'ANORMAL', desc: gen.toraxCorazon === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '67.45%', abnormal: gen.toraxPulmonar === 'ANORMAL', desc: gen.toraxPulmonar === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '70.30%', abnormal: gen.abdomen === 'ANORMAL', desc: gen.abdomen === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '78.50%', abnormal: msk.columna === 'ANORMAL', desc: msk.columna === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '81.44%', abnormal: msk.codoMano === 'ANORMAL', desc: msk.codoMano === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '84.21%', abnormal: msk.columna === 'ANORMAL', desc: msk.columna === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '87.33%', abnormal: msk.caderaIngle === 'ANORMAL', desc: msk.caderaIngle === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '90.09%', abnormal: (msk.muslo || msk.rodilla) === 'ANORMAL', desc: '' },
+      { top: '92.67%', abnormal: msk.rodilla === 'ANORMAL', desc: msk.rodilla === 'ANORMAL' ? 'OBS.' : '' },
+      { top: '95.44%', abnormal: (msk.pierna || msk.rodilla) === 'ANORMAL', desc: '' }
     ];
     return (
       <div className="w-full h-full relative select-none">
@@ -812,17 +929,31 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         <div className="absolute fpf-doc-text" style={{ top: '41.85%', left: '71.40%' }}>
           {computedImc}
         </div>
-        {p7Checks.map((top, idx) => (
-          <div key={`chk-${idx}`} className="absolute fpf-doc-text" style={{ top, left: '48.45%' }}>
-            X
-          </div>
+        {p7Segmental.map((row, idx) => (
+          <React.Fragment key={`chk-${idx}`}>
+            <div
+              className="absolute fpf-doc-text"
+              style={{ top: row.top, left: row.abnormal ? '64.35%' : '48.45%' }}
+            >
+              X
+            </div>
+            {row.desc && (
+              <div
+                className="absolute fpf-doc-text uppercase truncate max-w-[20%]"
+                style={{ top: row.top, left: '74.50%', fontSize: '10.5px' }}
+              >
+                {row.desc}
+              </div>
+            )}
+          </React.Fragment>
         ))}
       </div>
     );
   }
 
-  // PÁGINA 8: ECG REPOSO - PROTOCOLO CONMEBOL (1 "SI" EN NORMAL + 19 "NO")
+  // PÁGINA 8: ECG REPOSO - PROTOCOLO CONMEBOL (RESULTADO REACTIVO NORMAL / ANORMAL + 19 CRITERIOS)
   if (pageNumber === 8) {
+    const isEcgAbnormal = (patient?.ekg?.resultadoGeneral || 'NORMAL').toUpperCase() === 'ANORMAL';
     const p8NoTops = [
       '34.23%', '37.25%', '40.29%', '43.05%', '45.90%', '48.85%', '51.60%', '54.46%', '57.39%',
       '65.86%', '68.79%', '71.56%', '74.50%', '77.16%',
@@ -835,7 +966,10 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           alt="ECG Reposo CONMEBOL Página 8"
           className="w-full h-full object-contain pointer-events-none block"
         />
-        <div className="absolute fpf-doc-text" style={{ top: '24.77%', left: '33.77%' }}>
+        <div
+          className="absolute fpf-doc-text"
+          style={{ top: '24.77%', left: isEcgAbnormal ? '50.40%' : '33.77%' }}
+        >
           X
         </div>
         {p8NoTops.map((top, idx) => (
@@ -951,7 +1085,13 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
   // PÁGINA 12: RESUMEN DE LA EVALUACIÓN PRE-PARTICIPATIVA (MÉDICO, FAMIHEART Y SELLO EN PLANTILLA BASE)
   if (pageNumber === 12) {
     const p12Checks = ['27.27%', '30.22%', '32.90%', '38.32%', '54.17%'];
-    const elegibleText = patient?.estadoAptitud === 'NO APTO' ? 'NO' : 'SI';
+    const aptStatus = (patient?.estadoAptitud || 'APTO').toUpperCase();
+    const conclusionTop =
+      aptStatus === 'NO APTO'
+        ? '72.45%'
+        : aptStatus === 'EN OBSERVACIÓN' || aptStatus === 'OBSERVADO'
+          ? '69.90%'
+          : '67.51%';
     return (
       <div className="w-full h-full relative select-none">
         <img
@@ -966,9 +1106,14 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         ))}
         <div
           className="absolute uppercase font-bold text-black"
-          style={{ top: '67.51%', left: '49.85%', fontFamily: 'Calibri, Arial, sans-serif', fontSize: '15px' }}
+          style={{
+            top: conclusionTop,
+            left: '49.85%',
+            fontFamily: 'Calibri, Arial, sans-serif',
+            fontSize: '15px'
+          }}
         >
-          {elegibleText}
+          SI
         </div>
         <div className="absolute fpf-doc-text" style={{ top: '89.73%', left: '9.19%' }}>
           {cleanDate}
@@ -979,6 +1124,13 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
 
   // PÁGINA 13: CERTIFICADO MÉDICO FAMIHEART (SOBRE MEMBRETE + SELLO PURO page_13_base.png)
   if (pageNumber === 13) {
+    const aptStatus = (patient?.estadoAptitud || 'APTO').toUpperCase();
+    const closingText =
+      aptStatus === 'NO APTO'
+        ? 'observándose hallazgos que ameritan evaluación complementaria, encontrándose temporalmente no apto para actividad física competitiva hasta el levantamiento de observaciones.'
+        : aptStatus === 'EN OBSERVACIÓN' || aptStatus === 'OBSERVADO'
+          ? 'encontrándose actualmente en observación médica preventiva con controles programados previo al alta deportiva sin restricciones.'
+          : 'los cuales se encuentran dentro de los límites normales y siendo asintomático cardiovascular, sin antecedentes, se encuentra apto para realizar actividad física sin restricciones.';
     return (
       <div className="w-full h-full relative select-none">
         <img
@@ -999,9 +1151,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
         >
           El médico que suscribe certifica que el paciente{' '}
           <strong className="uppercase font-bold">{cleanName}</strong> ha sido evaluado con exámenes de Rx de Tórax,
-          hematología, electrocardiograma y ecocardiografía, los cuales se encuentran dentro de los límites normales y
-          siendo asintomático cardiovascular, sin antecedentes, se encuentra apto para realizar actividad física sin
-          restricciones.
+          hematología, electrocardiograma y ecocardiografía, {closingText}
         </div>
         <div
           className="absolute font-bold text-black"
@@ -1174,8 +1324,8 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
             >
               DATE: {cleanDate}
             </div>
-            <div className="absolute fpf-doc-text" style={{ top: '84.29%', left: '44.09%' }}>
-              NORMAL
+            <div className="absolute fpf-doc-text uppercase" style={{ top: '84.29%', left: '44.09%' }}>
+              {(patient?.ekg?.resultadoGeneral || 'NORMAL').toUpperCase()}
             </div>
           </>
         )}

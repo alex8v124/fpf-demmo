@@ -36,6 +36,7 @@ export default function Dashboard({
   onSelectPatient,
   onSelectPatientId, 
   onNavigateTab, 
+  onOpenEditor,
   onResetBlank, 
   onPrint,
   globalDate = '22-01-2026',
@@ -229,6 +230,18 @@ export default function Dashboard({
         </div>
 
         <div className="flex items-center space-x-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              if (onResetBlank) onResetBlank();
+              if (onOpenEditor) onOpenEditor(1); else onNavigateTab('editor');
+            }}
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-[#0369A1] transition cursor-pointer shadow-xs"
+          >
+            <PlusCircle className="w-3.5 h-3.5 text-[#0369A1]" />
+            <span>Nueva Ficha</span>
+          </button>
+
           <button
             type="button"
             onClick={() => onNavigateTab('pool')}
@@ -578,7 +591,7 @@ export default function Dashboard({
                             type="button"
                             onClick={() => {
                               handleChoosePlayer(player);
-                              onNavigateTab('editor');
+                              if (onOpenEditor) onOpenEditor(1); else onNavigateTab('editor');
                             }}
                             className="inline-flex items-center space-x-1 px-2 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-[11px] font-medium transition cursor-pointer shrink-0 whitespace-nowrap"
                             title="Editar ficha médica"
@@ -655,7 +668,7 @@ export default function Dashboard({
           
           {/* Bloque Cardiología Deportiva */}
           <div 
-            onClick={() => onNavigateTab('editor')}
+            onClick={() => (onOpenEditor ? onOpenEditor(4) : onNavigateTab('editor'))}
             className="bg-white border border-slate-200/90 hover:border-slate-300 rounded-lg p-4 shadow-xs hover:shadow-sm transition cursor-pointer space-y-2.5"
           >
             <div className="flex items-center justify-between">
@@ -680,7 +693,7 @@ export default function Dashboard({
 
           {/* Bloque Laboratorio Clínico */}
           <div 
-            onClick={() => onNavigateTab('editor')}
+            onClick={() => (onOpenEditor ? onOpenEditor(5) : onNavigateTab('editor'))}
             className="bg-white border border-slate-200/90 hover:border-slate-300 rounded-lg p-4 shadow-xs hover:shadow-sm transition cursor-pointer space-y-2.5"
           >
             <div className="flex items-center justify-between">
@@ -705,7 +718,7 @@ export default function Dashboard({
 
           {/* Bloque Radiología de Tórax */}
           <div 
-            onClick={() => onNavigateTab('editor')}
+            onClick={() => (onOpenEditor ? onOpenEditor(5) : onNavigateTab('editor'))}
             className="bg-white border border-slate-200/90 hover:border-slate-300 rounded-lg p-4 shadow-xs hover:shadow-sm transition cursor-pointer space-y-2.5"
           >
             <div className="flex items-center justify-between">
