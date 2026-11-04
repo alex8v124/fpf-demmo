@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   UploadCloud,
@@ -20,14 +20,16 @@ import {
   FileCheck2,
   Database,
   Layers,
-  Search
+  Search,
+  ExternalLink,
+  ShieldCheck,
+  Building2
 } from 'lucide-react';
-import AttachmentSlots from './AttachmentSlots';
+import AttachmentSlots, { ATTACHMENT_SLOTS } from './AttachmentSlots';
 import BulkAttachmentUpload from './BulkAttachmentUpload';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
-import drivePatients from '../data/drivePatients.json';
 import { supabase, saveBatchPatientsToSupabase, uploadPatientPdf } from '../lib/supabase';
-import { ExternalLink } from 'lucide-react';
+import { generatePatientPdf, downloadPdfBlob } from '../utils/pdfGenerator';
 
 export default function FileExtractor({ 
   patientsList = [], 
@@ -39,8 +41,6 @@ export default function FileExtractor({
   globalClub: parentClub,
   nameOrder: parentOrder
 }) {
-  const [isDragging, setIsDragging] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [nameOrder, setNameOrder] = useState(parentOrder || 'LAST_FIRST'); // 'LAST_FIRST' | 'FIRST_LAST'
   const [globalDate, setGlobalDate] = useState(parentDate || '22-01-2026');
   const [globalClub, setGlobalClub] = useState(parentClub || 'Club FPF / Liga Formativa');
@@ -49,7 +49,7 @@ export default function FileExtractor({
   const [editingId, setEditingId] = useState(null);
   const [attachId, setAttachId] = useState(null);
   const [editNameValue, setEditNameValue] = useState('');
-  const fileInputRef = useRef(null);
+  const [downloadingPdfId, setDownloadingPdfId] = useState(null);
 
   const getExtractionConfidence = (player) => {
     const fn = (player.fileName || '').toUpperCase();
@@ -96,90 +96,6 @@ export default function FileExtractor({
     if (parentOrder) setNameOrder(parentOrder);
   }, [parentOrder]);
 
-  // Procesamiento automático de archivos seleccionados por el usuario
-  const processFiles = (files) => {
-    if (!files || files.length === 0) return;
-    setIsProcessing(true);
-
-    const newPatients = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const parsed = parsePatientFromFileName(file.name, file);
-      if (parsed) {
-        parsed.fechaEvaluacion = globalDate;
-        parsed.club = globalClub;
-        parsed.nombreCompleto = formatPlayerDisplayName(parsed.apellidos, parsed.nombres, nameOrder);
-        newPatients.push(parsed);
-
-        // Si el archivo subido es un PDF oficial, archivarlo en Supabase Storage
-        if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
-          uploadPatientPdf(parsed, file).then(res => {
-            if (res.success && onUpdatePatient) {
-              onUpdatePatient(parsed, {
-                pdfUrl: res.publicUrl,
-                pdfSizeBytes: res.sizeBytes,
-                pdfUpdatedAt: res.updatedAt
-              });
-            }
-          });
-        }
-      }
-    }
-
-    if (newPatients.length > 0) {
-      setPatientsList(prev => {
-        const existingNames = new Set((prev || []).map(p => p.fileName));
-        const filteredNew = newPatients.filter(p => !existingNames.has(p.fileName));
-        return [...filteredNew, ...(prev || [])];
-      });
-
-      saveBatchPatientsToSupabase(newPatients).then(res => {
-        if (res.success) {
-          console.log(`[Supabase] ${res.count} pacientes sincronizados en la nube.`);
-        }
-      });
-
-      if (onSelectPatient) {
-        onSelectPatient(newPatients[0]);
-      }
-
-      setToastMessage({
-        type: 'success',
-        text: `¡${newPatients.length} expedientes cargados y vinculados al protocolo FPF!`
-      });
-      setTimeout(() => setToastMessage(null), 4000);
-    }
-
-    setIsProcessing(false);
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragEnter = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      processFiles(e.dataTransfer.files);
-    }
-  };
-
   const handleToggleNameOrder = (order) => {
     setNameOrder(order);
     setPatientsList(prev => (prev || []).map(player => ({
@@ -199,6 +115,22 @@ export default function FileExtractor({
     }
   };
 
+  const handleDownloadSinglePdf = async (player) => {
+    setDownloadingPdfId(player.id || player.fileName);
+    try {
+      const { blob, fileName } = await generatePatientPdf(player, {
+        globalDate,
+        globalClub,
+        nameOrder
+      });
+      downloadPdfBlob(blob, fileName);
+    } catch (e) {
+      window.alert('Error descargando PDF: ' + e.message);
+    } finally {
+      setDownloadingPdfId(null);
+    }
+  };
+
   const filteredPatients = (patientsList || []).filter(player => {
     const q = searchFilter.toLowerCase();
     return (
@@ -209,7 +141,7 @@ export default function FileExtractor({
   });
 
   return (
-    <div className="space-y-6 select-none animate-in fade-in duration-200">
+    <div className="space-y-5 select-none animate-in fade-in duration-200">
       
       {/* Toast Alert flotante */}
       <AnimatePresence>
@@ -226,8 +158,8 @@ export default function FileExtractor({
         )}
       </AnimatePresence>
 
-      {/* ENCABEZADO DE SECCIÓN */}
-      <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* ENCABEZADO DE SECCIÓN CON BOTONES DE ACCIÓN */}
+      <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#0369A1] bg-sky-50 px-2 py-0.5 rounded">
@@ -236,192 +168,134 @@ export default function FileExtractor({
             <span className="text-[10px] font-bold text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded">
               Cero Tipeo Manual
             </span>
+            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+              Expedientes: {patientsList.length}
+            </span>
           </div>
           <h1 className="text-lg sm:text-xl font-bold text-[#1E293B]">
             Carga de Archivos & Extracción de Nombres
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5">
-            Sube las imágenes o PDFs de los futbolistas y el sistema extrae automáticamente el nombre del archivo asociándolo a las 19 páginas.
+            Sube los estudios médicos (PDFs o imágenes) directamente a los 5 espacios clínicos. El sistema identifica automáticamente al jugador, incrusta las imágenes en el expediente de 19 páginas y archiva el PDF oficial en Supabase.
           </p>
         </div>
 
         <div className="flex items-center space-x-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-md bg-[#0369A1] hover:bg-[#075985] text-xs font-semibold text-white transition cursor-pointer shadow-xs"
-          >
-            <UploadCloud className="w-3.5 h-3.5" />
-            <span>Seleccionar Archivos</span>
-          </button>
-
           {patientsList.length > 0 && (
             <button
               type="button"
               onClick={handleClearAll}
-              className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-md bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-medium transition cursor-pointer"
+              className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition cursor-pointer shadow-2xs"
               title="Limpiar la lista actual"
             >
               <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-              <span>Limpiar Data</span>
+              <span>Limpiar Bandeja</span>
             </button>
           )}
         </div>
       </div>
 
-      {onUpdatePatient && (
-        <BulkAttachmentUpload patientsList={patientsList} onUpdatePatient={onUpdatePatient} />
-      )}
-
-      {/* ZONA DE ARRASTRE DRAG & DROP Y REGLAS */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        
-        {/* ZONA DRAG & DROP (2 Columnas) */}
-        <div 
-          onDragOver={handleDragOver}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`lg:col-span-2 border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 relative bg-white ${
-            isDragging
-              ? 'border-[#0369A1] bg-sky-50/60 ring-2 ring-[#0369A1]/20'
-              : 'border-slate-300 hover:border-[#0369A1] hover:bg-slate-50/50'
-          }`}
-        >
-          <input 
-            type="file"
-            ref={fileInputRef}
-            onChange={(e) => {
-              if (e.target.files && e.target.files.length > 0) {
-                processFiles(e.target.files);
-              }
-              e.target.value = '';
-            }}
-            multiple
-            accept=".pdf,image/*"
-            className="hidden"
-          />
-
-          <div className="w-12 h-12 rounded-lg bg-sky-50 text-[#0369A1] border border-sky-200 flex items-center justify-center mb-3">
-            <UploadCloud className="w-6 h-6" />
+      {/* BARRA HORIZONTAL DE REGLAS DE EXTRACCIÓN Y CONFIGURACIÓN */}
+      <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          
+          {/* 1. Selector de formato de nombres */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <span className="text-xs font-bold text-[#1E293B] flex items-center gap-1.5 shrink-0">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#0369A1]" />
+              Formato de Nombre:
+            </span>
+            <div className="inline-flex rounded-lg p-1 bg-slate-100 border border-slate-200">
+              <button
+                type="button"
+                onClick={() => handleToggleNameOrder('LAST_FIRST')}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
+                  nameOrder === 'LAST_FIRST'
+                    ? 'bg-[#0369A1] text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Ej. AGURTO ROMERO FERNANDO"
+              >
+                [APELLIDOS NOMBRES] (Oficial FPF)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleNameOrder('FIRST_LAST')}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
+                  nameOrder === 'FIRST_LAST'
+                    ? 'bg-[#0369A1] text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Ej. FERNANDO AGURTO ROMERO"
+              >
+                [NOMBRES APELLIDOS] (Directo)
+              </button>
+            </div>
           </div>
 
-          <h3 className="text-sm sm:text-base font-bold text-[#1E293B]">
-            {isDragging ? '¡Suelta aquí los archivos para procesarlos!' : 'Arrastra aquí tus Imágenes o PDFs de Exámenes'}
-          </h3>
-          <p className="text-xs text-[#64748B] max-w-md mt-1">
-            Archivos con formato <strong className="text-[#1E293B]">[APELLIDOS] [NOMBRES].pdf</strong> (ej. <span className="text-[#0369A1] font-mono">BARAYBAR COLLANTES FABIANO.pdf</span>).
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-            <span className="text-[11px] font-medium text-slate-700 bg-slate-100 px-2.5 py-1 rounded">
-              PDFs de Electrocardiograma (EKG)
+          {/* 2. Fecha unificada en cascada */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[#1E293B] flex items-center gap-1 shrink-0">
+              <Calendar className="w-3.5 h-3.5 text-[#0369A1]" />
+              Fecha Unificada:
             </span>
-            <span className="text-[11px] font-medium text-slate-700 bg-slate-100 px-2.5 py-1 rounded">
-              Imágenes JPG / PNG de Estudios
-            </span>
-            <span className="text-[11px] font-semibold text-[#166534] bg-[#DCFCE7] px-2.5 py-1 rounded">
-              Extracción en Vivo
-            </span>
+            <input
+              type="text"
+              value={globalDate}
+              onChange={(e) => {
+                const newDate = e.target.value;
+                setGlobalDate(newDate);
+                setPatientsList(prev => (prev || []).map(p => ({ ...p, fechaEvaluacion: newDate })));
+              }}
+              placeholder="DD-MM-AAAA"
+              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-mono font-bold text-[#1E293B] focus:outline-none focus:border-[#0369A1] w-28 text-center"
+            />
           </div>
 
-          <div className="mt-3 text-[11px] text-slate-400">
-            Haz clic en cualquier lugar del recuadro para abrir el explorador de archivos
+          {/* 3. Club unificado en cascada */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[#1E293B] flex items-center gap-1 shrink-0">
+              <Building2 className="w-3.5 h-3.5 text-[#0369A1]" />
+              Club FPF:
+            </span>
+            <input
+              type="text"
+              value={globalClub}
+              onChange={(e) => {
+                const newClub = e.target.value;
+                setGlobalClub(newClub);
+                setPatientsList(prev => (prev || []).map(p => ({ ...p, club: newClub })));
+              }}
+              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-bold text-[#1E293B] focus:outline-none focus:border-[#0369A1] w-48 truncate"
+            />
           </div>
+
         </div>
-
-        {/* PANEL LATERAL DE CONFIGURACIÓN */}
-        <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2 border-b border-[#E2E8F0] pb-2.5">
-              <SlidersHorizontal className="w-4 h-4 text-[#0369A1]" />
-              <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider">
-                Reglas de Extracción
-              </h3>
-            </div>
-
-            {/* Formato de Nombres */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-[#64748B] font-semibold">Formato de Nombre Extraído:</label>
-              <div className="space-y-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleToggleNameOrder('LAST_FIRST')}
-                  className={`w-full p-2.5 rounded-md border text-left text-xs transition cursor-pointer ${
-                    nameOrder === 'LAST_FIRST'
-                      ? 'bg-sky-50 border-[#0369A1] text-[#0369A1] font-semibold'
-                      : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="text-[10px] uppercase font-bold text-[#0369A1]">Oficial FPF</div>
-                  <div className="font-mono text-xs">[APELLIDOS NOMBRES]</div>
-                  <div className="text-[10px] text-[#64748B]">AGURTO ROMERO FERNANDO</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleToggleNameOrder('FIRST_LAST')}
-                  className={`w-full p-2.5 rounded-md border text-left text-xs transition cursor-pointer ${
-                    nameOrder === 'FIRST_LAST'
-                      ? 'bg-sky-50 border-[#0369A1] text-[#0369A1] font-semibold'
-                      : 'bg-white border-[#E2E8F0] text-[#1E293B] hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="text-[10px] uppercase font-bold text-[#64748B]">Formato Directo</div>
-                  <div className="font-mono text-xs">[NOMBRES APELLIDOS]</div>
-                  <div className="text-[10px] text-[#64748B]">FERNANDO AGURTO ROMERO</div>
-                </button>
-              </div>
-            </div>
-
-            {/* Fecha Única en Cascada */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-[#64748B] font-semibold">Fecha Unificada en Cascada:</label>
-              <div className="flex items-center space-x-2 bg-slate-50 border border-[#CBD5E1] rounded-md px-3 py-1.5">
-                <Calendar className="w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  value={globalDate}
-                  onChange={(e) => {
-                    const newDate = e.target.value;
-                    setGlobalDate(newDate);
-                    setPatientsList(prev => (prev || []).map(p => ({ ...p, fechaEvaluacion: newDate })));
-                  }}
-                  className="bg-transparent text-xs font-mono font-bold text-[#1E293B] focus:outline-none w-full"
-                />
-              </div>
-              <div className="text-[10px] text-[#64748B]">
-                Se propaga automáticamente a las 19 páginas del expediente.
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleClearAll}
-            disabled={patientsList.length === 0}
-            className="w-full bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 text-xs font-semibold py-2 rounded-md transition cursor-pointer flex items-center justify-center space-x-2 disabled:opacity-40"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Limpiar Bandeja de Archivos</span>
-          </button>
-        </div>
-
       </div>
 
+      {/* LOS 5 ESPACIOS PRINCIPALES DE CARGA MASIVA */}
+      <BulkAttachmentUpload 
+        patientsList={patientsList}
+        setPatientsList={setPatientsList}
+        onUpdatePatient={onUpdatePatient}
+        onSelectPatient={onSelectPatient}
+        globalDate={globalDate}
+        globalClub={globalClub}
+        nameOrder={nameOrder}
+      />
+
       {/* BANDEJA DE EXPEDIENTES EXTRAÍDOS EN TIEMPO REAL */}
-      <section className="bg-white border border-[#E2E8F0] rounded-lg shadow-xs overflow-hidden">
+      <section className="bg-white border border-[#E2E8F0] rounded-xl shadow-xs overflow-hidden">
         
         {/* Cabecera de la Bandeja */}
         <div className="p-4 border-b border-[#E2E8F0] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white">
           <div>
             <h2 className="text-sm font-bold text-[#1E293B] flex items-center gap-2">
               <FileCheck2 className="w-4 h-4 text-[#15803D]" />
-              Expedientes Extraídos desde Archivos
+              Expedientes Médicos en Bandeja ({patientsList.length})
             </h2>
             <p className="text-xs text-[#64748B] mt-0.5">
-              Haz clic en cualquier jugador para abrir su expediente oficial de 19 páginas.
+              Cada futbolista refleja en vivo sus 5 estudios clínicos asociados y su PDF oficial de 19 páginas guardado.
             </p>
           </div>
 
@@ -432,12 +306,12 @@ export default function FileExtractor({
                 type="text"
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
-                placeholder="Buscar por nombre o archivo..."
-                className="bg-slate-50 border border-[#CBD5E1] pl-8 pr-3 py-1.5 rounded-md text-xs text-[#1E293B] placeholder-slate-400 focus:outline-none focus:border-[#0284C7] w-48 sm:w-60"
+                placeholder="Buscar por futbolista o archivo..."
+                className="bg-slate-50 border border-[#CBD5E1] pl-8 pr-3 py-1.5 rounded-lg text-xs text-[#1E293B] placeholder-slate-400 focus:outline-none focus:border-[#0284C7] w-52 sm:w-64"
               />
             </div>
 
-            <span className="text-xs text-[#64748B] font-semibold bg-slate-100 px-2.5 py-1.5 rounded-md">
+            <span className="text-xs text-[#64748B] font-semibold bg-slate-100 px-2.5 py-1.5 rounded-lg">
               <strong className="text-[#1E293B]">{filteredPatients.length}</strong> listos
             </span>
           </div>
@@ -448,12 +322,12 @@ export default function FileExtractor({
           <table className="w-full text-left text-xs border-collapse">
             <thead className="bg-slate-50 border-b border-[#E2E8F0] text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
               <tr>
-                <th className="px-4 py-2.5 font-semibold">Nombre Extraído (Oficial)</th>
-                <th className="px-4 py-2.5 font-semibold">Archivo Fuente</th>
-                <th className="px-4 py-2.5 font-semibold">Apellidos / Nombres</th>
-                <th className="px-4 py-2.5 font-semibold">Fecha Evaluación</th>
-                <th className="px-4 py-2.5 font-semibold text-center">Estado</th>
-                <th className="px-4 py-2.5 font-semibold text-right">Acción</th>
+                <th className="px-4 py-3 font-semibold">Futbolista</th>
+                <th className="px-4 py-3 font-semibold">Club & Fecha</th>
+                <th className="px-4 py-3 font-semibold text-center">5 Estudios Adjuntos</th>
+                <th className="px-4 py-3 font-semibold text-center">Aptitud</th>
+                <th className="px-4 py-3 font-semibold text-center">PDF Oficial (19 Págs)</th>
+                <th className="px-4 py-3 font-semibold text-right">Acción</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
@@ -461,10 +335,14 @@ export default function FileExtractor({
                 const pId = player.id || player.fileName;
                 const isEditing = editingId === pId;
                 const confidence = getExtractionConfidence(player);
+                const attachments = player.attachments || {};
+                const attachedCount = Object.keys(attachments).length;
 
                 return (
                   <React.Fragment key={pId}>
                   <tr className="hover:bg-slate-50/80 transition-colors group">
+                    
+                    {/* 1. Nombre y DNI */}
                     <td className="px-4 py-3">
                       {isEditing ? (
                         <div className="flex items-center space-x-1.5">
@@ -490,7 +368,7 @@ export default function FileExtractor({
                         </div>
                       ) : (
                         <div className="flex items-center space-x-1.5">
-                          <div className="font-semibold text-[#1E293B] text-xs font-mono">
+                          <div className="font-bold text-[#1E293B] text-xs font-mono">
                             {player.nombreCompleto}
                           </div>
                           <button
@@ -504,7 +382,7 @@ export default function FileExtractor({
                         </div>
                       )}
                       <div className="text-[11px] text-[#64748B] flex items-center space-x-1.5 mt-0.5">
-                        <span>DNI: {player.dni || '74290500'}</span>
+                        <span className="font-mono">DNI: {player.dni || '74290500'}</span>
                         <span>•</span>
                         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${confidence.badgeBg}`}>
                           {confidence.text}
@@ -512,26 +390,44 @@ export default function FileExtractor({
                       </div>
                     </td>
 
+                    {/* 2. Club y Fecha */}
                     <td className="px-4 py-3">
-                      <div className="flex items-center space-x-1.5 text-[#64748B]">
-                        <FileText className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                        <span className="font-mono text-xs truncate max-w-[180px]" title={player.fileName}>
-                          {player.fileName}
-                        </span>
+                      <div className="text-[#1E293B] font-medium truncate max-w-[170px]" title={player.club}>
+                        {player.club}
+                      </div>
+                      <div className="text-[11px] text-[#64748B] font-mono">{player.fechaEvaluacion}</div>
+                    </td>
+
+                    {/* 3. Chips de los 5 Estudios */}
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1 flex-wrap">
+                        {ATTACHMENT_SLOTS.map((slot) => {
+                          const hasFile = Boolean(attachments[slot.id]?.url);
+                          return (
+                            <span
+                              key={slot.id}
+                              title={`${slot.label}: ${hasFile ? attachments[slot.id].name : 'Pendiente'}`}
+                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition ${
+                                hasFile
+                                  ? 'bg-sky-100 text-[#0369A1] border border-sky-300'
+                                  : 'bg-slate-100 text-slate-400 border border-slate-200'
+                              }`}
+                            >
+                              {slot.id === 'eco2d' && 'ECO 2D'}
+                              {slot.id === 'ecoMmode' && 'ECO MM'}
+                              {slot.id === 'ecg' && 'ECG'}
+                              {slot.id === 'rayosX' && 'RX'}
+                              {slot.id === 'laboratorio' && 'LAB'}
+                            </span>
+                          );
+                        })}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-semibold mt-1">
+                        {attachedCount} de 5 vinculados
                       </div>
                     </td>
 
-                    <td className="px-4 py-3">
-                      <div className="text-[#1E293B] font-medium">{player.apellidos}</div>
-                      <div className="text-[11px] text-[#64748B]">{player.nombres}</div>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span className="font-mono text-[#1E293B] text-xs">
-                        {player.fechaEvaluacion}
-                      </span>
-                    </td>
-
+                    {/* 4. Estado de Aptitud */}
                     <td className="px-4 py-3 text-center">
                       <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-[#DCFCE7] text-[#166534]">
                         <CheckCircle2 className="w-3 h-3" />
@@ -539,27 +435,52 @@ export default function FileExtractor({
                       </span>
                     </td>
 
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
-                      {player.pdfUrl && (
-                        <a
-                          href={player.pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mr-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#166534] border border-emerald-300 text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-2xs"
-                          title="Abrir PDF oficial archivado en Supabase"
+                    {/* 5. PDF Oficial con Sellos */}
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        {player.pdfUrl ? (
+                          <a
+                            href={player.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-emerald-50 hover:bg-emerald-100 text-[#166534] border border-emerald-300 text-[11px] font-bold px-2 py-1 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-2xs"
+                            title="Abrir PDF oficial archivado en Supabase Storage"
+                          >
+                            <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Ver en Nube</span>
+                            <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                          </a>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 italic">Sin archivar</span>
+                        )}
+
+                        <button
+                          type="button"
+                          disabled={downloadingPdfId === pId}
+                          onClick={() => handleDownloadSinglePdf(player)}
+                          className="bg-white hover:bg-slate-50 text-[#0369A1] border border-slate-300 hover:border-[#0369A1] text-[11px] font-bold px-2 py-1 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-2xs disabled:opacity-50"
+                          title="Descargar PDF de 19 páginas generado con las imágenes cambiadas"
                         >
-                          <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>PDF</span>
-                          <ExternalLink className="w-2.5 h-2.5 opacity-60" />
-                        </a>
-                      )}
+                          {downloadingPdfId === pId ? (
+                            <RefreshCw className="w-3 h-3 animate-spin text-[#0369A1]" />
+                          ) : (
+                            <Download className="w-3 h-3 text-[#0369A1]" />
+                          )}
+                          <span>Descargar PDF</span>
+                        </button>
+                      </div>
+                    </td>
+
+                    {/* 6. Acciones */}
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => setAttachId(attachId === pId ? null : pId)}
-                        className="mr-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer inline-flex items-center space-x-1"
+                        className="mr-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-xs font-semibold px-2.5 py-1.5 rounded-lg transition cursor-pointer inline-flex items-center space-x-1"
+                        title="Ver o reemplazar individualmente los 5 espacios"
                       >
-                        <ImageIcon className="w-3.5 h-3.5" />
-                        <span>Adjuntos ({Object.keys(player.attachments || {}).length}/5)</span>
+                        <ImageIcon className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Ver 5 Espacios</span>
                       </button>
                       <button
                         type="button"
@@ -567,16 +488,31 @@ export default function FileExtractor({
                           onSelectPatient(player);
                           onNavigateTab('documento');
                         }}
-                        className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-xs"
+                        className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg transition cursor-pointer inline-flex items-center space-x-1 shadow-xs"
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Ver 19 Págs</span>
+                        <span>Expediente (19P)</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </td>
+
                   </tr>
-                  {attachId === pId && onUpdatePatient && (
-                    <tr className="bg-slate-50">
-                      <td colSpan={6} className="px-4 py-3">
+
+                  {/* Panel expandible de los 5 espacios individuales */}
+                  {attachId === pId && (
+                    <tr className="bg-slate-50/70 border-b border-[#E2E8F0]">
+                      <td colSpan={6} className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-bold text-slate-700">
+                            Espacios Clínicos Individuales para {player.nombreCompleto}:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setAttachId(null)}
+                            className="text-[10px] text-slate-400 hover:text-slate-600 font-semibold cursor-pointer"
+                          >
+                            Ocultar
+                          </button>
+                        </div>
                         <AttachmentSlots patient={player} onUpdatePatient={onUpdatePatient} compact />
                       </td>
                     </tr>
@@ -584,18 +520,6 @@ export default function FileExtractor({
                   </React.Fragment>
                 );
               })}
-
-              {filteredPatients.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-[#64748B]">
-                    <UploadCloud className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-                    <p className="font-semibold text-xs text-[#1E293B]">No hay archivos en la bandeja</p>
-                    <p className="text-[11px] text-[#64748B] mt-0.5">
-                      Arrastra archivos arriba para procesar y vincularlos de inmediato.
-                    </p>
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>

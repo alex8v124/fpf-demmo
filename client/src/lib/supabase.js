@@ -9,6 +9,8 @@ export {
   mapDbToPatient,
   uploadPatientPdf,
   deletePatientPdf,
+  getCachedAttachments,
+  setCachedAttachments,
   mapDbToStaff,
   loadStaffFromSupabase,
   saveStaffToSupabase,

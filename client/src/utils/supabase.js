@@ -124,6 +124,24 @@ export async function testSupabaseConnection() {
 /**
  * Genera un ID limpio determinístico cuando se crea un nuevo jugador desde Formato en Blanco
  */
+
+export function getCachedAttachments(patientId) {
+  if (typeof window === 'undefined' || !patientId) return {};
+  try {
+    const raw = localStorage.getItem('famiheart_attachments_' + patientId);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function setCachedAttachments(patientId, attachments) {
+  if (typeof window === 'undefined' || !patientId || !attachments) return;
+  try {
+    localStorage.setItem('famiheart_attachments_' + patientId, JSON.stringify(attachments));
+  } catch {}
+}
+
 export function buildPatientId(patient) {
   if (patient?.id && patient.id !== 'plantilla-en-blanco') {
     return patient.id;
@@ -178,7 +196,8 @@ export async function savePatientToSupabase(patient) {
       presion_arterial: patient.presionArterial != null ? String(patient.presionArterial) : null,
       examen_clinico: {
         ...(patient.examenClinicoGeneral || {}),
-        musculoEsqueletico: patient.examenMusculoEsqueletico || {}
+        musculoEsqueletico: patient.examenMusculoEsqueletico || {},
+        attachments: patient.attachments || {}
       },
       cardio_personal: patient.cardioPersonal || {},
       cardio_familiar: patient.cardioFamiliar || {},
@@ -189,16 +208,32 @@ export async function savePatientToSupabase(patient) {
       lesiones_graves: patient.lesionesGraves || [],
       ekg: {
         ...(patient.ekg || {}),
-        fileName: patient.fileName || patient.ekg?.fileName || `${fullName}.pdf`
+        fileName: patient.fileName || patient.ekg?.fileName || `${fullName}.pdf`,
+        attachment: patient.attachments?.ecg || patient.ekg?.attachment || null
       },
-      ecocardiograma: patient.ecocardiograma || {},
-      laboratorio: patient.laboratorio || {},
-      radiografia: patient.radiografia || {},
+      ecocardiograma: {
+        ...(patient.ecocardiograma || {}),
+        attachments: {
+          eco2d: patient.attachments?.eco2d || null,
+          ecoMmode: patient.attachments?.ecoMmode || null
+        }
+      },
+      laboratorio: {
+        ...(patient.laboratorio || {}),
+        attachment: patient.attachments?.laboratorio || null
+      },
+      radiografia: {
+        ...(patient.radiografia || {}),
+        attachment: patient.attachments?.rayosX || null
+      },
       pdf_url: patient.pdfUrl || null,
       pdf_size_bytes: patient.pdfSizeBytes || null,
       pdf_updated_at: patient.pdfUpdatedAt || null,
       updated_at: new Date().toISOString()
     };
+
+    setCachedAttachments(resolvedId, patient.attachments);
+    if (patient.dni) setCachedAttachments(patient.dni, patient.attachments);
 
     const { data, error } = await supabase
       .from('expedientes_medicos')
@@ -325,6 +360,15 @@ export function mapDbToPatient(row) {
     pdfUrl: row.pdf_url || null,
     pdfSizeBytes: row.pdf_size_bytes || null,
     pdfUpdatedAt: row.pdf_updated_at || null,
+    attachments: {
+      ...(rawExamen.attachments || {}),
+      ...(row.ecocardiograma?.attachments || {}),
+      ...(row.ekg?.attachment ? { ecg: row.ekg.attachment } : {}),
+      ...(row.laboratorio?.attachment ? { laboratorio: row.laboratorio.attachment } : {}),
+      ...(row.radiografia?.attachment ? { rayosX: row.radiografia.attachment } : {}),
+      ...getCachedAttachments(row.id),
+      ...(row.dni ? getCachedAttachments(row.dni) : {})
+    },
     origen: 'Supabase DB',
     synced21Pages: true
   };
@@ -355,11 +399,27 @@ export async function saveBatchPatientsToSupabase(patients = []) {
         medico_evaluador: p.medicoEvaluador || 'DR. DARIO HERNANDEZ ALARCON',
         medico_cmp: p.medicoCmp || '27503',
         medico_rne: p.medicoRne || '15620',
+        examen_clinico: {
+          attachments: p.attachments || {}
+        },
+        ecocardiograma: {
+          attachments: {
+            eco2d: p.attachments?.eco2d || null,
+            ecoMmode: p.attachments?.ecoMmode || null
+          }
+        },
+        laboratorio: {
+          attachment: p.attachments?.laboratorio || null
+        },
+        radiografia: {
+          attachment: p.attachments?.rayosX || null
+        },
         ekg: {
           ...(p.ekg || {}),
           imagen: p.ekgImage || p.fileUrl || p.ekg?.imagen || '',
           resultado: p.resultadoEkg || 'APTO (EKG NORMAL)',
-          fileName: p.fileName || ''
+          fileName: p.fileName || '',
+          attachment: p.attachments?.ecg || null
         },
         pdf_url: p.pdfUrl || null,
         pdf_size_bytes: p.pdfSizeBytes || null,

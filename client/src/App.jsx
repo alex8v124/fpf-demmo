@@ -12,7 +12,7 @@ import DatabaseView from './components/DatabaseView';
 import BatchConfigBar from './components/BatchConfigBar';
 import drivePatients from './data/drivePatients.json';
 import { blankPatientTemplate, initialStaff } from './data/initialData';
-import { loadPatientsFromSupabase, mapDbToPatient, loadStaffFromSupabase } from './lib/supabase';
+import { loadPatientsFromSupabase, mapDbToPatient, loadStaffFromSupabase, savePatientToSupabase } from './lib/supabase';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('dashboard');
@@ -125,6 +125,11 @@ export default function App() {
       (target?.fileName && p?.fileName === target.fileName);
     setPatientsList((prev) => (prev || []).map((p) => (same(p) ? { ...p, ...changes } : p)));
     setCurrentPatient((prev) => (prev && same(prev) ? { ...prev, ...changes } : prev));
+
+    if (changes.attachments || changes.pdfUrl) {
+      const merged = { ...target, ...changes };
+      savePatientToSupabase(merged).catch((e) => console.warn('Sync to Supabase background error:', e));
+    }
   };
 
   // Sincroniza cambios desde ClinicalEditor tanto al paciente activo como a la bandeja general

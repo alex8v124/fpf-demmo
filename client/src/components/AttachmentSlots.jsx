@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { UploadCloud, RefreshCw, Trash2, ImageIcon } from 'lucide-react';
+import { anyFileToDataUrl } from '../utils/fileConverter';
 
 // Los 5 espacios de adjuntos por jugador. Todos los archivos suelen llevar el mismo nombre,
 // por eso se elige explícitamente el espacio de destino dentro del expediente.
@@ -11,26 +12,9 @@ export const ATTACHMENT_SLOTS = [
   { id: 'laboratorio', label: 'Laboratorio', page: 'Pág. 17' }
 ];
 
-// Reduce la imagen para no saturar la memoria del navegador.
-export function fileToDataUrl(file, maxSize = 1600) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('El archivo no es una imagen válida'));
-      img.onload = () => {
-        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.9));
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
+// Universal: convierte cualquier archivo (PDF o Imagen) a Data URL de alta calidad
+export async function fileToDataUrl(file, maxSize = 1600) {
+  return await anyFileToDataUrl(file, maxSize);
 }
 
 function Slot({ slot, value, onChange, onRemove }) {
@@ -70,7 +54,7 @@ function Slot({ slot, value, onChange, onRemove }) {
         <div className="text-[10px] text-[#64748B] truncate" title={value.name}>{value.name}</div>
       )}
 
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <input ref={inputRef} type="file" accept=".pdf,image/*" className="hidden" onChange={handleFile} />
       <div className="flex gap-1.5">
         <button
           type="button"

@@ -1,6 +1,21 @@
 import React, { useRef, useState } from 'react';
-import { UploadCloud, CheckCircle2, AlertCircle, FileCheck, Layers, RefreshCw } from 'lucide-react';
-import { ATTACHMENT_SLOTS, fileToDataUrl } from './AttachmentSlots';
+import { 
+  UploadCloud, 
+  CheckCircle2, 
+  AlertCircle, 
+  FileCheck, 
+  Layers, 
+  RefreshCw, 
+  FileText, 
+  Download, 
+  ExternalLink,
+  Sparkles
+} from 'lucide-react';
+import { ATTACHMENT_SLOTS } from './AttachmentSlots';
+import { anyFileToDataUrl } from '../utils/fileConverter';
+import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
+import { savePatientToSupabase, setCachedAttachments } from '../utils/supabase';
+import { generateAndArchivePatientPdf, downloadPdfBlob, generatePatientPdf } from '../utils/pdfGenerator';
 
 const NOISE_WORDS = new Set([
   '2D', '3D', 'MM', 'ECO', 'ECOGRAFIA', 'ECG', 'EKG', 'ELECTRO', 'ELECTROCARDIOGRAMA',
@@ -47,7 +62,7 @@ export function findPlayer(fileName, patientsList = []) {
     if (exact) return exact;
   }
 
-  // 3. Subconjunto o coincidencia parcial de nombres:
+  // 3. Subconjunto o coincidencia de nombres:
   // Si los tokens del archivo coinciden con al menos 2 palabras clave del jugador
   if (nameTokens.length >= 2) {
     let bestPlayer = null;
@@ -74,42 +89,159 @@ export function findPlayer(fileName, patientsList = []) {
   return null;
 }
 
-export default function BulkAttachmentUpload({ patientsList = [], onUpdatePatient }) {
-  const [busy, setBusy] = useState(null);
+export default function BulkAttachmentUpload({ 
+  patientsList = [], 
+  setPatientsList,
+  onUpdatePatient,
+  onSelectPatient,
+  globalDate = '22-01-2026',
+  globalClub = 'Club FPF / Liga Formativa',
+  nameOrder = 'LAST_FIRST'
+}) {
+  const [busySlot, setBusySlot] = useState(null);
+  const [processingStatus, setProcessingStatus] = useState('');
   const [report, setReport] = useState(null);
   const inputs = useRef({});
 
   const handleFiles = async (slot, fileList) => {
-    const isImage = (f) => (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|webp|bmp|gif)$/i.test(f.name);
-    const files = Array.from(fileList || []).filter(isImage);
+    if (!fileList || fileList.length === 0) return;
+
+    // Acepta cualquier formato: PDFs e imágenes (JPG, PNG, WebP, etc.)
+    const isValidFile = (f) =>
+      (f.type && (f.type.startsWith('image/') || f.type === 'application/pdf')) ||
+      /\.(pdf|png|jpe?g|webp|bmp|gif)$/i.test(f.name);
+
+    const files = Array.from(fileList).filter(isValidFile);
     if (files.length === 0) {
-      window.alert('No se detectaron imágenes válidas (JPG, PNG, WebP) en la selección.');
+      window.alert('Por favor selecciona archivos válidos (PDFs o imágenes JPG, PNG, WebP).');
       return;
     }
 
-    setBusy(slot.id);
+    setBusySlot(slot.id);
+    setProcessingStatus(`Procesando ${files.length} archivo(s) para ${slot.label}...`);
+
     const matched = [];
     const unmatched = [];
+    let currentPatients = [...patientsList];
 
-    for (const file of files) {
-      const player = findPlayer(file.name, patientsList);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setProcessingStatus(`Procesando archivo (${i + 1}/${files.length}): ${file.name}...`);
+
+      let player = findPlayer(file.name, currentPatients);
+      let isNew = false;
+
+      // Si no existe, autocrea el jugador desde el nombre del archivo igual que el extractor central
+      if (!player) {
+        const parsed = parsePatientFromFileName(file.name, file);
+        if (parsed) {
+          parsed.fechaEvaluacion = globalDate;
+          parsed.club = globalClub;
+          parsed.nombreCompleto = formatPlayerDisplayName(parsed.apellidos, parsed.nombres, nameOrder);
+          player = parsed;
+          isNew = true;
+        }
+      }
+
       if (!player) {
         unmatched.push(file.name);
         continue;
       }
+
       try {
-        const url = await fileToDataUrl(file);
-        onUpdatePatient(player, {
-          attachments: { ...(player.attachments || {}), [slot.id]: { url, name: file.name } }
+        // 1. Convierte cualquier formato (PDF o Imagen) a Data URL de alta definición
+        const url = await anyFileToDataUrl(file);
+        const updatedAttachments = {
+          ...(player.attachments || {}),
+          [slot.id]: {
+            url,
+            name: file.name,
+            type: file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg')
+          }
+        };
+
+        const updatedPlayer = {
+          ...player,
+          attachments: updatedAttachments,
+          ...(slot.id === 'ecg' ? { fileUrl: url, fileName: file.name } : {})
+        };
+
+        // 2. Registrar en estado local de React
+        if (isNew) {
+          currentPatients = [updatedPlayer, ...currentPatients];
+          if (setPatientsList) {
+            setPatientsList((prev) => [updatedPlayer, ...(prev || [])]);
+          }
+          if (onSelectPatient) {
+            onSelectPatient(updatedPlayer);
+          }
+        } else {
+          currentPatients = currentPatients.map((p) =>
+            (p.id && p.id === player.id) || (p.fileName && p.fileName === player.fileName)
+              ? updatedPlayer
+              : p
+          );
+          if (onUpdatePatient) {
+            onUpdatePatient(player, {
+              attachments: updatedAttachments,
+              ...(slot.id === 'ecg' ? { fileUrl: url, fileName: file.name } : {})
+            });
+          }
+        }
+
+        // 3. Persistir en almacenamiento local seguro
+        setCachedAttachments(updatedPlayer.id || updatedPlayer.dni, updatedAttachments);
+
+        // 4. Guardar inmediatamente en base de datos Supabase
+        await savePatientToSupabase(updatedPlayer);
+
+        // 5. Generar y archivar el PDF oficial de 19 páginas CON las imágenes ya cambiadas en Supabase Storage
+        setProcessingStatus(`Generando y archivando PDF oficial con sellos para ${updatedPlayer.nombreCompleto}...`);
+        const archiveRes = await generateAndArchivePatientPdf(updatedPlayer, {
+          globalDate,
+          globalClub,
+          nameOrder
         });
-        matched.push(player.nombreCompleto || `${player.apellidos || ''} ${player.nombres || ''}`);
-      } catch {
+
+        if (archiveRes.success && archiveRes.publicUrl) {
+          updatedPlayer.pdfUrl = archiveRes.publicUrl;
+          updatedPlayer.pdfSizeBytes = archiveRes.sizeBytes;
+          if (onUpdatePatient) {
+            onUpdatePatient(updatedPlayer, {
+              pdfUrl: archiveRes.publicUrl,
+              pdfSizeBytes: archiveRes.sizeBytes
+            });
+          }
+        }
+
+        matched.push({
+          player: updatedPlayer,
+          fileName: file.name,
+          pdfUrl: updatedPlayer.pdfUrl
+        });
+      } catch (err) {
+        console.error('Error procesando archivo:', file.name, err);
         unmatched.push(file.name);
       }
     }
 
-    setBusy(null);
-    setReport({ slot: slot.label, matched, unmatched });
+    setBusySlot(null);
+    setProcessingStatus('');
+    setReport({
+      slot: slot.label,
+      page: slot.page,
+      matched,
+      unmatched
+    });
+  };
+
+  const handleDownloadSinglePdf = async (player) => {
+    try {
+      const { blob, fileName } = await generatePatientPdf(player, { globalDate, globalClub, nameOrder });
+      downloadPdfBlob(blob, fileName);
+    } catch (e) {
+      window.alert('Error descargando PDF: ' + e.message);
+    }
   };
 
   const totalPatients = patientsList.length;
@@ -120,39 +252,51 @@ export default function BulkAttachmentUpload({ patientsList = [], onUpdatePatien
   return (
     <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
       
-      {/* Encabezado del módulo de carga masiva */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 mb-3">
+      {/* Encabezado del módulo de los 5 espacios */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0369A1] bg-sky-50 px-2 py-0.5 rounded">
-              5 Estudios de Soporte Clínico
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0369A1] bg-sky-50 px-2 py-0.5 rounded flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              5 Espacios de Estudios Médicos FPF
             </span>
             <span className="text-[10px] font-bold text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded flex items-center gap-1">
               <FileCheck className="w-3 h-3" />
-              {fullyAttached} de {totalPatients} expedientes completos
+              {fullyAttached} de {totalPatients} expedientes con estudios completos
+            </span>
+            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+              Admite PDFs e Imágenes (JPG, PNG)
             </span>
           </div>
           <h3 className="text-sm sm:text-base font-bold text-[#1E293B] mt-1">
-            Carga Masiva de Archivos por Estudio (5 Espacios)
+            Carga de Archivos por Estudio Clínico
           </h3>
-          <p className="text-xs text-[#64748B] mt-0.5 max-w-3xl">
-            Haz clic o arrastra un lote de imágenes a cualquiera de los 5 espacios. El sistema asocia automáticamente cada imagen al jugador por coincidencia de nombre o DNI. Si vuelves a subir un archivo para el mismo espacio, reemplazará la imagen anterior.
+          <p className="text-xs text-[#64748B] mt-0.5 max-w-4xl">
+            Haz clic o arrastra archivos (PDFs o imágenes) directamente a cualquiera de los 5 espacios. El sistema asocia automáticamente cada archivo al futbolista por nombre o DNI (creando al jugador si no existía), incrusta las imágenes en el expediente oficial y archiva el PDF actualizado con sellos directamente en Supabase Storage.
           </p>
         </div>
       </div>
 
-      {/* Grid de las 5 opciones de carga */}
+      {/* Indicador de proceso activo */}
+      {processingStatus && (
+        <div className="mb-4 p-3 bg-sky-50 border border-sky-200 rounded-xl flex items-center space-x-2.5 text-xs text-[#0369A1] font-semibold animate-pulse">
+          <RefreshCw className="w-4 h-4 animate-spin shrink-0 text-[#0369A1]" />
+          <span>{processingStatus}</span>
+        </div>
+      )}
+
+      {/* Grid interactivo de los 5 espacios de carga */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
         {ATTACHMENT_SLOTS.map((slot) => {
           const done = patientsList.filter((p) => p.attachments && p.attachments[slot.id]).length;
           const isFull = done > 0 && done === totalPatients;
-          const isBusyThis = busy === slot.id;
+          const isBusyThis = busySlot === slot.id;
 
           return (
             <div key={slot.id} className="relative">
               <input
                 type="file"
-                accept="image/*"
+                accept=".pdf,image/*,.png,.jpg,.jpeg,.webp"
                 multiple
                 className="hidden"
                 ref={(el) => (inputs.current[slot.id] = el)}
@@ -163,16 +307,20 @@ export default function BulkAttachmentUpload({ patientsList = [], onUpdatePatien
               />
               <button
                 type="button"
-                disabled={busy !== null}
+                disabled={busySlot !== null}
                 onClick={() => inputs.current[slot.id]?.click()}
-                onDragOver={(e) => e.preventDefault()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
                 onDrop={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   handleFiles(slot, e.dataTransfer.files);
                 }}
-                className={`w-full border-2 border-dashed rounded-xl p-3.5 flex flex-col items-center text-center transition cursor-pointer disabled:opacity-50 min-h-[135px] justify-between ${
+                className={`w-full border-2 border-dashed rounded-xl p-3.5 flex flex-col items-center text-center transition cursor-pointer disabled:opacity-50 min-h-[145px] justify-between ${
                   isBusyThis
-                    ? 'border-[#0369A1] bg-sky-50 ring-2 ring-[#0369A1]/30'
+                    ? 'border-[#0369A1] bg-sky-50 ring-2 ring-[#0369A1]/30 shadow-md'
                     : isFull
                     ? 'border-emerald-300 bg-emerald-50/40 hover:bg-emerald-50'
                     : done > 0
@@ -181,7 +329,7 @@ export default function BulkAttachmentUpload({ patientsList = [], onUpdatePatien
                 }`}
               >
                 <div className="flex flex-col items-center">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-1.5 ${
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-1.5 ${
                     isFull ? 'bg-emerald-100 text-[#166534]' : 'bg-sky-100 text-[#0369A1]'
                   }`}>
                     {isBusyThis ? (
@@ -193,7 +341,8 @@ export default function BulkAttachmentUpload({ patientsList = [], onUpdatePatien
                     )}
                   </div>
                   <span className="text-xs font-bold text-[#1E293B] leading-tight">{slot.label}</span>
-                  <span className="text-[10px] text-[#64748B] mt-0.5">{slot.page}</span>
+                  <span className="text-[10px] text-[#64748B] mt-0.5 font-medium">{slot.page}</span>
+                  <span className="text-[9px] uppercase tracking-wider text-slate-400 mt-0.5">PDF • JPG • PNG</span>
                 </div>
 
                 <div className="w-full mt-2 pt-2 border-t border-slate-200/60">
@@ -209,35 +358,75 @@ export default function BulkAttachmentUpload({ patientsList = [], onUpdatePatien
         })}
       </div>
 
-      {/* Reporte de resultados de la última subida */}
+      {/* Reporte de resultados de la última subida con descarga del PDF actualizado */}
       {report && (
-        <div className="mt-3.5 text-xs border border-slate-200 rounded-xl p-3 bg-slate-50 space-y-1.5">
+        <div className="mt-4 text-xs border border-slate-200 rounded-xl p-3.5 bg-slate-50 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-[#166534] font-bold">
               <CheckCircle2 className="w-4 h-4" />
-              <span>{report.slot}: {report.matched.length} imágenes asignadas correctamente</span>
+              <span>{report.slot} ({report.page}): {report.matched.length} archivo(s) procesados y PDF oficial archivado</span>
             </div>
             <button
               type="button"
               onClick={() => setReport(null)}
-              className="text-[10px] text-slate-400 hover:text-slate-600 cursor-pointer"
+              className="text-[10px] text-slate-400 hover:text-slate-600 font-semibold cursor-pointer"
             >
               Cerrar
             </button>
           </div>
 
+          {report.matched.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <div className="text-[11px] text-slate-600 font-semibold">
+                Expedientes actualizados y archivados en Supabase Storage:
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {report.matched.map((item, idx) => (
+                  <div key={idx} className="bg-white border border-slate-200 rounded-lg p-2 flex items-center justify-between gap-2 shadow-2xs">
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-bold text-slate-800 truncate" title={item.player.nombreCompleto}>
+                        {item.player.nombreCompleto}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono truncate" title={item.fileName}>
+                        {item.fileName}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {item.pdfUrl && (
+                        <a
+                          href={item.pdfUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-1 rounded bg-sky-50 text-[#0369A1] hover:bg-sky-100 transition"
+                          title="Ver PDF Oficial archivado en Supabase"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadSinglePdf(item.player)}
+                        className="p-1 rounded bg-emerald-50 text-[#166534] hover:bg-emerald-100 transition"
+                        title="Descargar PDF con las nuevas imágenes"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {report.unmatched.length > 0 && (
             <div className="text-[#991B1B] bg-rose-50 border border-rose-200 rounded-lg p-2 mt-1">
               <div className="flex items-center gap-1.5 font-bold text-[11px]">
                 <AlertCircle className="w-3.5 h-3.5" />
-                <span>{report.unmatched.length} archivos no coincidieron con ningún jugador en la lista:</span>
+                <span>{report.unmatched.length} archivo(s) no se pudieron procesar:</span>
               </div>
-              <div className="font-mono text-[10px] mt-1 break-words max-h-20 overflow-y-auto">
+              <div className="font-mono text-[10px] mt-1 break-words">
                 {report.unmatched.join(', ')}
               </div>
-              <p className="text-[10px] text-slate-600 mt-1">
-                Tip: Asegúrate de que el nombre del archivo contenga los apellidos del jugador o su DNI de 8 dígitos.
-              </p>
             </div>
           )}
         </div>
