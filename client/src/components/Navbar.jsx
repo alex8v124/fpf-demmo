@@ -28,7 +28,8 @@ export default function Navbar({
   onResetBlank,
   onPrint,
   userRole = 'MEDICO',
-  setUserRole
+  setUserRole,
+  activeDoctor = null
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
