@@ -74,6 +74,7 @@ export default function PoolManager({
   onSelectPatientId, 
   onNavigateTab, 
   onPrint,
+  onDownloadPdf,
   currentPatient, 
   setCurrentPatient 
 }) {
@@ -773,23 +774,42 @@ const handleSelectToView = (player) => {
                 </button>
               </div>
 
-              {/* Descargar Lote PDF Oficial */}
+              {/* Descargar Lote PDFs 1 a 1 */}
               <button
                 type="button"
                 onClick={() => {
                   const selectedPatients = pool.filter(p => selectedIds.has(p.id || p.fileName));
                   if (selectedPatients.length === 0) return;
-                  if (onPrint) {
+                  if (onDownloadPdf) {
+                    onDownloadPdf(selectedPatients, false);
+                  } else if (onPrint) {
                     onPrint(selectedPatients);
                   } else {
                     window.print();
                   }
                 }}
                 className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-bold px-3 py-1.5 rounded-md shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
-                title={`Descargar o guardar lote de ${selectedIds.size} futbolistas en PDF oficial`}
+                title={`Descargar automáticamente ${selectedIds.size} expedientes PDF 1 a 1 en tu equipo`}
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Descargar Lote PDF ({selectedIds.size})</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Descargar PDFs 1 a 1 ({selectedIds.size})</span>
+              </button>
+
+              {/* Descargar Lote ZIP (PDFs) */}
+              <button
+                type="button"
+                onClick={() => {
+                  const selectedPatients = pool.filter(p => selectedIds.has(p.id || p.fileName));
+                  if (selectedPatients.length === 0) return;
+                  if (onDownloadPdf) {
+                    onDownloadPdf(selectedPatients, true);
+                  }
+                }}
+                className="bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold px-2.5 py-1.5 rounded-md shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
+                title={`Descargar archivo comprimido (.zip) con los ${selectedIds.size} expedientes PDF individuales`}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>PDFs ZIP ({selectedIds.size})</span>
               </button>
 
               {/* Exportar Seleccionados Word */}
@@ -928,13 +948,14 @@ const handleSelectToView = (player) => {
                           <button
                             type="button"
                             onClick={() => {
-                              if (onPrint) onPrint(player);
+                              if (onDownloadPdf) onDownloadPdf(player);
+                              else if (onPrint) onPrint(player);
                               else window.print();
                             }}
                             className="bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] px-2 py-1 rounded-md transition cursor-pointer text-xs font-semibold flex items-center gap-1"
-                            title="Descargar expediente oficial en PDF (19 Págs)"
+                            title="Descargar automáticamente expediente oficial en PDF (19 Págs)"
                           >
-                            <Printer className="w-3.5 h-3.5 text-slate-500" />
+                            <Download className="w-3.5 h-3.5 text-slate-500" />
                             <span>PDF</span>
                           </button>
 

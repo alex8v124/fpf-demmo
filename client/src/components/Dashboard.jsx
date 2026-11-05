@@ -41,6 +41,7 @@ export default function Dashboard({
   onOpenEditor,
   onResetBlank, 
   onPrint,
+  onDownloadPdf,
   globalDate = '22-01-2026',
   globalClub = 'Club FPF / Liga Formativa',
   nameOrder = 'LAST_FIRST',
@@ -585,23 +586,42 @@ export default function Dashboard({
                 </button>
               </div>
 
-              {/* Descargar Lote PDF Oficial */}
+              {/* Descargar Lote PDFs 1 a 1 */}
               <button
                 type="button"
                 onClick={() => {
                   const selectedPatients = (patientsList || []).filter(p => selectedDashboardIds.has(p.id || p.fileName));
                   if (selectedPatients.length === 0) return;
-                  if (onPrint) {
+                  if (onDownloadPdf) {
+                    onDownloadPdf(selectedPatients, false);
+                  } else if (onPrint) {
                     onPrint(selectedPatients);
                   } else {
                     window.print();
                   }
                 }}
                 className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-bold px-3 py-1.5 rounded-md shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
-                title={`Descargar o guardar lote consolidado de ${selectedDashboardIds.size} futbolistas en PDF oficial`}
+                title={`Descargar automáticamente ${selectedDashboardIds.size} expedientes PDF 1 a 1 en tu equipo`}
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Descargar Lote PDF ({selectedDashboardIds.size})</span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Descargar PDFs 1 a 1 ({selectedDashboardIds.size})</span>
+              </button>
+
+              {/* Descargar Lote ZIP (PDFs) */}
+              <button
+                type="button"
+                onClick={() => {
+                  const selectedPatients = (patientsList || []).filter(p => selectedDashboardIds.has(p.id || p.fileName));
+                  if (selectedPatients.length === 0) return;
+                  if (onDownloadPdf) {
+                    onDownloadPdf(selectedPatients, true);
+                  }
+                }}
+                className="bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold px-2.5 py-1.5 rounded-md shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
+                title={`Descargar archivo comprimido (.zip) con los ${selectedDashboardIds.size} expedientes PDF individuales`}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>PDFs ZIP ({selectedDashboardIds.size})</span>
               </button>
 
               {/* Exportar Word ZIP */}
@@ -771,10 +791,13 @@ export default function Dashboard({
                             onClick={(e) => {
                               e.stopPropagation();
                               handleChoosePlayer(player);
-                              setTimeout(() => {
-                                if (onPrint) onPrint(player);
-                                else window.print();
-                              }, 100);
+                              if (onDownloadPdf) {
+                                onDownloadPdf(player);
+                              } else if (onPrint) {
+                                setTimeout(() => onPrint(player), 100);
+                              } else {
+                                window.print();
+                              }
                             }}
                             className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-sky-50 hover:bg-sky-100 text-[#0369A1] border border-sky-300 text-[11px] font-bold transition cursor-pointer shrink-0 whitespace-nowrap shadow-2xs"
                             title="Descargar o guardar como PDF oficial las 19 páginas con formato 1:1"

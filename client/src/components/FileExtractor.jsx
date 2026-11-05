@@ -38,6 +38,7 @@ export default function FileExtractor({
   onNavigateTab,
   onUpdatePatient,
   onPrint,
+  onDownloadPdf,
   globalDate: parentDate,
   globalClub: parentClub,
   nameOrder: parentOrder
@@ -118,10 +119,13 @@ export default function FileExtractor({
 
   const handleDownloadSinglePdf = (player) => {
     if (onSelectPatient) onSelectPatient(player);
-    setTimeout(() => {
-      if (onPrint) onPrint(player);
-      else window.print();
-    }, 100);
+    if (onDownloadPdf) {
+      onDownloadPdf(player);
+    } else if (onPrint) {
+      setTimeout(() => onPrint(player), 100);
+    } else {
+      window.print();
+    }
   };
 
   const filteredPatients = (patientsList || []).filter(player => {
@@ -271,6 +275,7 @@ export default function FileExtractor({
         onUpdatePatient={onUpdatePatient}
         onSelectPatient={onSelectPatient}
         onPrint={onPrint}
+        onDownloadPdf={onDownloadPdf}
         globalDate={globalDate}
         globalClub={globalClub}
         nameOrder={nameOrder}

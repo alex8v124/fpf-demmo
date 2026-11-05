@@ -217,10 +217,13 @@ export default function BulkAttachmentUpload({
 
   const handleDownloadSinglePdf = (player) => {
     if (onSelectPatient) onSelectPatient(player);
-    setTimeout(() => {
-      if (onPrint) onPrint(player);
-      else window.print();
-    }, 100);
+    if (onDownloadPdf) {
+      onDownloadPdf(player);
+    } else if (onPrint) {
+      setTimeout(() => onPrint(player), 100);
+    } else {
+      window.print();
+    }
   };
 
   const totalPatients = patientsList.length;
@@ -365,16 +368,18 @@ export default function BulkAttachmentUpload({
                     type="button"
                     onClick={() => {
                       const players = report.matched.map(item => item.player);
-                      if (onPrint) {
+                      if (onDownloadPdf) {
+                        onDownloadPdf(players, false);
+                      } else if (onPrint) {
                         onPrint(players);
                       } else {
                         window.print();
                       }
                     }}
                     className="text-[10px] font-bold text-[#0369A1] hover:underline cursor-pointer"
-                    title="Descargar lote completo de futbolistas actualizados en un solo PDF continuo"
+                    title="Descargar automáticamente cada PDF 1 a 1 de los futbolistas actualizados"
                   >
-                    Descargar Lote PDF ({report.matched.length})
+                    Descargar PDFs 1 a 1 ({report.matched.length})
                   </button>
                 )}
               </div>

@@ -29,7 +29,7 @@ export const TOTAL_EXPEDIENTE_PAGES = 19;
  * para garantizar que el botón "Imprimir PDF" funcione desde CUALQUIER pestaña de la plataforma
  * generando exactamente las 19 páginas limpias sin hojas grises ni desplazamientos verticales.
  */
-export function PrintExpedienteDocument({ patient, patients = null, isBlankMode }) {
+export function PrintExpedienteDocument({ patient, patients = null, isBlankMode, forceVisible = false }) {
   const targetPatients = Array.isArray(patients) && patients.length > 0
     ? patients
     : (patient ? [patient] : []);
@@ -37,13 +37,15 @@ export function PrintExpedienteDocument({ patient, patients = null, isBlankMode 
   if (targetPatients.length === 0) return null;
 
   return (
-    <div className="print-only m-0 p-0">
+    <div className={forceVisible ? "m-0 p-0" : "print-only m-0 p-0"}>
       {targetPatients.map((currPat, patIdx) => (
         <React.Fragment key={currPat?.id || currPat?.fileName || patIdx}>
           {Array.from({ length: TOTAL_EXPEDIENTE_PAGES }, (_, i) => i + 1).map((pNum) => (
             <div
               key={`${currPat?.id || patIdx}-${pNum}`}
-              className="print-page w-[210mm] h-[297mm] max-h-[297mm] bg-white text-black relative overflow-hidden"
+              className="print-page w-[794px] h-[1123px] min-w-[794px] min-h-[1123px] max-w-[794px] max-h-[1123px] bg-white text-black relative overflow-hidden"
+              data-patient-id={currPat?.id || currPat?.fileName}
+              data-page-num={pNum}
             >
               <PageContentRenderer
                 pageNumber={pNum}
@@ -64,7 +66,8 @@ export default function DocumentViewer({
   setIsBlankMode,
   onUpdatePatient,
   onNavigateTab,
-  onPrint
+  onPrint,
+  onDownloadPdf
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState('single'); // 'single' | 'all'
@@ -329,14 +332,15 @@ export default function DocumentViewer({
           <button
             type="button"
             onClick={() => {
-              if (onPrint) onPrint(patient);
+              if (onDownloadPdf) onDownloadPdf(patient);
+              else if (onPrint) onPrint(patient);
               else window.print();
             }}
             className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-1.5 rounded-md transition cursor-pointer shadow-xs"
-            title="Descargar o imprimir el expediente oficial de 19 páginas con formato idéntico a Imprimir"
+            title="Descargar automáticamente el expediente oficial de 19 páginas a tu equipo"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Descargar / Imprimir PDF (19P)</span>
+            <span>Descargar PDF (19P)</span>
           </button>
 
           {viewFormat === 'blank' ? (
