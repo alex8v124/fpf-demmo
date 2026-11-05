@@ -15,7 +15,7 @@ import { ATTACHMENT_SLOTS } from './AttachmentSlots';
 import { anyFileToDataUrl } from '../utils/fileConverter';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
 import { savePatientToSupabase, setCachedAttachments } from '../utils/supabase';
-import { generateAndArchivePatientPdf, downloadPdfBlob, generatePatientPdf } from '../utils/pdfGenerator';
+import { downloadAndOpenPatientPdf } from '../utils/pdfGenerator';
 
 const NOISE_WORDS = new Set([
   '2D', '3D', 'MM', 'ECO', 'ECOGRAFIA', 'ECG', 'EKG', 'ELECTRO', 'ELECTROCARDIOGRAMA',
@@ -195,29 +195,9 @@ export default function BulkAttachmentUpload({
         // 4. Guardar inmediatamente en base de datos Supabase
         await savePatientToSupabase(updatedPlayer);
 
-        // 5. Generar y archivar el PDF oficial de 19 páginas CON las imágenes ya cambiadas en Supabase Storage
-        setProcessingStatus(`Generando y archivando PDF oficial con sellos para ${updatedPlayer.nombreCompleto}...`);
-        const archiveRes = await generateAndArchivePatientPdf(updatedPlayer, {
-          globalDate,
-          globalClub,
-          nameOrder
-        });
-
-        if (archiveRes.success && archiveRes.publicUrl) {
-          updatedPlayer.pdfUrl = archiveRes.publicUrl;
-          updatedPlayer.pdfSizeBytes = archiveRes.sizeBytes;
-          if (onUpdatePatient) {
-            onUpdatePatient(updatedPlayer, {
-              pdfUrl: archiveRes.publicUrl,
-              pdfSizeBytes: archiveRes.sizeBytes
-            });
-          }
-        }
-
         matched.push({
           player: updatedPlayer,
-          fileName: file.name,
-          pdfUrl: updatedPlayer.pdfUrl
+          fileName: file.name
         });
       } catch (err) {
         console.error('Error procesando archivo:', file.name, err);
@@ -237,10 +217,9 @@ export default function BulkAttachmentUpload({
 
   const handleDownloadSinglePdf = async (player) => {
     try {
-      const { blob, fileName } = await generatePatientPdf(player, { globalDate, globalClub, nameOrder });
-      downloadPdfBlob(blob, fileName);
+      await downloadAndOpenPatientPdf(player, { globalDate, globalClub, nameOrder });
     } catch (e) {
-      window.alert('Error descargando PDF: ' + e.message);
+      window.alert('Error generando PDF: ' + e.message);
     }
   };
 
@@ -364,7 +343,7 @@ export default function BulkAttachmentUpload({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-[#166534] font-bold">
               <CheckCircle2 className="w-4 h-4" />
-              <span>{report.slot} ({report.page}): {report.matched.length} archivo(s) procesados y PDF oficial archivado</span>
+              <span>{report.slot} ({report.page}): {report.matched.length} archivo(s) procesados y asociados con éxito</span>
             </div>
             <button
               type="button"
@@ -376,13 +355,28 @@ export default function BulkAttachmentUpload({
           </div>
 
           {report.matched.length > 0 && (
-            <div className="space-y-1.5 pt-1">
-              <div className="text-[11px] text-slate-600 font-semibold">
-                Expedientes actualizados y archivados en Supabase Storage:
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-600 font-semibold">
+                  Futbolistas actualizados con este estudio:
+                </span>
+                {report.matched.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      for (const item of report.matched) {
+                        await handleDownloadSinglePdf(item.player);
+                      }
+                    }}
+                    className="text-[10px] font-bold text-[#0369A1] hover:underline cursor-pointer"
+                  >
+                    Descargar y abrir todos ({report.matched.length})
+                  </button>
+                )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {report.matched.map((item, idx) => (
-                  <div key={idx} className="bg-white border border-slate-200 rounded-lg p-2 flex items-center justify-between gap-2 shadow-2xs">
+                  <div key={idx} className="bg-white border border-slate-200 rounded-lg p-2.5 flex items-center justify-between gap-2 shadow-2xs">
                     <div className="min-w-0">
                       <div className="text-[11px] font-bold text-slate-800 truncate" title={item.player.nombreCompleto}>
                         {item.player.nombreCompleto}
@@ -391,27 +385,15 @@ export default function BulkAttachmentUpload({
                         {item.fileName}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {item.pdfUrl && (
-                        <a
-                          href={item.pdfUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1 rounded bg-sky-50 text-[#0369A1] hover:bg-sky-100 transition"
-                          title="Ver PDF Oficial archivado en Supabase"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleDownloadSinglePdf(item.player)}
-                        className="p-1 rounded bg-emerald-50 text-[#166534] hover:bg-emerald-100 transition"
-                        title="Descargar PDF con las nuevas imágenes"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadSinglePdf(item.player)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#0369A1] hover:bg-[#075985] text-white text-[11px] font-bold shadow-2xs transition cursor-pointer shrink-0"
+                      title="Descargar PDF y abrirlo automáticamente en nueva pestaña"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Descargar PDF</span>
+                    </button>
                   </div>
                 ))}
               </div>

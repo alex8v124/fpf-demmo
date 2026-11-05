@@ -20,6 +20,7 @@ import { pagesCatalog } from '../data/initialData';
 import { downloadPatientDocx } from '../utils/docxGenerator';
 import { uploadPatientPdf } from '../lib/supabase';
 import AttachmentSlots from './AttachmentSlots';
+import { downloadAndOpenPatientPdf } from '../utils/pdfGenerator';
 
 export const TOTAL_EXPEDIENTE_PAGES = 19;
 
@@ -60,6 +61,7 @@ export default function DocumentViewer({
   const [zoomLevel, setZoomLevel] = useState(100);
   const [viewFormat, setViewFormat] = useState(isBlankMode ? 'blank' : 'facsimile'); // 'facsimile' | 'blank'
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfToast, setPdfToast] = useState(null);
   const pdfFileInputRef = React.useRef(null);
 
@@ -314,26 +316,28 @@ export default function DocumentViewer({
             </a>
           )}
 
-          <input
-            ref={pdfFileInputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            className="hidden"
-            onChange={handleUploadOfficialPdf}
-          />
           <button
             type="button"
-            disabled={isUploadingPdf}
-            onClick={() => pdfFileInputRef.current?.click()}
-            className="flex items-center space-x-1 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs px-2.5 py-1.5 rounded-md transition border border-[#CBD5E1] cursor-pointer disabled:opacity-50"
-            title="Archivar el archivo PDF oficial resultante en la nube de Supabase"
+            disabled={isGeneratingPdf}
+            onClick={async () => {
+              setIsGeneratingPdf(true);
+              try {
+                await downloadAndOpenPatientPdf(patient);
+              } catch (e) {
+                window.alert('Error generando PDF: ' + e.message);
+              } finally {
+                setIsGeneratingPdf(false);
+              }
+            }}
+            className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-1.5 rounded-md transition cursor-pointer shadow-xs disabled:opacity-50"
+            title="Genera el expediente de 19 páginas con los 5 estudios médicos, lo abre automáticamente y lo descarga"
           >
-            {isUploadingPdf ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#0369A1]" />
+            {isGeneratingPdf ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <UploadCloud className="w-3.5 h-3.5 text-[#0369A1]" />
+              <Download className="w-3.5 h-3.5" />
             )}
-            <span>{isUploadingPdf ? 'Archivando...' : patient?.pdfUrl ? 'Reemplazar PDF' : 'Archivar PDF en Nube'}</span>
+            <span>{isGeneratingPdf ? 'Generando...' : 'Descargar PDF (19P)'}</span>
           </button>
 
           {viewFormat === 'blank' ? (

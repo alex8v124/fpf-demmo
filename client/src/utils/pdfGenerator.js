@@ -286,40 +286,42 @@ export async function generatePatientPdf(patient, options = {}) {
 }
 
 /**
- * Descarga el PDF generado directamente al navegador
+ * Descarga el PDF generado directamente al navegador y lo abre automáticamente en una nueva pestaña
  */
-export function downloadPdfBlob(blob, fileName) {
+export function downloadPdfBlob(blob, fileName, autoOpen = true) {
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  // 1. Abrir automáticamente en nueva pestaña si el navegador lo permite
+  if (autoOpen && typeof window !== 'undefined') {
+    try {
+      window.open(url, '_blank');
+    } catch (e) {
+      console.warn('Popup bloqueado por el navegador, continuando con descarga directa:', e);
+    }
+  }
+
+  // 2. Descargar el archivo directamente a la computadora
+  try {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (err) {
+    console.error('Error al forzar descarga directa:', err);
+  }
+
+  // Mantener la URL en memoria por 2 minutos para que el visor de la nueva pestaña cargue sin problemas
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
 }
 
 /**
- * Genera el PDF con las imágenes adjuntas y lo archiva automáticamente en Supabase Storage
+ * Genera el PDF con las imágenes diagnósticas y sellos,
+ * lo abre automáticamente en una nueva pestaña y lo descarga de inmediato en el equipo.
  */
-export async function generateAndArchivePatientPdf(patient, options = {}) {
-  try {
-    const { blob, fileName, sizeBytes } = await generatePatientPdf(patient, options);
-    const file = new File([blob], fileName, { type: 'application/pdf' });
-    const res = await uploadPatientPdf(patient, file);
-    return {
-      success: res.success,
-      publicUrl: res.publicUrl,
-      sizeBytes,
-      fileName,
-      blob,
-      error: res.error
-    };
-  } catch (err) {
-    console.error('Error al generar y archivar PDF:', err);
-    return {
-      success: false,
-      error: err.message
-    };
-  }
+export async function downloadAndOpenPatientPdf(patient, options = {}) {
+  const { blob, fileName } = await generatePatientPdf(patient, options);
+  downloadPdfBlob(blob, fileName, true);
+  return { success: true, fileName };
 }

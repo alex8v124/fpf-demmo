@@ -29,7 +29,7 @@ import AttachmentSlots, { ATTACHMENT_SLOTS } from './AttachmentSlots';
 import BulkAttachmentUpload from './BulkAttachmentUpload';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
 import { supabase, saveBatchPatientsToSupabase, uploadPatientPdf } from '../lib/supabase';
-import { generatePatientPdf, downloadPdfBlob } from '../utils/pdfGenerator';
+import { downloadAndOpenPatientPdf } from '../utils/pdfGenerator';
 
 export default function FileExtractor({ 
   patientsList = [], 
@@ -118,14 +118,13 @@ export default function FileExtractor({
   const handleDownloadSinglePdf = async (player) => {
     setDownloadingPdfId(player.id || player.fileName);
     try {
-      const { blob, fileName } = await generatePatientPdf(player, {
+      await downloadAndOpenPatientPdf(player, {
         globalDate,
         globalClub,
         nameOrder
       });
-      downloadPdfBlob(blob, fileName);
     } catch (e) {
-      window.alert('Error descargando PDF: ' + e.message);
+      window.alert('Error generando PDF: ' + e.message);
     } finally {
       setDownloadingPdfId(null);
     }
@@ -437,38 +436,20 @@ export default function FileExtractor({
 
                     {/* 5. PDF Oficial con Sellos */}
                     <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        {player.pdfUrl ? (
-                          <a
-                            href={player.pdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-emerald-50 hover:bg-emerald-100 text-[#166534] border border-emerald-300 text-[11px] font-bold px-2 py-1 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-2xs"
-                            title="Abrir PDF oficial archivado en Supabase Storage"
-                          >
-                            <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Ver en Nube</span>
-                            <ExternalLink className="w-2.5 h-2.5 opacity-60" />
-                          </a>
+                      <button
+                        type="button"
+                        disabled={downloadingPdfId === pId}
+                        onClick={() => handleDownloadSinglePdf(player)}
+                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-bold transition cursor-pointer shadow-xs disabled:opacity-50"
+                        title="Genera el PDF con las 19 páginas y los 5 estudios clínicos, lo abre automáticamente en nueva pestaña y lo descarga en tu equipo"
+                      >
+                        {downloadingPdfId === pId ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                         ) : (
-                          <span className="text-[10px] text-slate-400 italic">Sin archivar</span>
+                          <Download className="w-3.5 h-3.5" />
                         )}
-
-                        <button
-                          type="button"
-                          disabled={downloadingPdfId === pId}
-                          onClick={() => handleDownloadSinglePdf(player)}
-                          className="bg-white hover:bg-slate-50 text-[#0369A1] border border-slate-300 hover:border-[#0369A1] text-[11px] font-bold px-2 py-1 rounded-md transition cursor-pointer inline-flex items-center space-x-1 shadow-2xs disabled:opacity-50"
-                          title="Descargar PDF de 19 páginas generado con las imágenes cambiadas"
-                        >
-                          {downloadingPdfId === pId ? (
-                            <RefreshCw className="w-3 h-3 animate-spin text-[#0369A1]" />
-                          ) : (
-                            <Download className="w-3 h-3 text-[#0369A1]" />
-                          )}
-                          <span>Descargar PDF</span>
-                        </button>
-                      </div>
+                        <span>{downloadingPdfId === pId ? 'Generando...' : 'Descargar PDF'}</span>
+                      </button>
                     </td>
 
                     {/* 6. Acciones */}
