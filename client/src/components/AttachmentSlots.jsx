@@ -58,9 +58,11 @@ function Slot({ slot, value, onChange, onRemove }) {
         ) : value ? (
           <img src={value.url} alt={slot.label} className="w-full h-full object-contain" />
         ) : (
-          <div className="flex flex-col items-center text-slate-400">
-            <ImageIcon className="w-5 h-5" />
-            <span className="text-[10px] mt-1">Sin archivo</span>
+          <div className="flex flex-col items-center text-slate-400 px-2 text-center">
+            <ImageIcon className="w-4 h-4 mb-1 text-slate-300" />
+            <span className="text-[9px] leading-tight text-slate-400 font-medium">
+              No se ha subido la imagen de referencia
+            </span>
           </div>
         )}
       </div>

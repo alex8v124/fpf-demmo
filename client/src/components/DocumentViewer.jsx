@@ -1250,6 +1250,9 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
 
   // PÁGINA 15: ANEXO DE IMÁGENES ECOCARDIOGRAMA DOPPLER 2D Y MODO M
   if (pageNumber === 15) {
+    const eco2dUrl = patient?.attachments?.eco2d?.url;
+    const ecoMmodeUrl = patient?.attachments?.ecoMmode?.url;
+
     return (
       <div className="w-full h-full relative select-none">
         <img
@@ -1262,22 +1265,50 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           className="absolute overflow-hidden"
           style={{ top: '22.49%', left: '14.29%', width: '71.42%', height: '30.83%' }}
         >
-          <img
-            src={patient?.attachments?.eco2d?.url || '/assets/echo_sample_2d.png'}
-            alt="Ecocardiograma 2D Doppler"
-            className="w-full h-full object-contain bg-black/95 rounded-2xs"
-          />
+          {eco2dUrl ? (
+            <img
+              src={eco2dUrl}
+              alt="Ecocardiograma 2D Doppler"
+              className="w-full h-full object-contain bg-black/95 rounded-2xs"
+            />
+          ) : (
+            <div className="w-full h-full border-2 border-dashed border-slate-300 bg-slate-50/90 rounded flex flex-col items-center justify-center p-4 text-center">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                ECOCARDIOGRAMA 2D / DOPPLER
+              </span>
+              <span className="text-xs font-bold text-slate-700 mt-1">
+                No se ha subido la imagen de referencia
+              </span>
+              <span className="text-[10px] text-slate-400 mt-0.5">
+                (Estudio pendiente de adjuntar)
+              </span>
+            </div>
+          )}
         </div>
         {/* Captura Inferior: Eco M-Mode / Flujos */}
         <div
           className="absolute overflow-hidden"
           style={{ top: '62.44%', left: '14.94%', width: '71.42%', height: '31.73%' }}
         >
-          <img
-            src={patient?.attachments?.ecoMmode?.url || '/assets/echo_sample_mmode.png'}
-            alt="Ecocardiograma M-Mode"
-            className="w-full h-full object-contain bg-black/95 rounded-2xs"
-          />
+          {ecoMmodeUrl ? (
+            <img
+              src={ecoMmodeUrl}
+              alt="Ecocardiograma M-Mode"
+              className="w-full h-full object-contain bg-black/95 rounded-2xs"
+            />
+          ) : (
+            <div className="w-full h-full border-2 border-dashed border-slate-300 bg-slate-50/90 rounded flex flex-col items-center justify-center p-4 text-center">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                ECOCARDIOGRAMA M-MODE / FLUJOS
+              </span>
+              <span className="text-xs font-bold text-slate-700 mt-1">
+                No se ha subido la imagen de referencia
+              </span>
+              <span className="text-[10px] text-slate-400 mt-0.5">
+                (Estudio pendiente de adjuntar)
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1285,7 +1316,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
 
   // PÁGINA 16: ELECTROCARDIOGRAMA DE REPOSO (12 DERIVACIONES) CON SELLO CARDIÓLOGO
   if (pageNumber === 16) {
-    const hasCustomEcg = Boolean(patient?.attachments?.ecg?.url);
+    const ecgUrl = patient?.attachments?.ecg?.url;
     return (
       <div className="w-full h-full relative select-none">
         <img
@@ -1298,44 +1329,29 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           className="absolute overflow-hidden"
           style={{ top: '24.35%', left: '14.28%', width: '71.42%', height: '72.10%' }}
         >
-          <img
-            src={patient?.attachments?.ecg?.url || '/assets/ecg_sample_strip.png'}
-            alt="Trazado ECG 12 Derivaciones"
-            className="w-full h-full object-contain"
-          />
+          {ecgUrl ? (
+            <img
+              src={ecgUrl}
+              alt="Trazado ECG 12 Derivaciones"
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <div className="w-full h-full border-2 border-dashed border-slate-300 bg-slate-50/90 rounded flex flex-col items-center justify-center p-6 text-center">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                ELECTROCARDIOGRAMA DE REPOSO (12 DERIVACIONES)
+              </span>
+              <span className="text-sm font-bold text-slate-800 mt-2">
+                No se ha subido la imagen de referencia
+              </span>
+              <span className="text-xs text-slate-500 font-mono mt-1">
+                FUTBOLISTA: {cleanName} • FECHA: {cleanDate}
+              </span>
+              <span className="text-[11px] text-slate-400 mt-1">
+                (Trazado EKG oficial pendiente de adjuntar en el módulo de estudios)
+              </span>
+            </div>
+          )}
         </div>
-        {/* Cuando se usa la tira limpia base, superponer Nombre, Fecha y Dictamen NORMAL */}
-        {!hasCustomEcg && (
-          <>
-            <div
-              className="absolute uppercase text-black font-semibold truncate max-w-[46%]"
-              style={{
-                top: '25.58%',
-                left: '18.14%',
-                fontFamily: 'Calibri, Arial, sans-serif',
-                fontSize: '9.5px',
-                lineHeight: 1.1
-              }}
-            >
-              NAME: {cleanName}
-            </div>
-            <div
-              className="absolute text-black font-semibold"
-              style={{
-                top: '28.49%',
-                left: '67.54%',
-                fontFamily: 'Calibri, Arial, sans-serif',
-                fontSize: '9.5px',
-                lineHeight: 1.1
-              }}
-            >
-              DATE: {cleanDate}
-            </div>
-            <div className="absolute fpf-doc-text uppercase" style={{ top: '84.29%', left: '44.09%' }}>
-              {(patient?.ekg?.resultadoGeneral || 'NORMAL').toUpperCase()}
-            </div>
-          </>
-        )}
         {/* Sello transparente del Cardiólogo sobre la esquina inferior derecha */}
         <img
           src="/assets/sello-alfredo-vega-transparent.png"
@@ -1437,6 +1453,7 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
 
   // PÁGINA 19: ANEXO PLACA DIGITAL DE RAYOS X DE TÓRAX
   if (pageNumber === 19) {
+    const rxUrl = patient?.attachments?.rayosX?.url;
     return (
       <div className="w-full h-full relative select-none">
         <img
@@ -1448,11 +1465,25 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
           className="absolute overflow-hidden"
           style={{ top: '30.17%', left: '14.29%', width: '71.42%', height: '37.59%' }}
         >
-          <img
-            src={patient?.attachments?.rayosX?.url || '/assets/rx_sample_clean.jpeg'}
-            alt="Placa Radiográfica de Tórax"
-            className="w-full h-full object-contain bg-black rounded-2xs"
-          />
+          {rxUrl ? (
+            <img
+              src={rxUrl}
+              alt="Placa Radiográfica de Tórax"
+              className="w-full h-full object-contain bg-black rounded-2xs"
+            />
+          ) : (
+            <div className="w-full h-full border-2 border-dashed border-slate-300 bg-slate-50/90 rounded flex flex-col items-center justify-center p-4 text-center">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                RADIOGRAFÍA DE TÓRAX (PLACA DIGITAL)
+              </span>
+              <span className="text-xs font-bold text-slate-800 mt-1">
+                No se ha subido la imagen de referencia
+              </span>
+              <span className="text-[10px] text-slate-400 mt-0.5">
+                (Placa radiográfica pendiente de adjuntar)
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );
