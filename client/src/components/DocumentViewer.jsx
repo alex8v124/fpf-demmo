@@ -29,20 +29,30 @@ export const TOTAL_EXPEDIENTE_PAGES = 19;
  * para garantizar que el botón "Imprimir PDF" funcione desde CUALQUIER pestaña de la plataforma
  * generando exactamente las 19 páginas limpias sin hojas grises ni desplazamientos verticales.
  */
-export function PrintExpedienteDocument({ patient, isBlankMode }) {
+export function PrintExpedienteDocument({ patient, patients = null, isBlankMode }) {
+  const targetPatients = Array.isArray(patients) && patients.length > 0
+    ? patients
+    : (patient ? [patient] : []);
+
+  if (targetPatients.length === 0) return null;
+
   return (
     <div className="print-only m-0 p-0">
-      {Array.from({ length: TOTAL_EXPEDIENTE_PAGES }, (_, i) => i + 1).map((pNum) => (
-        <div
-          key={pNum}
-          className="print-page w-[210mm] h-[297mm] max-h-[297mm] bg-white text-black relative overflow-hidden"
-        >
-          <PageContentRenderer
-            pageNumber={pNum}
-            patient={patient}
-            viewFormat={isBlankMode ? 'blank' : 'facsimile'}
-          />
-        </div>
+      {targetPatients.map((currPat, patIdx) => (
+        <React.Fragment key={currPat?.id || currPat?.fileName || patIdx}>
+          {Array.from({ length: TOTAL_EXPEDIENTE_PAGES }, (_, i) => i + 1).map((pNum) => (
+            <div
+              key={`${currPat?.id || patIdx}-${pNum}`}
+              className="print-page w-[210mm] h-[297mm] max-h-[297mm] bg-white text-black relative overflow-hidden"
+            >
+              <PageContentRenderer
+                pageNumber={pNum}
+                patient={currPat}
+                viewFormat={isBlankMode ? 'blank' : 'facsimile'}
+              />
+            </div>
+          ))}
+        </React.Fragment>
       ))}
     </div>
   );

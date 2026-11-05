@@ -73,6 +73,7 @@ export default function PoolManager({
   onSelectPatient,
   onSelectPatientId, 
   onNavigateTab, 
+  onPrint,
   currentPatient, 
   setCurrentPatient 
 }) {
@@ -763,7 +764,26 @@ const handleSelectToView = (player) => {
                 </button>
               </div>
 
-              {/* Exportar Seleccionados */}
+              {/* Descargar Lote PDF Oficial */}
+              <button
+                type="button"
+                onClick={() => {
+                  const selectedPatients = pool.filter(p => selectedIds.has(p.id || p.fileName));
+                  if (selectedPatients.length === 0) return;
+                  if (onPrint) {
+                    onPrint(selectedPatients);
+                  } else {
+                    window.print();
+                  }
+                }}
+                className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-bold px-3 py-1.5 rounded-md shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
+                title={`Descargar o guardar lote de ${selectedIds.size} futbolistas en PDF oficial`}
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Descargar Lote PDF ({selectedIds.size})</span>
+              </button>
+
+              {/* Exportar Seleccionados Word */}
               <button
                 type="button"
                 onClick={() => {
@@ -774,7 +794,7 @@ const handleSelectToView = (player) => {
                 className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-md shadow-2xs transition flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Exportar ZIP ({selectedIds.size})</span>
+                <span>Word ZIP ({selectedIds.size})</span>
               </button>
 
               {/* Limpiar selección */}

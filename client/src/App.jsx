@@ -25,6 +25,7 @@ export default function App() {
   const [activeDoctor, setActiveDoctor] = useState(
     initialStaff && initialStaff.length > 0 ? initialStaff[0] : null
   );
+  const [printBatchPatients, setPrintBatchPatients] = useState(null);
 
   useEffect(() => {
     loadStaffFromSupabase().then((res) => {
@@ -166,14 +167,36 @@ export default function App() {
     setIsBlankMode(true);
   };
 
-  const handlePrint = async (targetPatient = null) => {
-    if (targetPatient) {
-      setCurrentPatient(targetPatient);
+  const handlePrint = async (target = null) => {
+    let patientsToPrint = [];
+    if (Array.isArray(target) && target.length > 0) {
+      patientsToPrint = target;
+      setPrintBatchPatients(target);
+      const originalTitle = document.title;
+      document.title = `EXPEDIENTES_FPF_LOTE_${target.length}_FUTBOLISTAS`;
+      setTimeout(() => { document.title = originalTitle; }, 6000);
+    } else if (target && typeof target === 'object') {
+      patientsToPrint = [target];
+      setPrintBatchPatients([target]);
+      setCurrentPatient(target);
       setIsBlankMode(false);
-      await new Promise((r) => setTimeout(r, 60));
+      const originalTitle = document.title;
+      const cleanName = (target.nombreCompleto || `${target.apellidos || ''} ${target.nombres || ''}`).trim() || 'EXPEDIENTE';
+      document.title = `${cleanName}_FPF_19P`;
+      setTimeout(() => { document.title = originalTitle; }, 6000);
+    } else {
+      patientsToPrint = currentPatient ? [currentPatient] : [];
+      setPrintBatchPatients(null);
+      const originalTitle = document.title;
+      const cleanName = (currentPatient?.nombreCompleto || `${currentPatient?.apellidos || ''} ${currentPatient?.nombres || ''}`).trim() || 'EXPEDIENTE';
+      document.title = `${cleanName}_FPF_19P`;
+      setTimeout(() => { document.title = originalTitle; }, 6000);
     }
-    const patientForPrint = targetPatient || currentPatient;
-    // Precarga síncrona de las 19 páginas oficiales y bases limpias para evitar hojas en blanco al imprimir
+
+    // Esperar a que React monte todas las páginas en el contenedor oculto de impresión
+    await new Promise((r) => setTimeout(r, 120));
+
+    // Precarga síncrona de recursos gráficos de todos los expedientes a imprimir
     const allUrls = [
       ...Array.from(
         { length: TOTAL_EXPEDIENTE_PAGES },
@@ -187,11 +210,13 @@ export default function App() {
       '/assets/rx_sample_clean.jpeg',
       '/assets/sello-alfredo-vega-transparent.png',
       '/assets/sello-dario-hernandez-transparent.png',
-      ...Object.values(patientForPrint?.attachments || {})
-        .map((a) => a?.url)
-        .filter(Boolean)
+      ...patientsToPrint.flatMap(p => 
+        Object.values(p?.attachments || {}).map(a => a?.url).filter(Boolean)
+      )
     ];
-    const loadPromises = allUrls.map((url) => {
+
+    const uniqueUrls = Array.from(new Set(allUrls));
+    const loadPromises = uniqueUrls.map((url) => {
       return new Promise((resolve) => {
         const img = new Image();
         img.src = url;
@@ -203,11 +228,13 @@ export default function App() {
         }
       });
     });
+
     try {
       await Promise.all(loadPromises);
     } catch {
       // Fallback
     }
+
     window.print();
   };
 
@@ -294,6 +321,7 @@ export default function App() {
                     setPatientsList={setPatientsList}
                     onSelectPatient={handleSelectPatient}
                     onNavigateTab={setCurrentTab}
+                    onPrint={handlePrint}
                     currentPatient={currentPatient}
                     setCurrentPatient={setCurrentPatient}
                   />
@@ -358,7 +386,7 @@ export default function App() {
       </div>
 
       {/* Contenedor raíz de impresión: siempre montado fuera de flex/transform para imprimir 19 páginas desde cualquier pestaña */}
-      <PrintExpedienteDocument patient={currentPatient} isBlankMode={isBlankMode} />
+      <PrintExpedienteDocument patient={currentPatient} patients={printBatchPatients} isBlankMode={isBlankMode} />
     </>
   );
 }

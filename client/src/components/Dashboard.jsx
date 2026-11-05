@@ -585,6 +585,48 @@ export default function Dashboard({
                 </button>
               </div>
 
+              {/* Descargar Lote PDF Oficial */}
+              <button
+                type="button"
+                onClick={() => {
+                  const selectedPatients = (patientsList || []).filter(p => selectedDashboardIds.has(p.id || p.fileName));
+                  if (selectedPatients.length === 0) return;
+                  if (onPrint) {
+                    onPrint(selectedPatients);
+                  } else {
+                    window.print();
+                  }
+                }}
+                className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-bold px-3 py-1.5 rounded-md shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
+                title={`Descargar o guardar lote consolidado de ${selectedDashboardIds.size} futbolistas en PDF oficial`}
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Descargar Lote PDF ({selectedDashboardIds.size})</span>
+              </button>
+
+              {/* Exportar Word ZIP */}
+              <button
+                type="button"
+                onClick={async () => {
+                  const selectedPatients = (patientsList || []).filter(p => selectedDashboardIds.has(p.id || p.fileName));
+                  if (selectedPatients.length === 0) return;
+                  try {
+                    await downloadBatchDocxZip(selectedPatients, {
+                      globalDate: batchDate,
+                      globalClub: batchClub,
+                      nameOrder
+                    });
+                  } catch (err) {
+                    alert('Error exportando Word ZIP: ' + err.message);
+                  }
+                }}
+                className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-md shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
+                title={`Exportar lote de ${selectedDashboardIds.size} futbolistas en archivos Word (.docx)`}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Word ZIP ({selectedDashboardIds.size})</span>
+              </button>
+
               {/* Limpiar selección */}
               <button
                 type="button"
