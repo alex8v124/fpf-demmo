@@ -1,15 +1,9 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-// Configuración segura del Worker para Vite en producción y desarrollo
+// Configuración segura del Worker para Vite en producción y desarrollo usando import ?url
 if (typeof window !== 'undefined' && pdfjsLib.GlobalWorkerOptions) {
-  try {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.mjs',
-      import.meta.url
-    ).toString();
-  } catch {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || '4.10.38'}/build/pdf.worker.min.mjs`;
-  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 }
 
 /**
@@ -18,7 +12,13 @@ if (typeof window !== 'undefined' && pdfjsLib.GlobalWorkerOptions) {
 export async function convertPdfPageToDataUrl(fileOrBlob, pageNum = 1, maxSize = 1800) {
   try {
     const arrayBuffer = await fileOrBlob.arrayBuffer();
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const loadingTask = pdfjsLib.getDocument({
+      data: arrayBuffer,
+      cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || '6.5.438'}/cmaps/`,
+      cMapPacked: true,
+      standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || '6.5.438'}/standard_fonts/`
+    });
+
     const pdf = await loadingTask.promise;
     const page = await pdf.getPage(Math.min(pageNum, pdf.numPages));
     const viewport = page.getViewport({ scale: 2.0 });

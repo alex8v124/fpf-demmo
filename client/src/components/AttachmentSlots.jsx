@@ -19,16 +19,26 @@ export async function fileToDataUrl(file, maxSize = 1600) {
 
 function Slot({ slot, value, onChange, onRemove }) {
   const inputRef = useRef(null);
+  const [isProcessing, setIsProcessing] = React.useState(false);
 
   const handleFile = async (e) => {
     const file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
+
+    setIsProcessing(true);
     try {
       const url = await fileToDataUrl(file);
-      onChange(slot.id, { url, name: file.name });
+      onChange(slot.id, { 
+        url, 
+        name: file.name,
+        type: file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg')
+      });
     } catch (err) {
-      window.alert(err.message);
+      console.error('Error procesando archivo:', err);
+      window.alert('No se pudo procesar el archivo: ' + err.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -39,8 +49,13 @@ function Slot({ slot, value, onChange, onRemove }) {
         <div className="text-[10px] text-[#64748B]">{slot.page}</div>
       </div>
 
-      <div className="h-24 rounded-md bg-slate-50 border border-dashed border-[#CBD5E1] flex items-center justify-center overflow-hidden">
-        {value ? (
+      <div className="h-24 rounded-md bg-slate-50 border border-dashed border-[#CBD5E1] flex items-center justify-center overflow-hidden relative">
+        {isProcessing ? (
+          <div className="flex flex-col items-center justify-center text-[#0369A1] animate-pulse">
+            <RefreshCw className="w-5 h-5 animate-spin mb-1 text-[#0369A1]" />
+            <span className="text-[10px] font-bold">Procesando PDF...</span>
+          </div>
+        ) : value ? (
           <img src={value.url} alt={slot.label} className="w-full h-full object-contain" />
         ) : (
           <div className="flex flex-col items-center text-slate-400">
@@ -51,20 +66,35 @@ function Slot({ slot, value, onChange, onRemove }) {
       </div>
 
       {value && (
-        <div className="text-[10px] text-[#64748B] truncate" title={value.name}>{value.name}</div>
+        <div className="text-[10px] text-[#64748B] truncate font-medium" title={value.name}>
+          {value.name}
+        </div>
       )}
 
-      <input ref={inputRef} type="file" accept=".pdf,image/*" className="hidden" onChange={handleFile} />
+      <input 
+        ref={inputRef} 
+        type="file" 
+        accept=".pdf,application/pdf,image/*,.png,.jpg,.jpeg,.webp" 
+        className="hidden" 
+        onChange={handleFile} 
+      />
       <div className="flex gap-1.5">
         <button
           type="button"
+          disabled={isProcessing}
           onClick={() => inputRef.current && inputRef.current.click()}
-          className="flex-1 flex items-center justify-center gap-1 bg-[#0369A1] hover:bg-[#075985] text-white text-[11px] font-semibold px-2 py-1.5 rounded-md transition cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1 bg-[#0369A1] hover:bg-[#075985] text-white text-[11px] font-semibold px-2 py-1.5 rounded-md transition cursor-pointer disabled:opacity-50"
         >
-          {value ? <RefreshCw className="w-3 h-3" /> : <UploadCloud className="w-3 h-3" />}
-          <span>{value ? 'Reemplazar' : 'Subir'}</span>
+          {isProcessing ? (
+            <RefreshCw className="w-3 h-3 animate-spin" />
+          ) : value ? (
+            <RefreshCw className="w-3 h-3" />
+          ) : (
+            <UploadCloud className="w-3 h-3" />
+          )}
+          <span>{isProcessing ? 'Procesando...' : value ? 'Reemplazar' : 'Subir'}</span>
         </button>
-        {value && (
+        {value && !isProcessing && (
           <button
             type="button"
             onClick={() => onRemove(slot.id)}
