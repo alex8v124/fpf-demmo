@@ -17,11 +17,9 @@ import { loadPatientsFromSupabase, mapDbToPatient, loadStaffFromSupabase, savePa
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('dashboard');
-  const [patientsList, setPatientsList] = useState(drivePatients || []);
-  const [currentPatient, setCurrentPatient] = useState(
-    drivePatients && drivePatients.length > 0 ? drivePatients[0] : blankPatientTemplate
-  );
-  const [isBlankMode, setIsBlankMode] = useState(false);
+  const [patientsList, setPatientsList] = useState([]);
+  const [currentPatient, setCurrentPatient] = useState(blankPatientTemplate);
+  const [isBlankMode, setIsBlankMode] = useState(true);
   const [staffList, setStaffList] = useState(initialStaff || []);
   const [activeDoctor, setActiveDoctor] = useState(
     initialStaff && initialStaff.length > 0 ? initialStaff[0] : null
@@ -231,21 +229,16 @@ export default function App() {
           setCurrentPatient(mapped[0]);
           setIsBlankMode(false);
         } else {
-          // En ausencia de registros remotos, inicializar con los expedientes del Drive
-          setPatientsList(drivePatients || []);
-          if (drivePatients && drivePatients.length > 0) {
-            setCurrentPatient(drivePatients[0]);
-            setIsBlankMode(false);
-          }
+          setPatientsList([]);
+          setCurrentPatient(blankPatientTemplate);
+          setIsBlankMode(true);
         }
       })
       .catch((err) => {
-        console.warn('Supabase load fallback:', err);
-        setPatientsList(drivePatients || []);
-        if (drivePatients && drivePatients.length > 0) {
-          setCurrentPatient(drivePatients[0]);
-          setIsBlankMode(false);
-        }
+        console.warn('Carga de expedientes locales:', err);
+        setPatientsList([]);
+        setCurrentPatient(blankPatientTemplate);
+        setIsBlankMode(true);
       });
   }, []);
 

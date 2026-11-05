@@ -86,7 +86,25 @@ async function withStore(storeName, mode, callback) {
 export async function loadPatientsFromLocal() {
   const db = await openLocalDatabase();
   if (!db) {
-    return { success: true, data: drivePatients || [] };
+    return { success: true, data: [] };
+  }
+
+  // Si el usuario aún tiene datos semilla de prueba guardados en su navegador, limpiar una única vez
+  const hasCleanedLegacySeed = typeof localStorage !== 'undefined' ? localStorage.getItem('fpf_legacy_seed_cleared_v2') : 'true';
+  if (!hasCleanedLegacySeed) {
+    try {
+      const txClear = db.transaction(STORE_PATIENTS, 'readwrite');
+      txClear.objectStore(STORE_PATIENTS).clear();
+      await new Promise((r) => {
+        txClear.oncomplete = r;
+        txClear.onerror = r;
+      });
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('fpf_legacy_seed_cleared_v2', 'true');
+      }
+    } catch (e) {
+      console.warn('Limpieza inicial de datos demo:', e);
+    }
   }
 
   return new Promise((resolve) => {
@@ -97,21 +115,14 @@ export async function loadPatientsFromLocal() {
 
       request.onsuccess = () => {
         const patients = request.result || [];
-        if (patients.length === 0 && drivePatients && drivePatients.length > 0) {
-          // Semilla inicial automática en primer arranque
-          saveBatchPatientsToLocal(drivePatients).then(() => {
-            resolve({ success: true, data: drivePatients });
-          });
-        } else {
-          resolve({ success: true, data: patients });
-        }
+        resolve({ success: true, data: patients });
       };
 
       request.onerror = () => {
-        resolve({ success: true, data: drivePatients || [] });
+        resolve({ success: true, data: [] });
       };
     } catch {
-      resolve({ success: true, data: drivePatients || [] });
+      resolve({ success: true, data: [] });
     }
   });
 }

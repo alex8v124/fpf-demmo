@@ -79,15 +79,13 @@ export default function PoolManager({
   setCurrentPatient 
 }) {
   const [pool, setPool] = useState(() => {
-    return (patientsList && patientsList.length > 0) ? patientsList : (drivePatients || []);
+    return patientsList || [];
   });
 
   // Mantener sincronizado el pool si se actualiza la lista principal
   useEffect(() => {
-    if (patientsList && patientsList.length > 0) {
+    if (patientsList) {
       setPool(patientsList);
-    } else if (drivePatients && drivePatients.length > 0) {
-      setPool(drivePatients);
     }
   }, [patientsList]);
   const [selectedMonth, setSelectedMonth] = useState('ALL');
