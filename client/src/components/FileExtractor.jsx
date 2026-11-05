@@ -238,7 +238,6 @@ export default function FileExtractor({
               onChange={(e) => {
                 const newDate = e.target.value;
                 setGlobalDate(newDate);
-                setPatientsList(prev => (prev || []).map(p => ({ ...p, fechaEvaluacion: newDate })));
               }}
               placeholder="DD-MM-AAAA"
               className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-mono font-bold text-[#1E293B] focus:outline-none focus:border-[#0369A1] w-28 text-center"
@@ -257,7 +256,6 @@ export default function FileExtractor({
               onChange={(e) => {
                 const newClub = e.target.value;
                 setGlobalClub(newClub);
-                setPatientsList(prev => (prev || []).map(p => ({ ...p, club: newClub })));
               }}
               className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-bold text-[#1E293B] focus:outline-none focus:border-[#0369A1] w-48 truncate"
             />

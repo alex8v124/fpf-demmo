@@ -215,18 +215,24 @@ export default function PoolManager({
     });
   };
 
-  // Aplicar fecha unificada en cascada (a seleccionados o al lote completo)
-  const handleApplyGlobalDate = (onlySelected = false) => {
+  // Aplicar fecha unificada EXCLUSIVAMENTE a los futbolistas marcados con checkbox
+  const handleApplyGlobalDate = () => {
+    if (selectedIds.size === 0) {
+      setToastMessage({
+        type: 'error',
+        text: 'Debes marcar la casilla (checkbox) de al menos un futbolista para sincronizar la fecha.'
+      });
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
     if (!globalDate.trim()) return;
+
     setIsApplyingCascade(true);
     setTimeout(() => {
       let count = 0;
       const updated = pool.map(player => {
         const pId = player.id || player.fileName;
-        const matchesSelection = onlySelected
-          ? selectedIds.has(pId)
-          : (selectedMonth === 'ALL' || player.mes === selectedMonth);
-        if (matchesSelection) {
+        if (selectedIds.has(pId)) {
           count++;
           return {
             ...player,
@@ -240,7 +246,7 @@ export default function PoolManager({
       if (setPatientsList) {
         setPatientsList(updated);
       }
-      if (setCurrentPatient) {
+      if (setCurrentPatient && selectedIds.has(currentPatient?.id || currentPatient?.fileName)) {
         setCurrentPatient(prev => ({
           ...prev,
           fechaEvaluacion: globalDate.trim()
@@ -250,26 +256,30 @@ export default function PoolManager({
       setIsApplyingCascade(false);
       setToastMessage({
         type: 'success',
-        text: onlySelected
-          ? `¡Fecha unificada "${globalDate.trim()}" aplicada a los ${count} futbolistas seleccionados!`
-          : `¡Fecha unificada "${globalDate.trim()}" aplicada a todos los expedientes del lote! Las 19 páginas quedaron sincronizadas.`
+        text: `¡Fecha "${globalDate.trim()}" sincronizada exclusivamente en los ${count} futbolistas marcados!`
       });
       setTimeout(() => setToastMessage(null), 4000);
     }, 300);
   };
 
-  // Aplicar nombre de club en cascada (a seleccionados o al lote completo)
-  const handleApplyClub = (onlySelected = false) => {
+  // Aplicar nombre de club EXCLUSIVAMENTE a los futbolistas marcados con checkbox
+  const handleApplyClub = () => {
+    if (selectedIds.size === 0) {
+      setToastMessage({
+        type: 'error',
+        text: 'Debes marcar la casilla (checkbox) de al menos un futbolista para sincronizar el club.'
+      });
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
     if (!globalClub.trim()) return;
+
     setIsApplyingClub(true);
     setTimeout(() => {
       let count = 0;
       const updated = pool.map(player => {
         const pId = player.id || player.fileName;
-        const matchesSelection = onlySelected
-          ? selectedIds.has(pId)
-          : (selectedMonth === 'ALL' || player.mes === selectedMonth);
-        if (matchesSelection) {
+        if (selectedIds.has(pId)) {
           count++;
           return {
             ...player,
@@ -282,7 +292,7 @@ export default function PoolManager({
       if (setPatientsList) {
         setPatientsList(updated);
       }
-      if (setCurrentPatient) {
+      if (setCurrentPatient && selectedIds.has(currentPatient?.id || currentPatient?.fileName)) {
         setCurrentPatient(prev => ({
           ...prev,
           club: globalClub.trim()
@@ -292,9 +302,7 @@ export default function PoolManager({
       setIsApplyingClub(false);
       setToastMessage({
         type: 'success',
-        text: onlySelected
-          ? `¡Club "${globalClub.trim()}" asignado a los ${count} futbolistas seleccionados! Sincronizado en las 19 páginas.`
-          : `¡Club "${globalClub.trim()}" asignado a todos los expedientes del lote! Sincronizado en las 19 páginas.`
+        text: `¡Club "${globalClub.trim()}" sincronizado exclusivamente en los ${count} futbolistas marcados!`
       });
       setTimeout(() => setToastMessage(null), 4000);
     }, 300);
@@ -472,27 +480,28 @@ const handleSelectToView = (player) => {
 
             </div>
 
-            <div className="flex gap-2 pt-0.5">
-              {selectedIds.size > 0 && (
-                <button
-                  type="button"
-                  onClick={() => handleApplyGlobalDate(true)}
-                  disabled={isApplyingCascade}
-                  className="flex-1 bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs px-3 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1 cursor-pointer disabled:opacity-50"
-                  title={`Asignar fecha ${globalDate} a los ${selectedIds.size} futbolistas seleccionados`}
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  <span>A Seleccionados ({selectedIds.size})</span>
-                </button>
-              )}
+            <div className="pt-0.5">
               <button
                 type="button"
-                onClick={() => handleApplyGlobalDate(false)}
-                disabled={isApplyingCascade}
-                className={`bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50 ${selectedIds.size > 0 ? 'w-auto' : 'flex-1'}`}
+                onClick={handleApplyGlobalDate}
+                disabled={isApplyingCascade || selectedIds.size === 0}
+                className={`w-full text-xs font-bold py-2 px-3 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 ${
+                  selectedIds.size > 0
+                    ? 'bg-[#0369A1] hover:bg-[#075985] text-white cursor-pointer'
+                    : 'bg-slate-100 border border-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+                title={selectedIds.size > 0 ? `Sincronizar fecha a los ${selectedIds.size} futbolistas marcados con checkbox` : 'Marca casillas de futbolistas abajo para sincronizar'}
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isApplyingCascade ? 'animate-spin' : ''}`} />
-                <span>{selectedIds.size > 0 ? 'A Todo el Lote' : 'Aplicar al lote'}</span>
+                {isApplyingCascade ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  {selectedIds.size > 0 
+                    ? `Sincronizar Fecha a Marcados (${selectedIds.size})` 
+                    : 'Marca casillas abajo para sincronizar fecha'}
+                </span>
               </button>
             </div>
 
@@ -549,28 +558,28 @@ const handleSelectToView = (player) => {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-0.5">
-              {selectedIds.size > 0 && (
-                <button
-                  type="button"
-                  onClick={() => handleApplyClub(true)}
-                  disabled={isApplyingClub}
-                  className="flex-1 bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs px-3 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1 cursor-pointer disabled:opacity-50"
-                  title={`Asignar ${globalClub} a los ${selectedIds.size} futbolistas seleccionados`}
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  <span>A Seleccionados ({selectedIds.size})</span>
-                </button>
-              )}
+            <div className="pt-0.5">
               <button
                 type="button"
-                onClick={() => handleApplyClub(false)}
-                disabled={isApplyingClub}
-                className={`bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50 ${selectedIds.size > 0 ? 'w-auto' : 'flex-1'}`}
-                title="Asignar club a todos los expedientes del lote"
+                onClick={handleApplyClub}
+                disabled={isApplyingClub || selectedIds.size === 0}
+                className={`w-full text-xs font-bold py-2 px-3 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 ${
+                  selectedIds.size > 0
+                    ? 'bg-[#0369A1] hover:bg-[#075985] text-white cursor-pointer'
+                    : 'bg-slate-100 border border-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+                title={selectedIds.size > 0 ? `Sincronizar club a los ${selectedIds.size} futbolistas marcados con checkbox` : 'Marca casillas de futbolistas abajo para sincronizar'}
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isApplyingClub ? 'animate-spin' : ''}`} />
-                <span>{selectedIds.size > 0 ? 'A Todo el Lote' : 'Aplicar al Lote'}</span>
+                {isApplyingClub ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  {selectedIds.size > 0 
+                    ? `Sincronizar Club a Marcados (${selectedIds.size})` 
+                    : 'Marca casillas abajo para sincronizar club'}
+                </span>
               </button>
             </div>
 
@@ -730,13 +739,13 @@ const handleSelectToView = (player) => {
                 />
                 <button
                   type="button"
-                  onClick={() => handleApplyClub(true)}
+                  onClick={handleApplyClub}
                   disabled={isApplyingClub}
                   className="bg-[#15803D] hover:bg-[#166534] text-white text-xs font-bold px-3 py-1.5 transition cursor-pointer flex items-center gap-1"
-                  title="Asignar este club a todos los seleccionados"
+                  title="Asignar este club a todos los seleccionados con checkbox"
                 >
                   <Check className="w-3.5 h-3.5" />
-                  <span>Cambiar Club</span>
+                  <span>Sincronizar Club</span>
                 </button>
               </div>
 
@@ -754,13 +763,13 @@ const handleSelectToView = (player) => {
                 />
                 <button
                   type="button"
-                  onClick={() => handleApplyGlobalDate(true)}
+                  onClick={handleApplyGlobalDate}
                   disabled={isApplyingCascade}
                   className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-bold px-3 py-1.5 transition cursor-pointer flex items-center gap-1"
-                  title="Asignar esta fecha a todos los seleccionados"
+                  title="Asignar esta fecha a todos los seleccionados con checkbox"
                 >
                   <Check className="w-3.5 h-3.5" />
-                  <span>Cambiar Fecha</span>
+                  <span>Sincronizar Fecha</span>
                 </button>
               </div>
 
@@ -817,7 +826,7 @@ const handleSelectToView = (player) => {
                 <th className="px-3 py-2.5 w-10 text-center">
                   <input
                     type="checkbox"
-                    checked={paginatedList.length > 0 && selectedIds.size >= paginatedList.length}
+                    checked={paginatedList.length > 0 && paginatedList.every(p => selectedIds.has(p.id || p.fileName))}
                     onChange={handleToggleSelectAll}
                     className="rounded border-[#CBD5E1] text-[#0369A1] cursor-pointer"
                     title="Seleccionar todos los de esta página"

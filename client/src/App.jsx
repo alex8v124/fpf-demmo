@@ -9,7 +9,6 @@ import ClinicalEditor from './components/ClinicalEditor';
 import DocumentViewer, { PrintExpedienteDocument, TOTAL_EXPEDIENTE_PAGES } from './components/DocumentViewer';
 import MedicalStaff from './components/MedicalStaff';
 import DatabaseView from './components/DatabaseView';
-import BatchConfigBar from './components/BatchConfigBar';
 import drivePatients from './data/drivePatients.json';
 import { blankPatientTemplate, initialStaff } from './data/initialData';
 import { loadPatientsFromSupabase, mapDbToPatient, loadStaffFromSupabase, savePatientToSupabase } from './lib/supabase';
@@ -259,22 +258,6 @@ export default function App() {
         {/* 2. Contenedor Principal (Ancho Completo, Sin Barra Lateral) */}
         <div className="flex-1 flex flex-col min-w-0">
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            {/* Barra Maestra de Configuración en Lote (Solo visible en Pool y Expediente 19P) */}
-            {(currentTab === 'pool' || currentTab === 'documento') && (
-              <BatchConfigBar
-                globalDate={globalDate}
-                setGlobalDate={setGlobalDate}
-                globalClub={globalClub}
-                setGlobalClub={setGlobalClub}
-                nameOrder={nameOrder}
-                setNameOrder={setNameOrder}
-                patientsList={patientsList}
-                setPatientsList={setPatientsList}
-                currentPatient={currentPatient}
-                setCurrentPatient={setCurrentPatient}
-              />
-            )}
-
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentTab}
