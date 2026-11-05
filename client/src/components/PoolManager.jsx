@@ -927,6 +927,19 @@ const handleSelectToView = (player) => {
 
                           <button
                             type="button"
+                            onClick={() => {
+                              if (onPrint) onPrint(player);
+                              else window.print();
+                            }}
+                            className="bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] px-2 py-1 rounded-md transition cursor-pointer text-xs font-semibold flex items-center gap-1"
+                            title="Descargar expediente oficial en PDF (19 Págs)"
+                          >
+                            <Printer className="w-3.5 h-3.5 text-slate-500" />
+                            <span>PDF</span>
+                          </button>
+
+                          <button
+                            type="button"
                             onClick={() => downloadPatientDocx(player, { globalDate: player.fechaEvaluacion || globalDate, globalClub: player.club })}
                             className="bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] p-1.5 rounded-md transition cursor-pointer"
                             title="Descargar Word oficial con sellos médicos intactos"

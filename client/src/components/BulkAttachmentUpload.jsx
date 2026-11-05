@@ -363,14 +363,18 @@ export default function BulkAttachmentUpload({
                 {report.matched.length > 1 && (
                   <button
                     type="button"
-                    onClick={async () => {
-                      for (const item of report.matched) {
-                        await handleDownloadSinglePdf(item.player);
+                    onClick={() => {
+                      const players = report.matched.map(item => item.player);
+                      if (onPrint) {
+                        onPrint(players);
+                      } else {
+                        window.print();
                       }
                     }}
                     className="text-[10px] font-bold text-[#0369A1] hover:underline cursor-pointer"
+                    title="Descargar lote completo de futbolistas actualizados en un solo PDF continuo"
                   >
-                    Descargar y abrir todos ({report.matched.length})
+                    Descargar Lote PDF ({report.matched.length})
                   </button>
                 )}
               </div>
