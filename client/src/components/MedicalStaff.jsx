@@ -124,7 +124,7 @@ export default function MedicalStaff({
         setModalOpen(false);
         showToast('success', `Datos de ${saved.name} guardados en producción.`);
       } else {
-        showToast('error', res.error || 'Error al guardar en Supabase.');
+        showToast('error', res.error || 'Error al guardar los datos del profesional.');
       }
     } finally {
       setIsSaving(false);
@@ -380,7 +380,7 @@ export default function MedicalStaff({
                     {formData.id ? 'Editar Profesional de Salud' : 'Registrar Nuevo Profesional'}
                   </h2>
                   <p className="text-xs text-[#64748B]">
-                    Los cambios se guardan directamente en la tabla personal_salud de Supabase
+                    Los cambios se guardan con persistencia permanente en la base de datos local (IndexedDB)
                   </p>
                 </div>
                 <button

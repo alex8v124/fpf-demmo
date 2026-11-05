@@ -157,18 +157,18 @@ export default function ClinicalEditor({
         showEditorToast(
           'success',
           '¡Expediente guardado exitosamente!',
-          'Sincronizado en tiempo real con el visor de 19 páginas y Supabase PostgreSQL'
+          'Persistido en la base de datos local (IndexedDB) y sincronizado con el visor de 19 páginas'
         );
       } else {
         showEditorToast(
           'error',
-          'Guardado en sesión local (aviso de nube)',
-          res?.error || 'No se pudo confirmar la escritura remota en Supabase'
+          'Aviso al guardar localmente',
+          res?.error || 'No se pudo confirmar la escritura local'
         );
       }
     } catch (e) {
       console.warn('Error saving to Supabase:', e);
-      showEditorToast('error', 'Error al guardar en Supabase', e.message);
+      showEditorToast('error', 'Error al guardar localmente', e.message);
     } finally {
       setIsSavingDb(false);
     }

@@ -175,7 +175,7 @@ export default function FileExtractor({
             Carga de Archivos & Extracción de Nombres
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5">
-            Sube los estudios médicos (PDFs o imágenes) directamente a los 5 espacios clínicos. El sistema identifica automáticamente al jugador, incrusta las imágenes en el expediente de 19 páginas y archiva el PDF oficial en Supabase.
+            Sube los estudios médicos (PDFs o imágenes) directamente a los 5 espacios clínicos. El sistema identifica automáticamente al jugador, incrusta las imágenes en el expediente de 19 páginas y genera el PDF oficial de forma local e instantánea.
           </p>
         </div>
 

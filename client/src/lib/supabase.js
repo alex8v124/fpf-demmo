@@ -14,5 +14,16 @@ export {
   mapDbToStaff,
   loadStaffFromSupabase,
   saveStaffToSupabase,
-  deleteStaffFromSupabase
+  deleteStaffFromSupabase,
+  openLocalDatabase,
+  loadPatientsFromLocal,
+  savePatientToLocal,
+  saveBatchPatientsToLocal,
+  deletePatientFromLocal,
+  clearAllLocalPatients,
+  loadStaffFromLocal,
+  saveStaffToLocal,
+  deleteStaffFromLocal,
+  exportLocalDatabaseBackup,
+  importLocalDatabaseBackup
 } from '../utils/supabase';

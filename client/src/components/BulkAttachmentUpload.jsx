@@ -192,7 +192,7 @@ export default function BulkAttachmentUpload({
         // 3. Persistir en almacenamiento local seguro
         setCachedAttachments(updatedPlayer.id || updatedPlayer.dni, updatedAttachments);
 
-        // 4. Guardar inmediatamente en base de datos Supabase
+        // 4. Guardar inmediatamente en base de datos local (IndexedDB)
         await savePatientToSupabase(updatedPlayer);
 
         matched.push({
@@ -251,7 +251,7 @@ export default function BulkAttachmentUpload({
             Carga de Archivos por Estudio Clínico
           </h3>
           <p className="text-xs text-[#64748B] mt-0.5 max-w-4xl">
-            Haz clic o arrastra archivos (PDFs o imágenes) directamente a cualquiera de los 5 espacios. El sistema asocia automáticamente cada archivo al futbolista por nombre o DNI (creando al jugador si no existía), incrusta las imágenes en el expediente oficial y archiva el PDF actualizado con sellos directamente en Supabase Storage.
+            Haz clic o arrastra archivos (PDFs o imágenes) directamente a cualquiera de los 5 espacios. El sistema asocia automáticamente cada archivo al futbolista por nombre o DNI (creando al jugador si no existía), incrusta las imágenes en el expediente oficial y genera el PDF de 19 páginas de forma 100% local e instantánea.
           </p>
         </div>
       </div>

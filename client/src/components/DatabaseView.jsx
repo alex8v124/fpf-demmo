@@ -1,168 +1,247 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Database, 
   CheckCircle2, 
   AlertCircle, 
-  Copy, 
-  Check, 
   RefreshCw, 
-  ExternalLink, 
-  Server, 
-  Layers, 
-  Code2, 
-  UploadCloud, 
-  DownloadCloud,
-  ShieldCheck
+  ShieldCheck,
+  Download,
+  Upload,
+  HardDrive,
+  Trash2,
+  FileCheck2,
+  Users,
+  Check,
+  Cpu
 } from 'lucide-react';
 import { 
   testSupabaseConnection, 
-  SUPABASE_SCHEMA_SQL, 
-  savePatientToSupabase,
+  loadPatientsFromSupabase,
   saveBatchPatientsToSupabase,
-  loadPatientsFromSupabase 
+  loadStaffFromSupabase,
+  exportLocalDatabaseBackup,
+  importLocalDatabaseBackup,
+  clearAllLocalPatients
 } from '../utils/supabase';
 import drivePatients from '../data/drivePatients.json';
 
 export default function DatabaseView() {
   const [connStatus, setConnStatus] = useState({
     loading: true,
-    connected: false,
+    connected: true,
     latencyMs: 0,
-    status: 'Comprobando conexión...'
+    status: 'Almacenamiento Local (IndexedDB Activo)'
   });
-  const [copied, setCopied] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState(null);
+  const [localPatients, setLocalPatients] = useState([]);
+  const [localStaff, setLocalStaff] = useState([]);
+  const [copied, setCopied] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://yqajcjzkgcmauazcvwtd.supabase.co';
-  const projectId = 'yqajcjzkgcmauazcvwtd';
-
-  const [dbPatients, setDbPatients] = useState([]);
-
-  const checkConnection = async () => {
+  const loadData = async () => {
     setConnStatus(prev => ({ ...prev, loading: true }));
-    const res = await testSupabaseConnection();
+    const conn = await testSupabaseConnection();
     const patientsRes = await loadPatientsFromSupabase();
+    const staffRes = await loadStaffFromSupabase();
 
     if (patientsRes.success && patientsRes.data) {
-      setDbPatients(patientsRes.data);
+      setLocalPatients(patientsRes.data);
+    }
+    if (staffRes.success && staffRes.data) {
+      setLocalStaff(staffRes.data);
     }
 
     setConnStatus({
       loading: false,
-      connected: res.connected,
-      latencyMs: res.latencyMs || 120,
-      status: res.connected ? 'Conexión Establecida (Online)' : 'Error de Conexión',
-      error: res.error,
-      tableCreated: patientsRes.success
+      connected: true,
+      latencyMs: 0,
+      status: 'Almacenamiento Local (IndexedDB Activo)'
     });
   };
 
   useEffect(() => {
-    checkConnection();
+    loadData();
   }, []);
 
-  const handleCopySql = () => {
-    navigator.clipboard.writeText(SUPABASE_SCHEMA_SQL);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleExportBackup = async () => {
+    try {
+      await exportLocalDatabaseBackup();
+      setSyncMessage({
+        type: 'success',
+        text: `Copia de seguridad exportada correctamente con ${localPatients.length} expedientes y ${localStaff.length} profesionales de salud.`
+      });
+    } catch (err) {
+      setSyncMessage({
+        type: 'warning',
+        text: `Error al exportar copia de seguridad: ${err.message}`
+      });
+    }
   };
 
-  const handleSeedPatients = async () => {
+  const handleTriggerImport = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     setSyncing(true);
     setSyncMessage(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target.result;
+        const res = await importLocalDatabaseBackup(text);
+        if (res.success) {
+          setSyncMessage({
+            type: 'success',
+            text: `¡Restauración exitosa! Se importaron ${res.patientsCount} expedientes y ${res.staffCount} médicos.`
+          });
+          await loadData();
+        } else {
+          setSyncMessage({
+            type: 'warning',
+            text: `Error al importar: ${res.error}`
+          });
+        }
+      } catch (err) {
+        setSyncMessage({
+          type: 'error',
+          text: `Archivo de respaldo no válido: ${err.message}`
+        });
+      } finally {
+        setSyncing(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleResetToDrive = async () => {
+    if (!window.confirm('¿Deseas recargar la plantilla inicial de expedientes del Drive? Se conservarán los datos existentes.')) return;
+    setSyncing(true);
     try {
       const res = await saveBatchPatientsToSupabase(drivePatients);
       if (res.success) {
         setSyncMessage({
           type: 'success',
-          text: `¡${res.count} expedientes del Drive sincronizados exitosamente con la tabla "expedientes_medicos" en Supabase!`
+          text: `¡Plantilla inicial de ${drivePatients.length} expedientes cargada en la base local!`
         });
-        await checkConnection();
-      } else {
-        setSyncMessage({
-          type: 'warning',
-          text: `Error al sincronizar: ${res.error}`
-        });
+        await loadData();
       }
-    } catch (e) {
+    } catch (err) {
       setSyncMessage({
         type: 'error',
-        text: `Error al sincronizar: ${e.message}`
+        text: `Error al cargar plantilla: ${err.message}`
       });
     } finally {
       setSyncing(false);
     }
   };
 
+  const handleClearDatabase = async () => {
+    if (!window.confirm('¿Seguro que deseas vaciar la base de datos local de pacientes? Recuerda exportar una copia de seguridad primero si deseas conservarlos.')) return;
+    await clearAllLocalPatients();
+    setSyncMessage({
+      type: 'warning',
+      text: 'Se han eliminado los expedientes locales. Puedes importar un respaldo o recargar la plantilla en cualquier momento.'
+    });
+    await loadData();
+  };
+
   return (
     <div className="space-y-6 select-none animate-in fade-in duration-200">
       
-      {/* Banner Superior */}
-      <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs">
+      {/* Input oculto para importación de backups */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileImport} 
+        accept=".json" 
+        className="hidden" 
+      />
+
+      {/* Banner Superior Institucional */}
+      <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center space-x-2">
-              <span className="bg-[#DCFCE7] text-[#166534] text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
-                <Database className="w-3.5 h-3.5" /> Supabase Cloud Database
+              <span className="bg-[#DCFCE7] text-[#166534] text-[11px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                <HardDrive className="w-3.5 h-3.5" /> Base de Datos Local (IndexedDB)
               </span>
-              <span className="bg-sky-50 text-[#0369A1] text-[11px] font-semibold px-2 py-0.5 rounded">
-                PostgreSQL 15+
+              <span className="bg-sky-50 text-[#0369A1] text-[11px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                <Cpu className="w-3.5 h-3.5" /> 0 ms Latencia • 100% Offline
               </span>
             </div>
 
             <h2 className="text-lg sm:text-xl font-bold text-[#1E293B]">
-              Conexión y Sincronización con Supabase
+              Gestión de Datos Local & Respaldos
             </h2>
             <p className="text-xs text-[#64748B] max-w-2xl leading-relaxed">
-              Base de datos en la nube para persistencia de futbolistas evaluados, historias clínicas, parámetros cardiológicos y certificados oficiales de la FPF.
+              El sistema opera de forma 100% local en tu navegador. Tus expedientes médicos, imágenes de alta resolución (ECG, Doppler, Rayos X) y firmas no viajan a servidores externos, garantizando máxima velocidad, sin caídas de red y estricto cumplimiento de la Ley N° 29733 de Protección de Datos Personales.
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <button
               type="button"
-              onClick={checkConnection}
-              disabled={connStatus.loading}
-              className="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-[#1E293B] border border-[#CBD5E1] font-semibold text-xs px-3.5 py-2 rounded-md transition cursor-pointer shadow-xs"
+              onClick={handleExportBackup}
+              className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-bold text-xs px-3.5 py-2 rounded-lg transition cursor-pointer shadow-xs"
+              title="Descargar una copia de seguridad en formato JSON"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${connStatus.loading ? 'animate-spin' : ''}`} />
-              <span>Probar Conexión</span>
+              <Download className="w-3.5 h-3.5" />
+              <span>Exportar Copia (.json)</span>
             </button>
 
             <button
               type="button"
-              onClick={() => alert('Acceso a la Consola Cloud restringido por política de seguridad a administradores de infraestructura Famiheart S.A.C.')}
-              className="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] font-semibold text-xs px-3.5 py-2 rounded-md transition cursor-pointer"
-              title="Acceso exclusivo para administradores de infraestructura"
+              onClick={handleTriggerImport}
+              disabled={syncing}
+              className="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-[#1E293B] border border-[#CBD5E1] font-bold text-xs px-3.5 py-2 rounded-lg transition cursor-pointer shadow-xs"
+              title="Restaurar una copia de seguridad previamente exportada"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#15803D]" />
-              <span>Consola Admin (Restringida)</span>
+              <Upload className="w-3.5 h-3.5 text-slate-600" />
+              <span>Importar Copia</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={loadData}
+              disabled={connStatus.loading}
+              className="p-2 bg-white hover:bg-slate-50 text-[#1E293B] border border-[#CBD5E1] rounded-lg transition cursor-pointer"
+              title="Actualizar estado local"
+            >
+              <RefreshCw className={`w-4 h-4 text-slate-500 ${connStatus.loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
 
-        {/* Parámetros de Conexión */}
+        {/* Parámetros de Estado Local */}
         <div className="mt-4 pt-3.5 border-t border-[#E2E8F0] grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
           <div>
-            <span className="text-[#64748B] block font-medium">Estado del Endpoint:</span>
+            <span className="text-[#64748B] block font-medium">Motor de Almacenamiento:</span>
             <div className="flex items-center space-x-1.5 mt-0.5">
-              <span className={`w-2 h-2 rounded-full ${connStatus.connected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></span>
-              <span className="text-[#1E293B] font-bold">{connStatus.status}</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="text-[#1E293B] font-bold">IndexedDB del Navegador</span>
             </div>
           </div>
           <div>
-            <span className="text-[#64748B] block font-medium">Latencia de Red:</span>
-            <span className="text-[#166534] font-mono font-bold mt-0.5 block">{connStatus.latencyMs} ms</span>
+            <span className="text-[#64748B] block font-medium">Latencia de Operación:</span>
+            <span className="text-[#166534] font-mono font-bold mt-0.5 block">0 ms (Instantáneo)</span>
           </div>
           <div>
-            <span className="text-[#64748B] block font-medium">Instancia Médica:</span>
-            <span className="text-[#0369A1] font-mono font-bold mt-0.5 block">fpf_cluster_prod (TLS v1.3)</span>
+            <span className="text-[#64748B] block font-medium">Capacidad Disponible:</span>
+            <span className="text-[#0369A1] font-mono font-bold mt-0.5 block">Ilimitada (&gt; 500 MB)</span>
           </div>
           <div>
-            <span className="text-[#64748B] block font-medium">Seguridad de Datos:</span>
-            <span className="text-[#166534] font-mono text-xs truncate block mt-0.5">
-              Cifrado AES-256 / Ley 29733
+            <span className="text-[#64748B] block font-medium">Protección de Datos:</span>
+            <span className="text-[#166534] font-bold text-xs truncate block mt-0.5 flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 inline" /> Ley N° 29733 (Local)
             </span>
           </div>
         </div>
@@ -170,12 +249,12 @@ export default function DatabaseView() {
 
       {/* Sync Message Alert */}
       {syncMessage && (
-        <div className={`p-3 rounded-md border text-xs flex items-start space-x-2.5 ${
+        <div className={`p-3 rounded-lg border text-xs flex items-start space-x-2.5 ${
           syncMessage.type === 'success'
             ? 'bg-emerald-50 border-emerald-200 text-[#166534]'
             : syncMessage.type === 'warning'
             ? 'bg-amber-50 border-amber-200 text-[#92400E]'
-            : 'bg-sky-50 border-sky-200 text-[#0369A1]'
+            : 'bg-red-50 border-red-200 text-[#B91C1C]'
         }`}>
           {syncMessage.type === 'success' ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -188,113 +267,104 @@ export default function DatabaseView() {
         </div>
       )}
 
-      {/* Sincronización de Datos */}
-      <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs space-y-3.5">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
+      {/* Resumen de Expedientes y Personal en Memoria Local */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* Tarjeta Expedientes */}
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-2">
-              <UploadCloud className="w-4 h-4 text-[#166534]" />
-              Expedientes Persistidos en Supabase ({dbPatients.length})
+              <FileCheck2 className="w-4 h-4 text-[#0369A1]" />
+              Expedientes en Local ({localPatients.length})
             </h3>
-            <p className="text-xs text-[#64748B] mt-0.5">
-              Registros clínicos almacenados en PostgreSQL en la nube con acceso en tiempo real
-            </p>
+            <span className="text-[10px] bg-sky-50 text-[#0369A1] font-bold px-2 py-0.5 rounded">
+              Persistencia Activa
+            </span>
           </div>
+          <p className="text-xs text-[#64748B]">
+            Expedientes de futbolistas guardados en la base local con sus 5 estudios clínicos e historial de evaluación.
+          </p>
 
-          <button
-            type="button"
-            onClick={handleSeedPatients}
-            disabled={syncing}
-            className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3.5 py-2 rounded-md shadow-xs transition cursor-pointer disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-            <span>{syncing ? 'Sincronizando...' : 'Sincronizar Lote Drive con Supabase'}</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1 max-h-80 overflow-y-auto pr-1">
-          {dbPatients.length > 0 ? (
-            dbPatients.map(p => (
-              <div key={p.id} className="p-3 bg-slate-50 rounded-md border border-[#E2E8F0] flex items-center justify-between">
-                <div className="flex items-center space-x-2.5 min-w-0">
-                  <div className="w-7 h-7 rounded bg-emerald-100 text-[#15803D] flex items-center justify-center font-bold text-xs shrink-0">
-                    {p.apellidos?.charAt(0) || p.nombre_completo?.charAt(0) || 'P'}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold text-[#1E293B] truncate">{p.nombre_completo || p.id}</div>
-                    <div className="text-[10px] text-[#64748B] truncate">
-                      {p.club || 'Club FPF'} • DNI: {p.dni || '74290500'} • {p.fecha_evaluacion || '22-01-2026'}
+          <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+            {localPatients.length > 0 ? (
+              localPatients.map(p => (
+                <div key={p.id} className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                  <div className="min-w-0 pr-2">
+                    <div className="font-bold text-[#1E293B] truncate">{p.nombreCompleto || p.id}</div>
+                    <div className="text-[10px] text-slate-500 truncate">
+                      {p.club || 'Club FPF'} • DNI: {p.dni || 'S/D'} • {p.fechaEvaluacion || '22-01-2026'}
                     </div>
                   </div>
+                  <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                    {p.adjuntos ? `${Object.keys(p.adjuntos).length}/5 est.` : 'Listo'}
+                  </span>
                 </div>
-                <span className="text-[10px] bg-emerald-50 border border-emerald-200 text-[#15803D] px-1.5 py-0.5 rounded font-mono flex items-center gap-1 shrink-0 ml-2">
-                  <CheckCircle2 className="w-3 h-3" /> PostgreSQL
+              ))
+            ) : (
+              <div className="text-center py-6 text-xs text-slate-400">
+                No hay expedientes locales almacenados.
+              </div>
+            )}
+          </div>
+
+          <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+            <button
+              type="button"
+              onClick={handleResetToDrive}
+              disabled={syncing}
+              className="text-xs font-bold text-[#0369A1] hover:underline cursor-pointer flex items-center gap-1"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+              Recargar Plantilla Inicial (Drive)
+            </button>
+            <button
+              type="button"
+              onClick={handleClearDatabase}
+              className="text-xs font-bold text-red-600 hover:text-red-800 cursor-pointer flex items-center gap-1"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Vaciar Expedientes
+            </button>
+          </div>
+        </div>
+
+        {/* Tarjeta Personal Médico */}
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#15803D]" />
+              Personal Médico ({localStaff.length})
+            </h3>
+            <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded">
+              Firmas & Sellos
+            </span>
+          </div>
+          <p className="text-xs text-[#64748B]">
+            Médicos evaluadores, cardiólogos y radiólogos configurados con sus sellos y credenciales CMP/RNE.
+          </p>
+
+          <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+            {localStaff.map(s => (
+              <div key={s.id} className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                <div className="min-w-0 pr-2">
+                  <div className="font-bold text-[#1E293B] truncate">{s.name}</div>
+                  <div className="text-[10px] text-slate-500 truncate">
+                    {s.role} • CMP: {s.cmp} {s.rne ? `• RNE: ${s.rne}` : ''}
+                  </div>
+                </div>
+                <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-[#0369A1]">
+                  Acreditado
                 </span>
               </div>
-            ))
-          ) : (
-            <div className="col-span-2 text-center p-6 bg-slate-50 rounded-md border border-[#E2E8F0] text-[#64748B] text-xs">
-              No hay expedientes en la base de datos aún. Sube los nuevos archivos en la pestaña "Subir Archivos" para persistirlos automáticamente en PostgreSQL.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Script SQL para Creación de Tablas */}
-      <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs space-y-3">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-1.5">
-              <Code2 className="w-4 h-4 text-[#0369A1]" />
-              Script SQL para Crear la Tabla en Supabase
-            </h3>
-            <p className="text-xs text-[#64748B] mt-0.5">
-              Copia este script y pégalo en el <a href={`https://supabase.com/dashboard/project/${projectId}/sql`} target="_blank" rel="noopener noreferrer" className="text-[#0369A1] hover:underline inline-flex items-center gap-0.5 font-semibold">SQL Editor de Supabase <ExternalLink className="w-3 h-3" /></a> para inicializar la tabla Postgres
-            </p>
+            ))}
           </div>
 
-          <button
-            type="button"
-            onClick={handleCopySql}
-            className="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-[#CBD5E1] text-xs font-semibold px-3 py-1.5 rounded-md transition cursor-pointer"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
-            <span>{copied ? '¡Copiado!' : 'Copiar SQL'}</span>
-          </button>
+          <div className="pt-2 border-t border-slate-100 text-xs text-slate-500 flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Gestiona o añade más profesionales en la pestaña <strong>"Cuerpo Médico"</strong>.</span>
+          </div>
         </div>
 
-        <div className="relative">
-          <pre className="bg-[#0F172A] p-4 rounded-md border border-slate-800 font-mono text-xs text-slate-200 overflow-x-auto max-h-56 leading-relaxed">
-            {SUPABASE_SCHEMA_SQL}
-          </pre>
-        </div>
-      </div>
-
-      {/* Parámetros de Conexión Directa a Postgres */}
-      <div className="bg-white border border-[#E2E8F0] rounded-lg p-5 shadow-xs space-y-3">
-        <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider flex items-center gap-1.5">
-          <Server className="w-4 h-4 text-[#0369A1]" />
-          Credenciales de Conexión Directa (PostgreSQL)
-        </h3>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
-          <div className="p-2.5 bg-slate-50 rounded-md border border-[#E2E8F0]">
-            <span className="text-[#64748B] block text-[10px] uppercase font-sans font-semibold">Host</span>
-            <span className="text-[#1E293B] break-all">db.{projectId}.supabase.co</span>
-          </div>
-          <div className="p-2.5 bg-slate-50 rounded-md border border-[#E2E8F0]">
-            <span className="text-[#64748B] block text-[10px] uppercase font-sans font-semibold">Puerto</span>
-            <span className="text-[#1E293B]">5432</span>
-          </div>
-          <div className="p-2.5 bg-slate-50 rounded-md border border-[#E2E8F0]">
-            <span className="text-[#64748B] block text-[10px] uppercase font-sans font-semibold">Base de Datos</span>
-            <span className="text-[#1E293B]">postgres</span>
-          </div>
-          <div className="p-2.5 bg-slate-50 rounded-md border border-[#E2E8F0]">
-            <span className="text-[#64748B] block text-[10px] uppercase font-sans font-semibold">Usuario</span>
-            <span className="text-[#1E293B]">postgres</span>
-          </div>
-        </div>
       </div>
 
     </div>

@@ -98,7 +98,7 @@ export default function DocumentViewer({
           pdfUpdatedAt: res.updatedAt
         });
       }
-      setPdfToast('¡PDF oficial archivado permanentemente en Supabase Storage!');
+      setPdfToast('¡PDF oficial generado y archivado localmente con éxito!');
       setTimeout(() => setPdfToast(null), 4000);
     } else {
       window.alert('Error al archivar el PDF: ' + res.error);
@@ -307,7 +307,7 @@ export default function DocumentViewer({
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-1 bg-emerald-50 hover:bg-emerald-100 text-[#166534] border border-emerald-300 font-semibold text-xs px-2.5 py-1.5 rounded-md transition cursor-pointer shadow-2xs"
-              title="Abrir o descargar el PDF oficial guardado en Supabase Storage"
+              title="Abrir o descargar el PDF oficial guardado localmente"
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               <span className="hidden sm:inline">Ver PDF Archivado</span>
