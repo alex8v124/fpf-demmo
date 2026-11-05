@@ -215,12 +215,12 @@ export default function BulkAttachmentUpload({
     });
   };
 
-  const handleDownloadSinglePdf = async (player) => {
-    try {
-      await downloadAndOpenPatientPdf(player, { globalDate, globalClub, nameOrder });
-    } catch (e) {
-      window.alert('Error generando PDF: ' + e.message);
-    }
+  const handleDownloadSinglePdf = (player) => {
+    if (onSelectPatient) onSelectPatient(player);
+    setTimeout(() => {
+      if (onPrint) onPrint(player);
+      else window.print();
+    }, 100);
   };
 
   const totalPatients = patientsList.length;

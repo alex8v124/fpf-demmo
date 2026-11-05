@@ -321,7 +321,8 @@ export function downloadPdfBlob(blob, fileName, autoOpen = true) {
  * lo abre automáticamente en una nueva pestaña y lo descarga de inmediato en el equipo.
  */
 export async function downloadAndOpenPatientPdf(patient, options = {}) {
-  const { blob, fileName } = await generatePatientPdf(patient, options);
-  downloadPdfBlob(blob, fileName, true);
-  return { success: true, fileName };
+  if (typeof window !== 'undefined') {
+    window.print();
+    return { success: true, fileName: `${patient?.nombreCompleto || 'expediente'}.pdf` };
+  }
 }

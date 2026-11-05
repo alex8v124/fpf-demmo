@@ -37,6 +37,7 @@ export default function FileExtractor({
   onSelectPatient, 
   onNavigateTab,
   onUpdatePatient,
+  onPrint,
   globalDate: parentDate,
   globalClub: parentClub,
   nameOrder: parentOrder
@@ -115,19 +116,12 @@ export default function FileExtractor({
     }
   };
 
-  const handleDownloadSinglePdf = async (player) => {
-    setDownloadingPdfId(player.id || player.fileName);
-    try {
-      await downloadAndOpenPatientPdf(player, {
-        globalDate,
-        globalClub,
-        nameOrder
-      });
-    } catch (e) {
-      window.alert('Error generando PDF: ' + e.message);
-    } finally {
-      setDownloadingPdfId(null);
-    }
+  const handleDownloadSinglePdf = (player) => {
+    if (onSelectPatient) onSelectPatient(player);
+    setTimeout(() => {
+      if (onPrint) onPrint(player);
+      else window.print();
+    }, 100);
   };
 
   const filteredPatients = (patientsList || []).filter(player => {
@@ -278,6 +272,7 @@ export default function FileExtractor({
         setPatientsList={setPatientsList}
         onUpdatePatient={onUpdatePatient}
         onSelectPatient={onSelectPatient}
+        onPrint={onPrint}
         globalDate={globalDate}
         globalClub={globalClub}
         nameOrder={nameOrder}

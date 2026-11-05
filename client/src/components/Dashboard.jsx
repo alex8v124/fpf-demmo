@@ -726,16 +726,16 @@ export default function Dashboard({
                         <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap">
                           <button
                             type="button"
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.stopPropagation();
-                              try {
-                                await downloadAndOpenPatientPdf(player, { globalDate, globalClub, nameOrder });
-                              } catch (err) {
-                                alert('Error generando PDF: ' + err.message);
-                              }
+                              handleChoosePlayer(player);
+                              setTimeout(() => {
+                                if (onPrint) onPrint(player);
+                                else window.print();
+                              }, 100);
                             }}
                             className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md bg-sky-50 hover:bg-sky-100 text-[#0369A1] border border-sky-300 text-[11px] font-bold transition cursor-pointer shrink-0 whitespace-nowrap shadow-2xs"
-                            title="Descargar PDF oficial de 19 páginas y abrirlo automáticamente en nueva pestaña"
+                            title="Descargar o guardar como PDF oficial las 19 páginas con formato 1:1"
                           >
                             <Download className="w-3.5 h-3.5 text-[#0369A1] shrink-0" />
                             <span>PDF</span>

@@ -318,26 +318,15 @@ export default function DocumentViewer({
 
           <button
             type="button"
-            disabled={isGeneratingPdf}
-            onClick={async () => {
-              setIsGeneratingPdf(true);
-              try {
-                await downloadAndOpenPatientPdf(patient);
-              } catch (e) {
-                window.alert('Error generando PDF: ' + e.message);
-              } finally {
-                setIsGeneratingPdf(false);
-              }
+            onClick={() => {
+              if (onPrint) onPrint(patient);
+              else window.print();
             }}
-            className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-1.5 rounded-md transition cursor-pointer shadow-xs disabled:opacity-50"
-            title="Genera el expediente de 19 páginas con los 5 estudios médicos, lo abre automáticamente y lo descarga"
+            className="flex items-center space-x-1.5 bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-1.5 rounded-md transition cursor-pointer shadow-xs"
+            title="Descargar o imprimir el expediente oficial de 19 páginas con formato idéntico a Imprimir"
           >
-            {isGeneratingPdf ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Download className="w-3.5 h-3.5" />
-            )}
-            <span>{isGeneratingPdf ? 'Generando...' : 'Descargar PDF (19P)'}</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>Descargar / Imprimir PDF (19P)</span>
           </button>
 
           {viewFormat === 'blank' ? (

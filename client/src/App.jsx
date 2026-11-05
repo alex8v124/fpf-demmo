@@ -166,7 +166,13 @@ export default function App() {
     setIsBlankMode(true);
   };
 
-  const handlePrint = async () => {
+  const handlePrint = async (targetPatient = null) => {
+    if (targetPatient) {
+      setCurrentPatient(targetPatient);
+      setIsBlankMode(false);
+      await new Promise((r) => setTimeout(r, 60));
+    }
+    const patientForPrint = targetPatient || currentPatient;
     // Precarga síncrona de las 19 páginas oficiales y bases limpias para evitar hojas en blanco al imprimir
     const allUrls = [
       ...Array.from(
@@ -181,7 +187,7 @@ export default function App() {
       '/assets/rx_sample_clean.jpeg',
       '/assets/sello-alfredo-vega-transparent.png',
       '/assets/sello-dario-hernandez-transparent.png',
-      ...Object.values(currentPatient?.attachments || {})
+      ...Object.values(patientForPrint?.attachments || {})
         .map((a) => a?.url)
         .filter(Boolean)
     ];
@@ -275,6 +281,7 @@ export default function App() {
                     onSelectPatient={handleSelectPatient}
                     onNavigateTab={setCurrentTab}
                     onUpdatePatient={handleUpdatePatient}
+                    onPrint={handlePrint}
                     globalDate={globalDate}
                     globalClub={globalClub}
                     nameOrder={nameOrder}
