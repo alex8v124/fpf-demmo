@@ -21,12 +21,34 @@ import {
   ChevronRight,
   Database,
   Building,
+  Building2,
   SlidersHorizontal,
   FolderSync
 } from 'lucide-react';
 import drivePatients from '../data/drivePatients.json';
 import { downloadPatientDocx, downloadBatchDocxZip } from '../utils/docxGenerator';
 import { getPlayerCertificationStatus } from '../utils/statusClassifier';
+import { saveBatchPatientsToSupabase } from '../lib/supabase';
+
+export const POPULAR_CLUBS = [
+  'Club Alianza Lima',
+  'Club Universitario de Deportes',
+  'Sporting Cristal',
+  'FBC Melgar',
+  'Cienciano del Cusco',
+  'Sport Boys Association',
+  'Academia Deportiva Cantolao',
+  'Asociación Deportiva Tarma (ADT)',
+  'Club Deportivo Garcilaso',
+  'Club Deportivo Zúñiga',
+  'Cusco FC',
+  'Los Chankas CYC',
+  'Atlético Grau',
+  'Universidad César Vallejo',
+  'Comerciantes Unidos',
+  'UTC de Cajamarca',
+  'Club FPF / Liga Formativa'
+];
 
 // Meses de la temporada deportiva 2026
 const MONTHS = [
@@ -70,7 +92,9 @@ export default function PoolManager({
   const [searchQuery, setSearchQuery] = useState('');
   const [nameFormatOrder, setNameFormatOrder] = useState('LAST_FIRST'); // 'LAST_FIRST' | 'FIRST_LAST'
   const [globalDate, setGlobalDate] = useState('22-01-2026');
+  const [globalClub, setGlobalClub] = useState('Club FPF / Liga Formativa');
   const [isApplyingCascade, setIsApplyingCascade] = useState(false);
+  const [isApplyingClub, setIsApplyingClub] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -100,7 +124,7 @@ export default function PoolManager({
       });
       await downloadBatchDocxZip(selectedPatients, { 
         globalDate, 
-        globalClub: 'Club FPF / Liga Formativa', 
+        globalClub: globalClub || 'Club FPF / Liga Formativa', 
         nameOrder: nameFormatOrder 
       });
       setToastMessage({
@@ -190,15 +214,22 @@ export default function PoolManager({
     });
   };
 
-  // Aplicar fecha unificada en cascada a todos los jugadores seleccionados ("Sincronizar Lote")
-  const handleApplyGlobalDate = () => {
+  // Aplicar fecha unificada en cascada (a seleccionados o al lote completo)
+  const handleApplyGlobalDate = (onlySelected = false) => {
+    if (!globalDate.trim()) return;
     setIsApplyingCascade(true);
     setTimeout(() => {
+      let count = 0;
       const updated = pool.map(player => {
-        if (selectedMonth === 'ALL' || player.mes === selectedMonth) {
+        const pId = player.id || player.fileName;
+        const matchesSelection = onlySelected
+          ? selectedIds.has(pId)
+          : (selectedMonth === 'ALL' || player.mes === selectedMonth);
+        if (matchesSelection) {
+          count++;
           return {
             ...player,
-            fechaEvaluacion: globalDate,
+            fechaEvaluacion: globalDate.trim(),
             synced21Pages: true
           };
         }
@@ -211,16 +242,61 @@ export default function PoolManager({
       if (setCurrentPatient) {
         setCurrentPatient(prev => ({
           ...prev,
-          fechaEvaluacion: globalDate
+          fechaEvaluacion: globalDate.trim()
         }));
       }
+      saveBatchPatientsToSupabase(updated);
       setIsApplyingCascade(false);
       setToastMessage({
         type: 'success',
-        text: `¡Fecha unificada "${globalDate}" aplicada a todos los expedientes del lote! Las 19 páginas quedaron sincronizadas.`
+        text: onlySelected
+          ? `¡Fecha unificada "${globalDate.trim()}" aplicada a los ${count} futbolistas seleccionados!`
+          : `¡Fecha unificada "${globalDate.trim()}" aplicada a todos los expedientes del lote! Las 19 páginas quedaron sincronizadas.`
       });
       setTimeout(() => setToastMessage(null), 4000);
-    }, 400);
+    }, 300);
+  };
+
+  // Aplicar nombre de club en cascada (a seleccionados o al lote completo)
+  const handleApplyClub = (onlySelected = false) => {
+    if (!globalClub.trim()) return;
+    setIsApplyingClub(true);
+    setTimeout(() => {
+      let count = 0;
+      const updated = pool.map(player => {
+        const pId = player.id || player.fileName;
+        const matchesSelection = onlySelected
+          ? selectedIds.has(pId)
+          : (selectedMonth === 'ALL' || player.mes === selectedMonth);
+        if (matchesSelection) {
+          count++;
+          return {
+            ...player,
+            club: globalClub.trim()
+          };
+        }
+        return player;
+      });
+      setPool(updated);
+      if (setPatientsList) {
+        setPatientsList(updated);
+      }
+      if (setCurrentPatient) {
+        setCurrentPatient(prev => ({
+          ...prev,
+          club: globalClub.trim()
+        }));
+      }
+      saveBatchPatientsToSupabase(updated);
+      setIsApplyingClub(false);
+      setToastMessage({
+        type: 'success',
+        text: onlySelected
+          ? `¡Club "${globalClub.trim()}" asignado a los ${count} futbolistas seleccionados! Sincronizado en las 19 páginas.`
+          : `¡Club "${globalClub.trim()}" asignado a todos los expedientes del lote! Sincronizado en las 19 páginas.`
+      });
+      setTimeout(() => setToastMessage(null), 4000);
+    }, 300);
   };
 
   // Cambiar formato estándar de nombres en todo el pool
@@ -316,8 +392,8 @@ const handleSelectToView = (player) => {
         </div>
       </div>
 
-      {/* CONTROLES DE ESTANDARIZACIÓN: NOMBRES Y FECHA EN CASCADA */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* CONTROLES DE ESTANDARIZACIÓN: NOMBRES, FECHA Y CLUB EN CASCADA */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         
         {/* PANEL 1: ESTANDARIZADOR DE NOMBRES */}
         <div className="bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
@@ -393,14 +469,29 @@ const handleSelectToView = (player) => {
                 />
               </div>
 
+            </div>
+
+            <div className="flex gap-2 pt-0.5">
+              {selectedIds.size > 0 && (
+                <button
+                  type="button"
+                  onClick={() => handleApplyGlobalDate(true)}
+                  disabled={isApplyingCascade}
+                  className="flex-1 bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs px-3 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1 cursor-pointer disabled:opacity-50"
+                  title={`Asignar fecha ${globalDate} a los ${selectedIds.size} futbolistas seleccionados`}
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>A Seleccionados ({selectedIds.size})</span>
+                </button>
+              )}
               <button
                 type="button"
-                onClick={handleApplyGlobalDate}
+                onClick={() => handleApplyGlobalDate(false)}
                 disabled={isApplyingCascade}
-                className="bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3.5 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                className={`bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50 ${selectedIds.size > 0 ? 'w-auto' : 'flex-1'}`}
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isApplyingCascade ? 'animate-spin' : ''}`} />
-                <span>Aplicar al lote</span>
+                <span>{selectedIds.size > 0 ? 'A Todo el Lote' : 'Aplicar al lote'}</span>
               </button>
             </div>
 
@@ -425,6 +516,79 @@ const handleSelectToView = (player) => {
           </div>
         </div>
 
+        {/* PANEL 3: ASIGNADOR MASIVO DE CLUB (SIMILAR A FECHAS) */}
+        <div className="bg-white border border-[#E2E8F0] rounded-lg p-4 shadow-xs space-y-3">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
+            <div className="flex items-center space-x-2">
+              <Building2 className="w-4 h-4 text-[#0369A1]" />
+              <h3 className="text-xs font-bold text-[#1E293B] uppercase tracking-wider">Asignador Masivo de Club</h3>
+            </div>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${selectedIds.size > 0 ? 'bg-emerald-50 text-[#15803D]' : 'bg-sky-50 text-[#0369A1]'}`}>
+              {selectedIds.size > 0 ? `${selectedIds.size} seleccionados` : 'Oficial FPF'}
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex-1 bg-slate-50 border border-[#CBD5E1] rounded-md px-3 py-1.5 flex items-center space-x-2">
+                <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
+                <input
+                  type="text"
+                  list="pool-clubs-list"
+                  value={globalClub}
+                  onChange={(e) => setGlobalClub(e.target.value)}
+                  placeholder="Club oficial FPF..."
+                  className="bg-transparent text-xs font-bold text-[#1E293B] focus:outline-none w-full truncate"
+                />
+                <datalist id="pool-clubs-list">
+                  {POPULAR_CLUBS.map((c, i) => (
+                    <option key={i} value={c} />
+                  ))}
+                </datalist>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-0.5">
+              {selectedIds.size > 0 && (
+                <button
+                  type="button"
+                  onClick={() => handleApplyClub(true)}
+                  disabled={isApplyingClub}
+                  className="flex-1 bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs px-3 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1 cursor-pointer disabled:opacity-50"
+                  title={`Asignar ${globalClub} a los ${selectedIds.size} futbolistas seleccionados`}
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>A Seleccionados ({selectedIds.size})</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleApplyClub(false)}
+                disabled={isApplyingClub}
+                className={`bg-[#0369A1] hover:bg-[#075985] text-white font-semibold text-xs px-3 py-2 rounded-md shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50 ${selectedIds.size > 0 ? 'w-auto' : 'flex-1'}`}
+                title="Asignar club a todos los expedientes del lote"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isApplyingClub ? 'animate-spin' : ''}`} />
+                <span>{selectedIds.size > 0 ? 'A Todo el Lote' : 'Aplicar al Lote'}</span>
+              </button>
+            </div>
+
+            {/* Check de Cascada a los Documentos Oficiales */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
+              {[
+                'Carátula FPF',
+                'Historia Clínica',
+                'CONMEBOL',
+                'Dictamen Médico'
+              ].map((docName, i) => (
+                <div key={i} className="bg-slate-50 p-1.5 rounded border border-[#E2E8F0] flex items-center space-x-1.5 text-[10px] text-slate-700">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                  <span className="truncate">{docName}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ROTACIÓN MENSUAL (12 Meses 2026) */}
@@ -535,6 +699,95 @@ const handleSelectToView = (player) => {
             )}
           </div>
         </div>
+
+        {/* Barra Flotante de Acciones en Lote cuando hay selección */}
+        {selectedIds.size > 0 && (
+          <div className="mb-3 bg-sky-50 border border-sky-200 rounded-lg p-3 flex flex-wrap items-center justify-between gap-3 animate-in fade-in">
+            <div className="flex items-center space-x-2">
+              <span className="bg-[#0369A1] text-white text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-2xs">
+                <Check className="w-3.5 h-3.5" />
+                <span>{selectedIds.size} futbolistas seleccionados</span>
+              </span>
+              <span className="text-xs text-slate-700 font-semibold hidden md:inline">
+                Edición masiva de registros:
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Asignador directo de Club */}
+              <div className="flex items-center bg-white border border-slate-300 rounded-md overflow-hidden shadow-2xs">
+                <div className="px-2 text-slate-400">
+                  <Building2 className="w-3.5 h-3.5" />
+                </div>
+                <input
+                  type="text"
+                  list="pool-clubs-list"
+                  value={globalClub}
+                  onChange={(e) => setGlobalClub(e.target.value)}
+                  placeholder="Club para seleccionados..."
+                  className="text-xs font-bold text-slate-800 px-2 py-1.5 focus:outline-none w-44 truncate"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleApplyClub(true)}
+                  disabled={isApplyingClub}
+                  className="bg-[#15803D] hover:bg-[#166534] text-white text-xs font-bold px-3 py-1.5 transition cursor-pointer flex items-center gap-1"
+                  title="Asignar este club a todos los seleccionados"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Cambiar Club</span>
+                </button>
+              </div>
+
+              {/* Asignador directo de Fecha */}
+              <div className="flex items-center bg-white border border-slate-300 rounded-md overflow-hidden shadow-2xs">
+                <div className="px-2 text-slate-400">
+                  <Calendar className="w-3.5 h-3.5" />
+                </div>
+                <input
+                  type="text"
+                  value={globalDate}
+                  onChange={(e) => setGlobalDate(e.target.value)}
+                  placeholder="DD-MM-AAAA"
+                  className="text-xs font-mono font-bold text-slate-800 px-2 py-1.5 focus:outline-none w-28 text-center"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleApplyGlobalDate(true)}
+                  disabled={isApplyingCascade}
+                  className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-bold px-3 py-1.5 transition cursor-pointer flex items-center gap-1"
+                  title="Asignar esta fecha a todos los seleccionados"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Cambiar Fecha</span>
+                </button>
+              </div>
+
+              {/* Exportar Seleccionados */}
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthConfirmed(false);
+                  setShowAuthModal(true);
+                }}
+                disabled={isExportingZip}
+                className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-md shadow-2xs transition flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Exportar ZIP ({selectedIds.size})</span>
+              </button>
+
+              {/* Limpiar selección */}
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="text-xs text-slate-500 hover:text-slate-900 font-semibold px-2 py-1 cursor-pointer"
+              >
+                Limpiar
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tabla Responsiva con Selección */}
         <div className="overflow-x-auto">

@@ -30,6 +30,7 @@ import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/file
 import { saveBatchPatientsToSupabase } from '../lib/supabase';
 import { downloadAndOpenPatientPdf } from '../utils/pdfGenerator';
 import { downloadPatientDocx } from '../utils/docxGenerator';
+import { POPULAR_CLUBS } from './PoolManager';
 
 export default function Dashboard({ 
   patientsList = [],
@@ -55,6 +56,10 @@ export default function Dashboard({
   const [uploadToast, setUploadToast] = useState(null);
   const [downloadingDocxId, setDownloadingDocxId] = useState(null);
   const dashboardFileInputRef = useRef(null);
+  const [selectedDashboardIds, setSelectedDashboardIds] = useState(new Set());
+  const [batchClub, setBatchClub] = useState(globalClub || 'Club FPF / Liga Formativa');
+  const [batchDate, setBatchDate] = useState(globalDate || '22-01-2026');
+  const [isApplyingBatch, setIsApplyingBatch] = useState(false);
 
   // Conteos dinámicos del semáforo médico
   const totalCount = patientsList.length;
@@ -192,6 +197,79 @@ export default function Dashboard({
     setClubFilter('ALL');
     setCurrentPage(1);
   };
+  // Manejo de Selección Múltiple y Asignación Masiva
+  const handleToggleSelectAll = () => {
+    if (paginatedPlayers.length === 0) return;
+    const allSelected = paginatedPlayers.every(p => {
+      const id = p.id || p.fileName;
+      return selectedDashboardIds.has(id);
+    });
+    const next = new Set(selectedDashboardIds);
+    if (allSelected) {
+      paginatedPlayers.forEach(p => {
+        const id = p.id || p.fileName;
+        if (id) next.delete(id);
+      });
+    } else {
+      paginatedPlayers.forEach(p => {
+        const id = p.id || p.fileName;
+        if (id) next.add(id);
+      });
+    }
+    setSelectedDashboardIds(next);
+  };
+
+  const handleToggleSelectOne = (id) => {
+    if (!id) return;
+    setSelectedDashboardIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleApplyBatchClub = () => {
+    if (!batchClub.trim() || selectedDashboardIds.size === 0) return;
+    setIsApplyingBatch(true);
+    let count = 0;
+    const updated = (patientsList || []).map(p => {
+      const id = p.id || p.fileName;
+      if (selectedDashboardIds.has(id)) {
+        count++;
+        return { ...p, club: batchClub.trim() };
+      }
+      return p;
+    });
+    setPatientsList(updated);
+    saveBatchPatientsToSupabase(updated);
+    setIsApplyingBatch(false);
+    setUploadToast(`¡Club "${batchClub.trim()}" asignado masivamente a los ${count} futbolistas seleccionados!`);
+    setTimeout(() => setUploadToast(null), 4000);
+  };
+
+  const handleApplyBatchDate = () => {
+    if (!batchDate.trim() || selectedDashboardIds.size === 0) return;
+    setIsApplyingBatch(true);
+    let count = 0;
+    const updated = (patientsList || []).map(p => {
+      const id = p.id || p.fileName;
+      if (selectedDashboardIds.has(id)) {
+        count++;
+        return { ...p, fechaEvaluacion: batchDate.trim(), synced21Pages: true };
+      }
+      return p;
+    });
+    setPatientsList(updated);
+    saveBatchPatientsToSupabase(updated);
+    setIsApplyingBatch(false);
+    setUploadToast(`¡Fecha "${batchDate.trim()}" asignada masivamente a los ${count} futbolistas seleccionados!`);
+    setTimeout(() => setUploadToast(null), 4000);
+  };
+
 
   return (
     <div className="space-y-6 select-none animate-in fade-in duration-200">
@@ -439,11 +517,100 @@ export default function Dashboard({
 
         </div>
 
+        {/* Barra de Acciones Masivas para Resultados Seleccionados */}
+        {selectedDashboardIds.size > 0 && (
+          <div className="p-3 bg-sky-50 border-b border-sky-200 flex flex-wrap items-center justify-between gap-3 animate-in fade-in">
+            <div className="flex items-center space-x-2">
+              <span className="bg-[#0369A1] text-white text-xs font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-2xs">
+                <Check className="w-3.5 h-3.5" />
+                <span>{selectedDashboardIds.size} futbolistas seleccionados</span>
+              </span>
+              <span className="text-xs text-slate-700 font-semibold hidden md:inline">
+                Edición masiva de registros:
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Asignador directo de Club */}
+              <div className="flex items-center bg-white border border-slate-300 rounded-md overflow-hidden shadow-2xs">
+                <div className="px-2 text-slate-400">
+                  <Building2 className="w-3.5 h-3.5" />
+                </div>
+                <input
+                  type="text"
+                  list="dashboard-clubs-list"
+                  value={batchClub}
+                  onChange={(e) => setBatchClub(e.target.value)}
+                  placeholder="Club para seleccionados..."
+                  className="text-xs font-bold text-slate-800 px-2 py-1.5 focus:outline-none w-44 truncate"
+                />
+                <datalist id="dashboard-clubs-list">
+                  {POPULAR_CLUBS.map((c, i) => (
+                    <option key={i} value={c} />
+                  ))}
+                </datalist>
+                <button
+                  type="button"
+                  onClick={handleApplyBatchClub}
+                  disabled={isApplyingBatch}
+                  className="bg-[#15803D] hover:bg-[#166534] text-white text-xs font-bold px-3 py-1.5 transition cursor-pointer flex items-center gap-1"
+                  title="Asignar este club a todos los seleccionados"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Cambiar Club</span>
+                </button>
+              </div>
+
+              {/* Asignador directo de Fecha */}
+              <div className="flex items-center bg-white border border-slate-300 rounded-md overflow-hidden shadow-2xs">
+                <div className="px-2 text-slate-400">
+                  <Calendar className="w-3.5 h-3.5" />
+                </div>
+                <input
+                  type="text"
+                  value={batchDate}
+                  onChange={(e) => setBatchDate(e.target.value)}
+                  placeholder="DD-MM-AAAA"
+                  className="text-xs font-mono font-bold text-slate-800 px-2 py-1.5 focus:outline-none w-28 text-center"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyBatchDate}
+                  disabled={isApplyingBatch}
+                  className="bg-[#0369A1] hover:bg-[#075985] text-white text-xs font-bold px-3 py-1.5 transition cursor-pointer flex items-center gap-1"
+                  title="Asignar esta fecha a todos los seleccionados"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Cambiar Fecha</span>
+                </button>
+              </div>
+
+              {/* Limpiar selección */}
+              <button
+                type="button"
+                onClick={() => setSelectedDashboardIds(new Set())}
+                className="text-xs text-slate-500 hover:text-slate-900 font-semibold px-2 py-1 cursor-pointer"
+              >
+                Limpiar
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Tabla Clásica de EHR / Data Grid */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <th className="py-3 px-3 w-10 text-center">
+                  <input
+                    type="checkbox"
+                    checked={paginatedPlayers.length > 0 && paginatedPlayers.every(p => selectedDashboardIds.has(p.id || p.fileName))}
+                    onChange={handleToggleSelectAll}
+                    className="rounded border-slate-300 text-[#0369A1] cursor-pointer"
+                    title="Seleccionar todos los de esta página"
+                  />
+                </th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap min-w-[200px]">Futbolista / DNI</th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap min-w-[170px]">Club / Categoría</th>
                 <th className="py-3 px-4 font-semibold whitespace-nowrap min-w-[120px]">Fecha Evaluación</th>
@@ -455,7 +622,7 @@ export default function Dashboard({
             <tbody className="divide-y divide-slate-100">
               {paginatedPlayers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-[#64748B]">
+                  <td colSpan={7} className="py-12 text-center text-[#64748B]">
                     <div className="max-w-sm mx-auto space-y-2">
                       <p className="font-semibold text-sm text-[#1E293B]">
                         No se encontraron futbolistas con los filtros seleccionados
@@ -482,8 +649,20 @@ export default function Dashboard({
                     <tr 
                       key={player.id || player.fileName}
                       onClick={() => handleChoosePlayer(player)}
-                      className="hover:bg-slate-50/70 transition-colors cursor-pointer group border-b border-slate-100 last:border-b-0"
+                      className={`hover:bg-slate-50/70 transition-colors cursor-pointer group border-b border-slate-100 last:border-b-0 ${
+                        selectedDashboardIds.has(player.id || player.fileName) ? 'bg-sky-50/60' : ''
+                      }`}
                     >
+                      {/* 0. Checkbox Selección */}
+                      <td className="py-3 px-3 w-10 text-center" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedDashboardIds.has(player.id || player.fileName)}
+                          onChange={() => handleToggleSelectOne(player.id || player.fileName)}
+                          className="rounded border-slate-300 text-[#0369A1] cursor-pointer"
+                        />
+                      </td>
+
                       {/* 1. Futbolista / DNI */}
                       <td className="py-3 px-4 min-w-[200px]">
                         <div className="flex items-center space-x-2.5">
