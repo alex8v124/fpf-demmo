@@ -400,6 +400,7 @@ export default function App() {
           onSelectPatientId={handleSelectPatientId}
           onResetBlank={handleResetBlank}
           onPrint={handlePrint}
+          onDownloadPdf={handleDownloadPdf}
           userRole={userRole}
           setUserRole={setUserRole}
           activeDoctor={activeDoctor}

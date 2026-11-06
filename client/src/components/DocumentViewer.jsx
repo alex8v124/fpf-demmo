@@ -510,8 +510,8 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
   const cleanDate = patient?.fechaEvaluacion || '22-01-2026';
   const cleanClub = (patient?.club || 'Club FPF / Liga Formativa').toUpperCase();
   const cleanPaisClub = (patient?.paisClub || 'PERÚ').toUpperCase();
-  const cleanBirthDate = patient?.fechaNacimiento || '18-09-2004';
-  const cleanPosicion = (patient?.posicion || 'VOLANTE').toUpperCase();
+  const cleanBirthDate = '';
+  const cleanPosicion = '';
 
   const medicoCert = (patient?.medicoEvaluador || 'DARIO HERNANDEZ')
     .replace(/^DR\.?\s*/i, '')
