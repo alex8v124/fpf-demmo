@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, 
   Users, 
-  Printer, 
+  Printer,
+  Download, 
   ChevronDown, 
   ShieldCheck, 
   FileSpreadsheet, 
