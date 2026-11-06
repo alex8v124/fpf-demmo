@@ -89,8 +89,8 @@ export async function loadPatientsFromLocal() {
     return { success: true, data: [] };
   }
 
-  // Si el usuario aún tiene datos semilla de prueba guardados en su navegador, limpiar una única vez
-  const hasCleanedLegacySeed = typeof localStorage !== 'undefined' ? localStorage.getItem('fpf_legacy_seed_cleared_v2') : 'true';
+  // Si el usuario aún tiene datos semilla de prueba guardados en su navegador, purgar completamente
+  const hasCleanedLegacySeed = typeof localStorage !== 'undefined' ? localStorage.getItem('fpf_legacy_seed_cleared_v3') : null;
   if (!hasCleanedLegacySeed) {
     try {
       const txClear = db.transaction(STORE_PATIENTS, 'readwrite');
@@ -100,7 +100,7 @@ export async function loadPatientsFromLocal() {
         txClear.onerror = r;
       });
       if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('fpf_legacy_seed_cleared_v2', 'true');
+        localStorage.setItem('fpf_legacy_seed_cleared_v3', 'true');
       }
     } catch (e) {
       console.warn('Limpieza inicial de datos demo:', e);
@@ -114,8 +114,24 @@ export async function loadPatientsFromLocal() {
       const request = store.getAll();
 
       request.onsuccess = () => {
-        const patients = request.result || [];
-        resolve({ success: true, data: patients });
+        const raw = request.result || [];
+        // Filtrar y purgar cualquier expediente mock/demo residual
+        const cleaned = raw.filter((p) => {
+          if (!p) return false;
+          const id = String(p.id || '');
+          const origen = String(p.origen || '');
+          const isMock = id.startsWith('player-drive-') ||
+                         id === 'talexsio-guzman' ||
+                         id === 'carlos-ponce' ||
+                         origen === 'Google Drive FPF';
+          if (isMock) {
+            deletePatientFromLocal(p.id).catch(() => {});
+            return false;
+          }
+          return true;
+        });
+
+        resolve({ success: true, data: cleaned });
       };
 
       request.onerror = () => {

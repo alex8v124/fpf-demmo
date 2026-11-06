@@ -23,11 +23,12 @@ import {
   Eye,
   Check,
   X,
-  ExternalLink
+  ExternalLink,
+  Trash2
 } from 'lucide-react';
 import { getPlayerCertificationStatus } from '../utils/statusClassifier';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
-import { saveBatchPatientsToSupabase } from '../lib/supabase';
+import { saveBatchPatientsToSupabase, clearAllLocalPatients } from '../lib/supabase';
 import { downloadAndOpenPatientPdf } from '../utils/pdfGenerator';
 import { downloadPatientDocx } from '../utils/docxGenerator';
 import { POPULAR_CLUBS } from './PoolManager';
@@ -330,6 +331,25 @@ export default function Dashboard({
             <Users className="w-3.5 h-3.5 text-slate-500" />
             <span>Pool de Rotación</span>
           </button>
+
+          {patientsList.length > 0 && (
+            <button
+              type="button"
+              onClick={async () => {
+                if (window.confirm('¿Deseas vaciar completamente la bandeja y eliminar todos los expedientes cargados?')) {
+                  await clearAllLocalPatients();
+                  if (setPatientsList) setPatientsList([]);
+                  if (onSelectPatient) onSelectPatient(null);
+                  if (onResetBlank) onResetBlank();
+                }
+              }}
+              className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-md bg-white border border-rose-300 hover:bg-rose-50 text-xs font-semibold text-rose-700 transition cursor-pointer shadow-xs"
+              title="Vaciar todos los expedientes de la bandeja"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              <span className="hidden sm:inline">Vaciar Bandeja</span>
+            </button>
+          )}
 
           <button
             type="button"
