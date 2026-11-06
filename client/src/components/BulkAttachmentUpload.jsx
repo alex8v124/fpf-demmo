@@ -174,15 +174,25 @@ export default function BulkAttachmentUpload({
           ...player,
           attachments: updatedAttachments,
           ...(slot.id === 'ecg' ? { fileUrl: url, fileName: file.name } : {}),
-          ...(extractedLab ? {
-            laboratorio: {
-              ...(player.laboratorio || {}),
-              hemograma: {
-                ...((player.laboratorio && player.laboratorio.hemograma) || {}),
-                ...extractedLab
+          ...(extractedLab ? (() => {
+            const { sodio, potasio, glucosaBasal, ...hemoRest } = extractedLab;
+            const prevL = player.laboratorio || {};
+            return {
+              laboratorio: {
+                ...prevL,
+                hemograma: {
+                  ...(prevL.hemograma || {}),
+                  ...hemoRest
+                },
+                bioquimica: {
+                  ...(prevL.bioquimica || {}),
+                  ...(sodio ? { sodio } : {}),
+                  ...(potasio ? { potasio } : {}),
+                  ...(glucosaBasal ? { glucosaBasal } : {})
+                }
               }
-            }
-          } : {})
+            };
+          })() : {})
         };
 
         // 2. Registrar en estado local de React

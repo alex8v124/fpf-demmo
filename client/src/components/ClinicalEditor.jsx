@@ -1276,9 +1276,9 @@ export default function ClinicalEditor({
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">Hemoglobina (gr%)</label>
                     <input
                       type="text"
-                      value={patient?.laboratorio?.hemograma?.hemoglobina ?? '13.8'}
+                      value={patient?.laboratorio?.hemograma?.hemoglobina ?? ''}
                       onChange={(e) => handleLabChange('hemograma', 'hemoglobina', e.target.value)}
-                      placeholder="13.8"
+                      placeholder="Ej. 13.8"
                       className={compactInputClass}
                     />
                     <span className="text-[10px] text-[#64748B]">Ref: 13.0 - 16.0 gr%</span>
@@ -1287,9 +1287,9 @@ export default function ClinicalEditor({
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">Hematocrito (%)</label>
                     <input
                       type="text"
-                      value={patient?.laboratorio?.hemograma?.hematocrito ?? '42'}
+                      value={patient?.laboratorio?.hemograma?.hematocrito ?? ''}
                       onChange={(e) => handleLabChange('hemograma', 'hematocrito', e.target.value)}
-                      placeholder="42"
+                      placeholder="Ej. 42"
                       className={compactInputClass}
                     />
                     <span className="text-[10px] text-[#64748B]">Ref: 40 - 54 %</span>
@@ -1298,9 +1298,9 @@ export default function ClinicalEditor({
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">Eritrocitos / Glób. Rojos</label>
                     <input
                       type="text"
-                      value={patient?.laboratorio?.hemograma?.globulosRojos ?? '4.620,000.00'}
+                      value={patient?.laboratorio?.hemograma?.globulosRojos ?? ''}
                       onChange={(e) => handleLabChange('hemograma', 'globulosRojos', e.target.value)}
-                      placeholder="4.620,000.00"
+                      placeholder="Ej. 4.620,000.00"
                       className={compactInputClass}
                     />
                     <span className="text-[10px] text-[#64748B]">3,800,000 - 5,800,000</span>
@@ -1309,9 +1309,9 @@ export default function ClinicalEditor({
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">Leucocitos (/mm³)</label>
                     <input
                       type="text"
-                      value={patient?.laboratorio?.hemograma?.leucocitos ?? '6,241.00'}
+                      value={patient?.laboratorio?.hemograma?.leucocitos ?? ''}
                       onChange={(e) => handleLabChange('hemograma', 'leucocitos', e.target.value)}
-                      placeholder="6,241.00"
+                      placeholder="Ej. 6,241.00"
                       className={compactInputClass}
                     />
                     <span className="text-[10px] text-[#64748B]">4,500 - 10,000</span>
@@ -1320,9 +1320,9 @@ export default function ClinicalEditor({
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">Plaquetas / Trombocitos</label>
                     <input
                       type="text"
-                      value={patient?.laboratorio?.hemograma?.plaquetas ?? '199.000'}
+                      value={patient?.laboratorio?.hemograma?.plaquetas ?? ''}
                       onChange={(e) => handleLabChange('hemograma', 'plaquetas', e.target.value)}
-                      placeholder="199.000"
+                      placeholder="Ej. 199.000"
                       className={compactInputClass}
                     />
                     <span className="text-[10px] text-[#64748B]">150,000 - 450,000</span>
@@ -1331,9 +1331,9 @@ export default function ClinicalEditor({
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">Sodio (mmol/L)</label>
                     <input
                       type="text"
-                      value={patient?.laboratorio?.bioquimica?.sodio ?? '135'}
+                      value={patient?.laboratorio?.bioquimica?.sodio ?? ''}
                       onChange={(e) => handleLabChange('bioquimica', 'sodio', e.target.value)}
-                      placeholder="135"
+                      placeholder="Ej. 135"
                       className={compactInputClass}
                     />
                     <span className="text-[10px] text-[#64748B]">135 - 145 mmol/L</span>
@@ -1342,9 +1342,9 @@ export default function ClinicalEditor({
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">Potasio (mmol/L)</label>
                     <input
                       type="text"
-                      value={patient?.laboratorio?.bioquimica?.potasio ?? '4.4'}
+                      value={patient?.laboratorio?.bioquimica?.potasio ?? ''}
                       onChange={(e) => handleLabChange('bioquimica', 'potasio', e.target.value)}
-                      placeholder="4.4"
+                      placeholder="Ej. 4.4"
                       className={compactInputClass}
                     />
                     <span className="text-[10px] text-[#64748B]">3.5 - 5.1 mmol/L</span>
@@ -1353,9 +1353,9 @@ export default function ClinicalEditor({
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">Glucosa Basal (mg/dl)</label>
                     <input
                       type="text"
-                      value={patient?.laboratorio?.bioquimica?.glucosaBasal ?? '88'}
+                      value={patient?.laboratorio?.bioquimica?.glucosaBasal ?? ''}
                       onChange={(e) => handleLabChange('bioquimica', 'glucosaBasal', e.target.value)}
-                      placeholder="88"
+                      placeholder="Ej. 88"
                       className={compactInputClass}
                     />
                     <span className="text-[10px] text-[#64748B]">70 - 110 mg/dl</span>

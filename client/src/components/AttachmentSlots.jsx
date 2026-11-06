@@ -167,11 +167,19 @@ export default function AttachmentSlots({ patient, onUpdatePatient, compact = fa
   const handleChange = (slotId, value, extractedLab) => {
     const changes = { attachments: { ...attachments, [slotId]: value } };
     if (slotId === 'laboratorio' && extractedLab) {
+      const { sodio, potasio, glucosaBasal, ...hemogramaData } = extractedLab;
+      const prevLab = patient?.laboratorio || {};
       changes.laboratorio = {
-        ...(patient?.laboratorio || {}),
+        ...prevLab,
         hemograma: {
-          ...((patient?.laboratorio && patient.laboratorio.hemograma) || {}),
-          ...extractedLab
+          ...(prevLab.hemograma || {}),
+          ...hemogramaData
+        },
+        bioquimica: {
+          ...(prevLab.bioquimica || {}),
+          ...(sodio ? { sodio } : {}),
+          ...(potasio ? { potasio } : {}),
+          ...(glucosaBasal ? { glucosaBasal } : {})
         }
       };
     }

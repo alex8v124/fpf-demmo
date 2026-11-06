@@ -79,6 +79,16 @@ export function parseHemogramaText(rawText) {
   const abastMatch = text.match(/Abastonados\s*[:=\-]?\s*([0-9]+)/i);
   if (abastMatch) found.abastonados = abastMatch[1];
 
+  // 8. Electrolitos y Bioquímica (Sodio, Potasio, Glucosa) si están en el informe
+  const sodioMatch = text.match(/(?:Sodio|Na\+?)\s*[:=\-]?\s*([0-9]+(?:[.,][0-9]+)?)/i);
+  if (sodioMatch) found.sodio = sodioMatch[1].replace(',', '.');
+
+  const potasioMatch = text.match(/(?:Potasio|K\+?)\s*[:=\-]?\s*([0-9]+(?:[.,][0-9]+)?)/i);
+  if (potasioMatch) found.potasio = potasioMatch[1].replace(',', '.');
+
+  const glucosaMatch = text.match(/(?:Glucosa|Glicemia)\s*[:=\-]?\s*([0-9]+(?:[.,][0-9]+)?)/i);
+  if (glucosaMatch) found.glucosaBasal = glucosaMatch[1].replace(',', '.');
+
   return Object.keys(found).length > 0 ? found : null;
 }
 

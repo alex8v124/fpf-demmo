@@ -1066,13 +1066,13 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
   if (pageNumber === 11) {
     const hasVal = (v) => v !== undefined && v !== null && String(v).trim() !== '';
     const p11Values = [
-      { top: '29.15%', val: hasVal(hemo.hemoglobina) ? String(hemo.hemoglobina) : '13.8' },
-      { top: '32.09%', val: hasVal(hemo.hematocrito) ? String(hemo.hematocrito) : '42' },
-      { top: '34.50%', val: hasVal(hemo.globulosRojos) ? String(hemo.globulosRojos) : '4.620' },
-      { top: '37.61%', val: hasVal(hemo.plaquetas) ? String(hemo.plaquetas) : '364' },
-      { top: '40.56%', val: hasVal(hemo.leucocitos) ? String(hemo.leucocitos) : '6.241' },
-      { top: '43.49%', val: hasVal(bioq.sodio) ? String(bioq.sodio) : '135' },
-      { top: '46.26%', val: hasVal(bioq.potasio) ? String(bioq.potasio) : '4.4' }
+      { top: '29.15%', val: hasVal(hemo.hemoglobina) ? String(hemo.hemoglobina) : '' },
+      { top: '32.09%', val: hasVal(hemo.hematocrito) ? String(hemo.hematocrito) : '' },
+      { top: '34.50%', val: hasVal(hemo.globulosRojos) ? String(hemo.globulosRojos) : '' },
+      { top: '37.61%', val: hasVal(hemo.plaquetas) ? String(hemo.plaquetas) : '' },
+      { top: '40.56%', val: hasVal(hemo.leucocitos) ? String(hemo.leucocitos) : '' },
+      { top: '43.49%', val: hasVal(bioq.sodio) ? String(bioq.sodio) : '' },
+      { top: '46.26%', val: hasVal(bioq.potasio) ? String(bioq.potasio) : '' }
     ];
     return (
       <div className="w-full h-full relative select-none">
@@ -1388,21 +1388,22 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
       );
     }
 
+    const hasVal17 = (v) => v !== undefined && v !== null && String(v).trim() !== '';
     const p17Hemograma = [
-      { top: '38.80%', left: '54.32%', val: hemo.globulosRojos || '4.620,000.00' },
-      { top: '40.58%', left: '60.85%', val: hemo.hemoglobina || '13.8' },
-      { top: '44.15%', left: '62.26%', val: hemo.hematocrito || '42' },
-      { top: '47.71%', left: '57.58%', val: hemo.leucocitos || '6,241.00' },
-      { top: '52.69%', left: '58.04%', val: hemo.plaquetas || '199.000' },
-      { top: '56.25%', left: '62.26%', val: hemo.vcm || '97' },
-      { top: '58.03%', left: '62.26%', val: hemo.hcm || '30' },
-      { top: '59.81%', left: '62.26%', val: hemo.chcm || '31' },
-      { top: '65.16%', left: '62.26%', val: hemo.linfocitos || '35' },
-      { top: '66.94%', left: '63.20%', val: hemo.monocitos || '1' },
-      { top: '68.72%', left: '63.20%', val: hemo.eosinofilos || '3' },
-      { top: '70.50%', left: '63.20%', val: hemo.basofilos || '0' },
-      { top: '72.29%', left: '62.26%', val: hemo.segmentados || '61' },
-      { top: '74.07%', left: '63.20%', val: hemo.abastonados || '0' }
+      { top: '38.80%', left: '54.32%', val: hasVal17(hemo.globulosRojos) ? String(hemo.globulosRojos) : '' },
+      { top: '40.58%', left: '60.85%', val: hasVal17(hemo.hemoglobina) ? String(hemo.hemoglobina) : '' },
+      { top: '44.15%', left: '62.26%', val: hasVal17(hemo.hematocrito) ? String(hemo.hematocrito) : '' },
+      { top: '47.71%', left: '57.58%', val: hasVal17(hemo.leucocitos) ? String(hemo.leucocitos) : '' },
+      { top: '52.69%', left: '58.04%', val: hasVal17(hemo.plaquetas) ? String(hemo.plaquetas) : '' },
+      { top: '56.25%', left: '62.26%', val: hasVal17(hemo.vcm) ? String(hemo.vcm) : '' },
+      { top: '58.03%', left: '62.26%', val: hasVal17(hemo.hcm) ? String(hemo.hcm) : '' },
+      { top: '59.81%', left: '62.26%', val: hasVal17(hemo.chcm) ? String(hemo.chcm) : '' },
+      { top: '65.16%', left: '62.26%', val: hasVal17(hemo.linfocitos) ? String(hemo.linfocitos) : '' },
+      { top: '66.94%', left: '63.20%', val: hasVal17(hemo.monocitos) ? String(hemo.monocitos) : '' },
+      { top: '68.72%', left: '63.20%', val: hasVal17(hemo.eosinofilos) ? String(hemo.eosinofilos) : '' },
+      { top: '70.50%', left: '63.20%', val: hasVal17(hemo.basofilos) ? String(hemo.basofilos) : '' },
+      { top: '72.29%', left: '62.26%', val: hasVal17(hemo.segmentados) ? String(hemo.segmentados) : '' },
+      { top: '74.07%', left: '63.20%', val: hasVal17(hemo.abastonados) ? String(hemo.abastonados) : '' }
     ];
 
     return (
