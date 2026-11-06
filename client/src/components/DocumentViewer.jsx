@@ -1062,16 +1062,17 @@ function FacsimileOfficialPage({ pageNumber, patient }) {
     );
   }
 
-  // PÁGINA 11: RESULTADOS ANÁLISIS DE SANGRE FPF
+  // PÁGINA 11: RESULTADOS ANÁLISIS DE SANGRE FPF (Vinculado a Laboratorio)
   if (pageNumber === 11) {
+    const hasVal = (v) => v !== undefined && v !== null && String(v).trim() !== '';
     const p11Values = [
-      { top: '29.15%', val: hemo.hemoglobina || '13.8' },
-      { top: '32.09%', val: hemo.hematocrito || '42' },
-      { top: '34.50%', val: hemo.globulosRojos || '4.620' },
-      { top: '37.61%', val: hemo.plaquetas || '364' },
-      { top: '40.56%', val: hemo.leucocitos || '6.241' },
-      { top: '43.49%', val: bioq.sodio || '135' },
-      { top: '46.26%', val: bioq.potasio || '4.4' }
+      { top: '29.15%', val: hasVal(hemo.hemoglobina) ? String(hemo.hemoglobina) : '13.8' },
+      { top: '32.09%', val: hasVal(hemo.hematocrito) ? String(hemo.hematocrito) : '42' },
+      { top: '34.50%', val: hasVal(hemo.globulosRojos) ? String(hemo.globulosRojos) : '4.620' },
+      { top: '37.61%', val: hasVal(hemo.plaquetas) ? String(hemo.plaquetas) : '364' },
+      { top: '40.56%', val: hasVal(hemo.leucocitos) ? String(hemo.leucocitos) : '6.241' },
+      { top: '43.49%', val: hasVal(bioq.sodio) ? String(bioq.sodio) : '135' },
+      { top: '46.26%', val: hasVal(bioq.potasio) ? String(bioq.potasio) : '4.4' }
     ];
     return (
       <div className="w-full h-full relative select-none">

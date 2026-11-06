@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { ATTACHMENT_SLOTS } from './AttachmentSlots';
 import { anyFileToDataUrl } from '../utils/fileConverter';
+import { extractLabDataFromFile } from '../utils/labExtractor';
 import { parsePatientFromFileName, formatPlayerDisplayName } from '../utils/filenameParser';
 import { savePatientToSupabase, setCachedAttachments } from '../utils/supabase';
 import { downloadAndOpenPatientPdf } from '../utils/pdfGenerator';
@@ -151,6 +152,15 @@ export default function BulkAttachmentUpload({
       try {
         // 1. Convierte cualquier formato (PDF o Imagen) a Data URL de alta definición
         const url = await anyFileToDataUrl(file);
+        let extractedLab = null;
+        if (slot.id === 'laboratorio') {
+          try {
+            extractedLab = await extractLabDataFromFile(file);
+          } catch (e) {
+            console.warn('Extracción lab en lote:', e);
+          }
+        }
+
         const updatedAttachments = {
           ...(player.attachments || {}),
           [slot.id]: {
@@ -163,7 +173,16 @@ export default function BulkAttachmentUpload({
         const updatedPlayer = {
           ...player,
           attachments: updatedAttachments,
-          ...(slot.id === 'ecg' ? { fileUrl: url, fileName: file.name } : {})
+          ...(slot.id === 'ecg' ? { fileUrl: url, fileName: file.name } : {}),
+          ...(extractedLab ? {
+            laboratorio: {
+              ...(player.laboratorio || {}),
+              hemograma: {
+                ...((player.laboratorio && player.laboratorio.hemograma) || {}),
+                ...extractedLab
+              }
+            }
+          } : {})
         };
 
         // 2. Registrar en estado local de React

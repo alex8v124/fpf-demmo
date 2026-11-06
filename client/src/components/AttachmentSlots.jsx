@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
-import { UploadCloud, RefreshCw, Trash2, ImageIcon } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { UploadCloud, RefreshCw, Trash2, ImageIcon, CheckCircle2 } from 'lucide-react';
 import { anyFileToDataUrl } from '../utils/fileConverter';
+import { extractLabDataFromFile } from '../utils/labExtractor';
 
 // Los 5 espacios de adjuntos por jugador. Todos los archivos suelen llevar el mismo nombre,
 // por eso se elige explícitamente el espacio de destino dentro del expediente.
@@ -17,9 +18,11 @@ export async function fileToDataUrl(file, maxSize = 1600) {
   return await anyFileToDataUrl(file, maxSize);
 }
 
-function Slot({ slot, value, onChange, onRemove }) {
+function Slot({ slot, value, patient, onChange, onRemove }) {
   const inputRef = useRef(null);
-  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState('');
+  const [extractedFeedback, setExtractedFeedback] = useState(null);
 
   const handleFile = async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -27,20 +30,46 @@ function Slot({ slot, value, onChange, onRemove }) {
     if (!file) return;
 
     setIsProcessing(true);
+    setProcessingStatus('Cargando documento...');
+    setExtractedFeedback(null);
+
     try {
+      // 1. Convertir documento a DataURL para visualización en Pág. 17
       const url = await fileToDataUrl(file);
+      let labData = null;
+
+      // 2. Si es el slot de laboratorio (Pág. 17), extraer automáticamente Hemograma con OCR/PDF
+      if (slot.id === 'laboratorio') {
+        setProcessingStatus('Extrayendo Hemoglobina, Hematocrito y Leucocitos...');
+        try {
+          labData = await extractLabDataFromFile(file, (msg) => setProcessingStatus(msg));
+        } catch (errLab) {
+          console.warn('Extracción de laboratorio:', errLab);
+        }
+      }
+
       onChange(slot.id, { 
         url, 
         name: file.name,
         type: file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg')
-      });
+      }, labData);
+
+      if (labData && (labData.hemoglobina || labData.hematocrito || labData.leucocitos)) {
+        setExtractedFeedback(
+          `¡Datos extraídos con éxito! Hb: ${labData.hemoglobina ?? '-'}, Hto: ${labData.hematocrito ?? '-'}%, Leu: ${labData.leucocitos ?? '-'}. Se han vinculado a la Página 11.`
+        );
+        setTimeout(() => setExtractedFeedback(null), 6000);
+      }
     } catch (err) {
       console.error('Error procesando archivo:', err);
       window.alert('No se pudo procesar el archivo: ' + err.message);
     } finally {
       setIsProcessing(false);
+      setProcessingStatus('');
     }
   };
+
+  const hemo = patient?.laboratorio?.hemograma;
 
   return (
     <div className="border border-[#E2E8F0] rounded-lg bg-white p-2.5 flex flex-col gap-2">
@@ -51,9 +80,11 @@ function Slot({ slot, value, onChange, onRemove }) {
 
       <div className="h-24 rounded-md bg-slate-50 border border-dashed border-[#CBD5E1] flex items-center justify-center overflow-hidden relative">
         {isProcessing ? (
-          <div className="flex flex-col items-center justify-center text-[#0369A1] animate-pulse">
+          <div className="flex flex-col items-center justify-center text-[#0369A1] animate-pulse px-2 text-center">
             <RefreshCw className="w-5 h-5 animate-spin mb-1 text-[#0369A1]" />
-            <span className="text-[10px] font-bold">Procesando PDF...</span>
+            <span className="text-[10px] font-bold leading-tight">
+              {processingStatus || 'Procesando...'}
+            </span>
           </div>
         ) : value ? (
           <img src={value.url} alt={slot.label} className="w-full h-full object-contain" />
@@ -70,6 +101,25 @@ function Slot({ slot, value, onChange, onRemove }) {
       {value && (
         <div className="text-[10px] text-[#64748B] truncate font-medium" title={value.name}>
           {value.name}
+        </div>
+      )}
+
+      {/* Indicador de Datos Extraídos en Laboratorio */}
+      {slot.id === 'laboratorio' && value && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded p-1.5 text-[9px] text-emerald-900 leading-tight">
+          <div className="font-bold flex items-center gap-1 text-emerald-700">
+            <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+            <span>Datos en Página 11:</span>
+          </div>
+          <div className="truncate mt-0.5 font-mono text-[9px]">
+            Hb: <strong>{hemo?.hemoglobina || '-'}</strong> • Hto: <strong>{hemo?.hematocrito || '-'}%</strong> • Leu: <strong>{hemo?.leucocitos || '-'}</strong>
+          </div>
+        </div>
+      )}
+
+      {extractedFeedback && (
+        <div className="bg-sky-50 border border-sky-200 rounded p-1 text-[9px] text-[#0369A1] leading-tight font-medium">
+          {extractedFeedback}
         </div>
       )}
 
@@ -94,7 +144,7 @@ function Slot({ slot, value, onChange, onRemove }) {
           ) : (
             <UploadCloud className="w-3 h-3" />
           )}
-          <span>{isProcessing ? 'Procesando...' : value ? 'Reemplazar' : 'Subir'}</span>
+          <span>{isProcessing ? 'Extrayendo...' : value ? 'Reemplazar' : 'Subir'}</span>
         </button>
         {value && !isProcessing && (
           <button
@@ -114,8 +164,18 @@ function Slot({ slot, value, onChange, onRemove }) {
 export default function AttachmentSlots({ patient, onUpdatePatient, compact = false }) {
   const attachments = (patient && patient.attachments) || {};
 
-  const handleChange = (slotId, value) => {
-    onUpdatePatient(patient, { attachments: { ...attachments, [slotId]: value } });
+  const handleChange = (slotId, value, extractedLab) => {
+    const changes = { attachments: { ...attachments, [slotId]: value } };
+    if (slotId === 'laboratorio' && extractedLab) {
+      changes.laboratorio = {
+        ...(patient?.laboratorio || {}),
+        hemograma: {
+          ...((patient?.laboratorio && patient.laboratorio.hemograma) || {}),
+          ...extractedLab
+        }
+      };
+    }
+    onUpdatePatient(patient, changes);
   };
 
   const handleRemove = (slotId) => {
@@ -141,6 +201,7 @@ export default function AttachmentSlots({ patient, onUpdatePatient, compact = fa
           <Slot
             key={slot.id}
             slot={slot}
+            patient={patient}
             value={attachments[slot.id]}
             onChange={handleChange}
             onRemove={handleRemove}
